@@ -9,10 +9,10 @@ Ext.define('dm.view.system.Groups', {
 
 
     initComponent: function () {
-
-        Ext.apply(this, {
+        var me = this;
+        Ext.apply(me, {
             columns: [
-                {text: 'username', dataIndex: '_id', flex: 1},
+                {text: 'groupname', dataIndex: '_id', flex: 1},
                 {
                     text: 'display', dataIndex: 'display', flex: 1,
                     editor: {
@@ -26,32 +26,28 @@ Ext.define('dm.view.system.Groups', {
                         xtype: 'datefield',
                         anchor: '100%'
                     }
-                }, {
-                    xtype: 'actioncolumn',
-                    flex: 1,
+                }, Ext.create('dm.grid.column.Action', {
                     sortable: false,
-                    menuDisabled: true,
-                    items: [
-                        {
-                            icon: '../ext/images/icons/delete.gif',
-                            scope: this,
-                            handler: this.onRemoveClick
-                        }
-                    ]
-                }
+                    scope: me,
+                    items: [{
+                        style: 'font-size:20px;color:DarkRed;',
+                        iconCls: 'fa fa-remove',
+                        handler: me.onRemoveClick
+                    }]
+                })
             ],
             tools: [
                 {
                     type: 'refresh',
-                    callback: this.refresh
+                    callback: me.refresh
                 },
                 {
                     type: 'plus',
-                    callback: this.createGroup
+                    callback: me.createGroup
                 }
             ]
         });
-        this.callParent();
+        me.callParent();
     },
 
     refresh: function (grid, tool, event) {
