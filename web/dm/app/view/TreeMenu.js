@@ -28,11 +28,11 @@ Ext.define('dm.view.TreeMenu', {
             ]
             },
             {
-                text: "系统", iconCls: 'fa-cog', expanded: true, children: [
+                text: "系统", iconCls: 'fa-cogs', expanded: true, children: [
                 {text: "用戶", iconCls: 'fa-user', ref: 'dm.view.system.Users', leaf: true},
                 {text: "组", iconCls: 'fa-users', ref: 'dm.view.system.Groups', leaf: true},
 
-                {text: "类型", iconCls: 'fa-users', ref: 'dm.view.system.Types', leaf: true},
+                {text: "类型", iconCls: 'fa-cubes', ref: 'dm.view.system.Types', leaf: true},
                 //{text: "Schema", iconCls: 'fa-list-alt', ref: 'dm.view.system.Schemas', leaf: true},
                 //{text: "权限", iconCls: 'fa-sliders', ref: 'dm.view.system.Acls', leaf: true},
                 {text: "初始化", iconCls: 'fa-eraser', ref: 'dm.view.system.Initialization', leaf: true}

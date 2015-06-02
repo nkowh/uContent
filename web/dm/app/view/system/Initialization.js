@@ -5,23 +5,6 @@ Ext.define('dm.view.system.Initialization', {
         var me = this;
         Ext.apply(me, {
             items: [
-                //{
-                //    xtype: 'button',
-                //    scale: 'large',
-                //    iconAlign: 'top',
-                //    text: '清空文档',
-                //    glyph: 0xf1c0,
-                //    handler: me.clearFiles
-                //},
-                //{
-                //    xtype: 'button',
-                //    scale: 'large',
-                //    iconAlign: 'top',
-                //    text: '文档结构初始化',
-                //    glyph: 0xf1c0,
-                //    handler: me.initFiles
-                //},
-
                 {
                     xtype: 'button',
                     scale: 'large',
@@ -37,48 +20,7 @@ Ext.define('dm.view.system.Initialization', {
         me.callParent();
     },
 
-    clearFiles: function () {
-        Ext.Ajax.request({
-            url: Ext.util.Cookies.get('service') + '/documents/person', method: 'DELETE',
-            callback: function (opts, success, response) {
-                Ext.toast({
-                    html: response.responseText,
-                    closable: false,
-                    align: 't',
-                    slideInDuration: 1000,
-                    minWidth: 400
-                });
-            }
-        });
-    },
 
-    initFiles: function () {
-
-        var q = {
-            person: {
-                properties: {
-                    _acl: {
-                        type: "nested"
-                    },
-                    _contents: {
-                        type: "nested"
-                    }
-                }
-            }
-        }
-        Ext.Ajax.request({
-            url: Ext.util.Cookies.get('service') + '/documents/_mapping/person', method: 'POST', jsonData: q,
-            callback: function (opts, success, response) {
-                Ext.toast({
-                    html: response.responseText,
-                    closable: false,
-                    align: 't',
-                    slideInDuration: 400,
-                    minWidth: 400
-                });
-            }
-        });
-    },
 
     reindexing: function () {
         Ext.ux.Ajax

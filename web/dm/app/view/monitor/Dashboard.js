@@ -1,6 +1,6 @@
 Ext.define('dm.view.monitor.Dashboard', {
     extend: 'Ext.dashboard.Dashboard',
-    requires: ['dm.view.monitor.CatGrid', 'dm.view.monitor.CatProperty'],
+    requires: ['dm.view.monitor.CatGrid'],
 
     columnWidths: [
         1

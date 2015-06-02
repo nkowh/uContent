@@ -39,10 +39,20 @@ Ext.define('dm.view.system.Types', {
                 var mappings = Ext.decode(response.responseText).documents.mappings;
 
                 var columns = [
-                    {dataIndex: 'type', text: 'type', flex: 1},
                     Ext.create('dm.grid.column.Action', {
                         sortable: false,
-                        flex: 5,
+                        flex: 1,
+                        scope: me,
+                        items: [{
+                            style: 'font-size:20px;',
+                            iconCls: 'fa fa-cube',
+                            handler: me.onMappingClick
+                        }]
+                    }),
+                    {dataIndex: 'type', text: 'type', flex: 2},
+                    Ext.create('dm.grid.column.Action', {
+                        sortable: false,
+                        flex: 1,
                         scope: me,
                         items: [{
                             style: 'font-size:20px;color:DarkRed;',
@@ -66,11 +76,38 @@ Ext.define('dm.view.system.Types', {
     createType: function (grid, tool, event) {
         Ext.create('Ext.window.Window', {
             title: 'Type', autoShow: true, closable: false, modal: true, items: [
-                Ext.create('dm.view.system.NewType')
+                Ext.create('dm.view.system.NewTypeForm')
             ]
         });
     },
 
+
+    onMappingClick: function (view, rowIndex, colIndex, item, e, record) {
+        var me = this.up('grid');
+        var type = record.get('type');
+        Ext.Ajax.request({
+            url: Ext.util.Cookies.get('service') + '/documents/_mapping/' + type,
+            callback: function (options, success, response) {
+                if (!success) return;
+                var result = Ext.decode(response.responseText).documents.mappings;
+
+                Ext.create('Ext.window.Window', {
+                    title: type,
+                    autoShow: true,
+                    layout: 'fit',
+                    height: 500,
+                    width: 600,
+                    scrollable: true,
+                    layout: 'fit',
+                    items: [Ext.create('dm.tree.CodeTree', {
+                        rootVisible: false,
+                        code: result[type].properties
+                    })]
+                });
+            }
+        });
+
+    },
 
     onRemoveClick: function (grid, rowIndex) {
         var me = this;
@@ -85,8 +122,8 @@ Ext.define('dm.view.system.Types', {
                 if (buttonId !== 'yes') return;
 
                 Ext.Ajax.request({
-                    method:'DELETE',
-                    url: Ext.util.Cookies.get('service') + '/documents/'+ selectionModel.get('type'),
+                    method: 'DELETE',
+                    url: Ext.util.Cookies.get('service') + '/documents/' + selectionModel.get('type'),
                     callback: function (options, success, response) {
                         Ext.toast({
                             html: response.responseText,

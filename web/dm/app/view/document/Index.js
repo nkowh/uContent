@@ -3,8 +3,10 @@ Ext.define('dm.view.document.Index', {
     bodyPadding: 10,
     scrollable: true,
 
+    layout: 'center',
     defaults: {
         anchor: '100%',
+        width: '75%',
         allowBlank: false,
         msgTarget: 'side',
         labelWidth: 50
@@ -28,62 +30,6 @@ Ext.define('dm.view.document.Index', {
         }
     },
 
-    items: [
-        {
-            xtype: 'combo',
-            fieldLabel: 'Type',
-            name: 'type',
-            displayField: 'name',
-            valueField: 'name',
-            allowBlank: false,
-            forceSelection: true
-        }, {
-            xtype: 'filefield',
-            emptyText: 'Select an File',
-            fieldLabel: 'Image',
-            name: 'File',
-            buttonText: '',
-            buttonConfig: {
-                glyph: 0xf0c6
-            },
-            listeners: {
-                afterrender: function (file, eOpts) {
-                    var el = file.getEl();
-                    file.fileInputEl.set({multiple: 'multiple'});
-                }
-            }
-        }, {
-            xtype: 'fieldset',
-            title: 'ACL',
-            layout: 'hbox',
-            items: [
-                {
-                    xtype: 'tagfield',
-                    allowBlank: false,
-                    store: Ext.create('dm.store.system.Users'),
-                    displayField: '_id',
-                    valueField: '_id',
-                    forceSelection: true
-                }, {
-                    xtype: 'tagfield',
-                    allowBlank: false,
-                    store: ['read', 'write'],
-                    forceSelection: true
-                },
-            ]
-        }, {
-            xtype: 'textareafield',
-            grow: true,
-            allowBlank: true,
-            name: 'meta',
-            fieldLabel: 'Meta',
-            anchor: '100%'
-        }, {
-            xtype: 'hiddenfield',
-            name: 'metadata'
-        }
-    ],
-    //errorReader: Ext.create('dm.data.reader.SubmitResultReader', {}),
 
     buttons: [{
         text: 'Upload',
@@ -91,15 +37,18 @@ Ext.define('dm.view.document.Index', {
             var me = this.up('form');
 
             var type = me.down('combo[name=type]').getValue();
-            var aclset = me.down('fieldset[title=ACL]');
-            var principals = Ext.Array.map(aclset.items.getAt(0).getValueRecords(), function (item) {
-                return item.get('_id');
-            });
-            var permission = Ext.Array.map(aclset.items.getAt(1).getValueRecords(), function (item) {
-                return item.get('field1');
-            });
+            var aclset = me.down('container[itemId=acl]');
+
             var acl = [];
-            acl.push({principals: principals, permission: permission});
+            aclset.items.each(function (aceset) {
+                var principals = Ext.Array.map(aceset.items.getAt(0).getValueRecords(), function (item) {
+                    return item.get('_id');
+                });
+                var permission = Ext.Array.map(aceset.items.getAt(1).getValueRecords(), function (item) {
+                    return item.get('field1');
+                });
+                acl.push({principals: principals, permission: permission});
+            });
 
             var metadataField = me.down('hiddenfield[name=metadata]');
             var metaText = me.down('textareafield[name=meta]').getValue();
@@ -134,6 +83,43 @@ Ext.define('dm.view.document.Index', {
         }
     }],
 
+    addAce: function () {
+        var me = this.up('form');
+        var aclcontainer = this.up('container[itemId=acl]');
+        aclcontainer.add({
+            xtype: 'container',
+            title: 'ace',
+            layout: 'hbox',
+            items: [
+                {
+                    fieldLabel: 'ACE',
+                    xtype: 'tagfield',
+                    allowBlank: false,
+                    store: Ext.create('dm.store.system.Users'),
+                    displayField: '_id',
+                    valueField: '_id',
+                    forceSelection: true
+                }, {
+                    xtype: 'tagfield',
+                    allowBlank: false,
+                    store: ['read', 'write'],
+                    forceSelection: true
+                }, {
+                    xtype: 'button',
+                    text: '-',
+                    handler: me.removeAce
+                }
+            ]
+        });
+    },
+
+    removeAce: function () {
+        var me = this.up('form');
+        var aclcontainer = this.up('container[itemId=acl]');
+        var acecontainer = this.up('container[title=ace]');
+        aclcontainer.remove(acecontainer);
+
+    },
 
     checkResult: function (url) {
         Ext.Ajax.request({
@@ -157,12 +143,90 @@ Ext.define('dm.view.document.Index', {
                 });
             }
         });
-    },
+    }
+    ,
 
     initComponent: function () {
+        var me = this;
+        Ext.apply(me, {
+            items: [
+                {
+                    xtype: 'fieldset',
+                    title: 'Index',
+                    items: [
+                        {
+                            xtype: 'combo',
+                            fieldLabel: 'Type',
+                            name: 'type',
+                            displayField: 'name',
+                            valueField: 'name',
+                            allowBlank: false,
+                            forceSelection: true
+                        }, {
+                            xtype: 'filefield',
+                            emptyText: 'Select an File',
+                            fieldLabel: 'Image',
+                            name: 'File',
+                            buttonText: '',
+                            buttonConfig: {
+                                glyph: 0xf0c6
+                            },
+                            listeners: {
+                                afterrender: function (file, eOpts) {
+                                    var el = file.getEl();
+                                    file.fileInputEl.set({multiple: 'multiple'});
+                                }
+                            }
+                        }, {
+                            xtype: 'container',
+                            itemId: 'acl',
+                            layout: 'vbox',
+                            items: [
+                                {
+                                    xtype: 'container',
+                                    title: 'ace',
+                                    layout: 'hbox',
+                                    items: [
+                                        {
+                                            fieldLabel: 'ACE',
+                                            xtype: 'tagfield',
+                                            allowBlank: false,
+                                            store: Ext.create('dm.store.system.Users'),
+                                            displayField: '_id',
+                                            valueField: '_id',
+                                            forceSelection: true
+                                        }, {
+                                            xtype: 'tagfield',
+                                            allowBlank: false,
+                                            store: ['read', 'write'],
+                                            forceSelection: true
+                                        }, {
+                                            xtype: 'button',
+                                            text: '+',
+                                            handler: me.addAce
+                                        }
+                                    ]
+                                }]
+                        }, {
+                            xtype: 'textareafield',
+                            grow: true,
+                            allowBlank: true,
+                            name: 'meta',
+                            fieldLabel: 'Meta',
+                            anchor: '100%'
+                        }, {
+                            xtype: 'hiddenfield',
+                            name: 'metadata'
+                        }
+                    ]
+                }
+            ]
+        });
 
-        this.callParent();
+
+        me.callParent();
 
     }
 
-});
+})
+;
