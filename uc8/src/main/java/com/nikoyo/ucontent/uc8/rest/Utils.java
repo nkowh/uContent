@@ -2,6 +2,7 @@ package com.nikoyo.ucontent.uc8.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikoyo.ucontent.uc8.file.servlet.NettyHttpServletRequest;
+import com.nikoyo.ucontent.uc8.security.SecurityService;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
@@ -68,15 +69,15 @@ public abstract class Utils {
     }
 
 
-    public static boolean hasPermission(final XContentBuilder builder, String principals, String permission) throws IOException {
+    public static boolean hasPermission(final XContentBuilder builder, RestRequest request, String permission) throws IOException {
         final ObjectMapper objectMapper = new ObjectMapper();
         Map result = objectMapper.readValue(builder.string(), Map.class);
         Map _source = (Map) result.get("_source");
-        return hasPermission(_source, ImmutableList.of(principals), permission);
+        return hasPermission(_source,SecurityService.getAllprincipals((String) request.getContext().get("principals")), permission);
     }
 
-    public static boolean hasPermission(final Map _source, String principals, String permission) throws IOException {
-        return hasPermission(_source, ImmutableList.of(principals), permission);
+    private static boolean hasPermission(final Map _source, RestRequest request, String permission) throws IOException {
+        return hasPermission(_source, SecurityService.getAllprincipals((String) request.getContext().get("principals")), permission);
     }
 
     public static boolean hasPermission(final Map _source, Collection<String> principals, String permission) throws IOException {
@@ -85,7 +86,7 @@ public abstract class Utils {
         for (Map ace : _acl) {
             List<String> principalsList = (List<String>) ace.get("principals");
             List<String> permissionList = (List<String>) ace.get("permission");
-            if(principalsList==null || permissionList==null)
+            if (principalsList == null || permissionList == null)
                 throw new RuntimeException("acl format is not correct");
             if (containsOne(principalsList, principals) && permissionList.contains(permission))
                 return true;
@@ -99,7 +100,7 @@ public abstract class Utils {
             getRequest.listenerThreaded(false);
             getRequest.operationThreaded(true);
             GetResponse response = client.get(getRequest).get();
-            if (response.isExists() && Utils.hasPermission(response.getSource(), (String) request.getContext().get("principals"), "write"))
+            if (response.isExists() && Utils.hasPermission(response.getSource(), request, "write"))
                 return true;
         } catch (Exception e) {
             throw new RuntimeException(e);

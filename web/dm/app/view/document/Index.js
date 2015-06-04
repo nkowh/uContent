@@ -95,7 +95,7 @@ Ext.define('dm.view.document.Index', {
                     fieldLabel: 'ACE',
                     xtype: 'tagfield',
                     allowBlank: false,
-                    store: Ext.create('dm.store.system.Users'),
+                    store: Ext.create('dm.store.system.Principals'),
                     displayField: '_id',
                     valueField: '_id',
                     forceSelection: true
@@ -191,7 +191,7 @@ Ext.define('dm.view.document.Index', {
                                             fieldLabel: 'ACE',
                                             xtype: 'tagfield',
                                             allowBlank: false,
-                                            store: Ext.create('dm.store.system.Users'),
+                                            store: Ext.create('dm.store.system.Principals'),
                                             displayField: '_id',
                                             valueField: '_id',
                                             forceSelection: true

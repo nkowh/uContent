@@ -121,7 +121,6 @@ public class IndexAction extends RestIndexAction {
         }
     }
 
-
     private boolean isMultipart(String contentType) {
         return contentType.toLowerCase(Locale.ENGLISH).startsWith(ServletFileUpload.MULTIPART);
     }

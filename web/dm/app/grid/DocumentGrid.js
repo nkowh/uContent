@@ -85,23 +85,6 @@ Ext.define('dm.grid.DocumentGrid', {
                     }
                 )]);
 
-                columns.push(Ext.create('dm.grid.column.Action', {
-                    sortable: false,
-                    scope: me,
-                    items: [{
-                        style: 'font-size:20px;color:#CC9900;',
-                        getClass: function (v, metadata, r, rowIndex, colIndex, store) {
-                            if (!me.user.get('favorite')) {
-                                return 'fa fa-star-o';
-                            }
-                            var has = Ext.Array.findBy(me.user.get('favorite'), function (f) {
-                                return f === r.get('_id');
-                            });
-                            return has ? 'fa fa-star' : 'fa fa-star-o';
-                        },
-                        handler: me.favorite
-                    }]
-                }));
                 me.reconfigure(store, columns);
 
             },
@@ -109,21 +92,7 @@ Ext.define('dm.grid.DocumentGrid', {
                 console.log('server-side failure with status code ' + response.status);
             }
         });
-    },
-
-    favorite: function (grid, rowIndex, colIndex, item, e, record) {
-        var me = this;
-        var id = record.get('_id');
-        var favorite = Ext.isArray(me.user.get('favorite')) ? Ext.Array.clone(me.user.get('favorite')) : [];
-        if (Ext.Array.contains(favorite, id)) {
-            Ext.Array.remove(favorite, id);
-            e.target.className = e.target.className.replace('fa fa-star', 'fa fa-star-o');
-        } else {
-            favorite.push(id);
-            e.target.className = e.target.className.replace('fa fa-star-o', 'fa fa-star');
-        }
-        me.user.set('favorite', Ext.Array.unique(favorite));
-        me.user.save();
     }
+
 
 });

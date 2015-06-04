@@ -69,7 +69,7 @@ public class GetAction extends RestGetAction {
                 builder.endObject();
                 if (!response.isExists()) {
                     return new BytesRestResponse(NOT_FOUND, builder);
-                } else if (Utils.hasPermission(builder, (String) request.getContext().get("principals"), "read")) {
+                } else if (Utils.hasPermission(builder,  request, "read")) {
                     return new BytesRestResponse(OK, builder);
                 } else {
                     XContentBuilder result = channel.newBuilder();

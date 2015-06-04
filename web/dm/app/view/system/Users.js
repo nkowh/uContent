@@ -7,7 +7,6 @@ Ext.define('dm.view.system.Users', {
         clicksToEdit: 2
     },
 
-
     initComponent: function () {
         var me = this;
         Ext.apply(me, {
@@ -21,18 +20,14 @@ Ext.define('dm.view.system.Users', {
                     }
                 },
                 {
-                    text: 'createAt', dataIndex: 'createAt', flex: 1,
-                    editor: {
-                        xtype: 'datefield',
-                        anchor: '100%'
-                    }
+                    text: 'groups', dataIndex: 'groups', flex: 1
                 },
-                Ext.create('dm.grid.column.Action',{
+                Ext.create('dm.grid.column.Action', {
                     sortable: false,
                     scope: me,
                     items: [{
-                        style:'font-size:20px;color:DarkRed;',
-                        iconCls:'fa fa-remove',
+                        style: 'font-size:20px;color:DarkRed;',
+                        iconCls: 'fa fa-remove',
                         handler: me.onRemoveClick
                     }]
                 })

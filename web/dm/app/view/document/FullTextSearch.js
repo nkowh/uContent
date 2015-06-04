@@ -1,6 +1,5 @@
 Ext.define('dm.view.document.FullTextSearch', {
    extend: 'dm.grid.DocumentGrid',
-   // extend: 'Ext.grid.Panel',
     initComponent: function () {
         var me = this;
         Ext.apply(me, {
@@ -48,14 +47,8 @@ Ext.define('dm.view.document.FullTextSearch', {
                     ]
                 }
             }
-            //"highlight": {
-            //    //"pre_tags": ['<span class="text-danger">'],
-            //    //"post_tags": ['</span>'],
-            //    "fields": {
-            //        "*": {}
-            //    }
-            //}
         };
+
         me.search(q);
     }
 

@@ -7,7 +7,6 @@ Ext.define('dm.view.system.Groups', {
         clicksToEdit: 2
     },
 
-
     initComponent: function () {
         var me = this;
         Ext.apply(me, {
@@ -29,11 +28,16 @@ Ext.define('dm.view.system.Groups', {
                 }, Ext.create('dm.grid.column.Action', {
                     sortable: false,
                     scope: me,
-                    items: [{
-                        style: 'font-size:20px;color:DarkRed;',
-                        iconCls: 'fa fa-remove',
-                        handler: me.onRemoveClick
-                    }]
+                    items: [
+                        {
+                            style: 'font-size:20px;color:DarkRed;',
+                            iconCls: 'fa fa-plus-square-o',
+                            handler: me.onAddUsers
+                        }, {
+                            style: 'font-size:20px;color:DarkRed;',
+                            iconCls: 'fa fa-remove',
+                            handler: me.onRemoveClick
+                        }]
                 })
             ],
             tools: [
@@ -57,12 +61,12 @@ Ext.define('dm.view.system.Groups', {
 
     createGroup: function (grid, tool, event) {
         var me = grid;
-        var newUser = Ext.create('Ext.window.Window', {
-            title: '组', closable: false, modal: true, items: [
+        Ext.create('Ext.window.Window', {
+            title: '组', autoShow: true, closable: false, modal: true, items: [
                 Ext.create('dm.view.system.NewGroupForm', {store: me.getStore()})
             ]
         });
-        newUser.show();
+
     },
 
     onRemoveClick: function (grid, rowIndex) {
@@ -79,6 +83,15 @@ Ext.define('dm.view.system.Groups', {
                     me.getStore().removeAt(rowIndex);
                 }
             }
+        });
+    },
+
+    onAddUsers: function (view, rowIndex, colIndex, item, e, record) {
+        var me = view;
+        Ext.create('Ext.window.Window', {
+            title: '组', autoShow: true, closable: false, modal: true, items: [
+                Ext.create('dm.view.system.UsersInGroup', {group: record})
+            ]
         });
     }
 

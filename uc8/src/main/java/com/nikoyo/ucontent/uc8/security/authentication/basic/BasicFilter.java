@@ -5,21 +5,25 @@ import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.Base64;
+import org.elasticsearch.common.collect.ImmutableList;
+import org.elasticsearch.common.collect.ImmutableMap;
+import org.elasticsearch.common.collect.Maps;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.rest.*;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class BasicFilter extends RestFilter {
 
     private static Map<String, String> sessionMap = new HashMap<String, String>();
     private ESLogger logger = Loggers.getLogger(BasicFilter.class);
     private final Client client;
+
+    public static Set<String> getUsers() {
+        return Collections.unmodifiableSet(new HashSet<String>(sessionMap.values()));
+    }
 
 
     public BasicFilter(Client client) {

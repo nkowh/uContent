@@ -16,53 +16,11 @@ Ext.define('dm.view.document.AdvCodition', {
             items: [{
                 xtype: 'container',
                 layout: 'hbox',
-                items: [
-                    {xtype: 'textfield'},
-                    {
-                        xtype: 'button',
-                        glyph: 0xf0c7,
-                        scope: me,
-                        handler: me.save
-                    },
-                    {
-                        xtype: 'combo', itemId: 'search_combo',
-                        allowBlank: false,
-                        displayField: 'name',
-                        valueField: 'query',
-                        forceSelection: true,
-                        listeners: {
-                            change: function (combo, newValue, oldValue, eOpts) {
-                                me.loadQuery(newValue)
-                            }
-                        }
-                    },
-                    {
-                        xtype: 'button',
-                        glyph: 0xf057,
-                        scope: me,
-                        handler: me.remove
-                    },
-                ]
+                items: []
             }, {
                 xtype: 'form',
                 listeners: {add: me.conditionAdded}
-            }],
-            listeners: {
-                beforerender: function () {
-                    dm.model.system.User.load(Ext.util.Cookies.get('username'), {
-                        callback: function (user, operation, success) {
-                            if (!success)return;
-                            me.user = user;
-                            var search_combo = me.down('combo[itemId=search_combo]');
-                            search_combo.setStore(Ext.create('Ext.data.Store', {
-                                fields: ['name', 'query'],
-                                data: user.get('search')
-                            }));
-
-                        }
-                    });
-                }
-            }
+            }]
         });
 
 
@@ -155,7 +113,7 @@ Ext.define('dm.view.document.AdvCodition', {
             items: [
                 {
                     xtype: 'combo',
-                    width: 100,
+                    width: 120,
                     value: must === false ? 'must_not' : 'must',
                     store: ['must', 'must_not']
                 }, {

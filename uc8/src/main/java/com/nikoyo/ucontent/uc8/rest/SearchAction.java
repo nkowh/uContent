@@ -1,6 +1,7 @@
 package com.nikoyo.ucontent.uc8.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nikoyo.ucontent.uc8.security.SecurityService;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
@@ -10,10 +11,7 @@ import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.action.search.RestSearchAction;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SearchAction extends RestSearchAction {
 
@@ -26,7 +24,7 @@ public class SearchAction extends RestSearchAction {
 
     @Override
     public void handleRequest(RestRequest request, RestChannel channel, Client client) {
-        if(!"documents".equalsIgnoreCase(request.param("index"))){
+        if (!"documents".equalsIgnoreCase(request.param("index"))) {
             super.handleRequest(request, channel, client);
             return;
         }
@@ -63,8 +61,8 @@ public class SearchAction extends RestSearchAction {
         nestedBool.put("must", nestedBoolMust);
         Map permissionsPart = new HashMap();
         final Map principalsPart = new HashMap();
-        principalsPart.put("term", new HashMap() {{
-            put("_acl.principals", principals);
+        principalsPart.put("terms", new HashMap() {{
+            put("_acl.principals", SecurityService.getAllprincipals(principals));
         }});
         permissionsPart.put("term", new HashMap() {{
             put("_acl.permission", "read");
