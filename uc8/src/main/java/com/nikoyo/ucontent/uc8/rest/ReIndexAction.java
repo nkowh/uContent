@@ -1,7 +1,5 @@
 package com.nikoyo.ucontent.uc8.rest;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
@@ -54,7 +52,8 @@ public class ReIndexAction extends BaseRestHandler {
     @Inject
     protected ReIndexAction(Settings settings, RestController controller, Client client) {
         super(settings, controller, client);
-        controller.registerHandler(RestRequest.Method.GET, "/_reindex/{index}", this);
+        controller.registerHandler(RestRequest.Method.PUT, "/_reindex/{index}", this);
+        controller.registerHandler(RestRequest.Method.POST, "/_reindex/{index}", this);
     }
 
 
