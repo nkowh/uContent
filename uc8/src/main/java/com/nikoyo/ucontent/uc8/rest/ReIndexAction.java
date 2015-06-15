@@ -164,7 +164,7 @@ public class ReIndexAction extends BaseRestHandler {
                 XContentBuilder xContentBuilder = null;
                 try {
                     for(BulkItemResponse item : responseItems){
-                        if (!item.isFailed()) {
+                        if (item.isFailed()) {
                             if(xContentBuilder == null){
                                 xContentBuilder = XContentFactory.jsonBuilder().startObject()
                                         .field("token", token)
