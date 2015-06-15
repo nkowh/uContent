@@ -264,6 +264,10 @@ public class ReIndexAction extends BaseRestHandler {
                 countRequest.source(new QuerySourceBuilder().setQuery(queryBuilder));
             }
             long total = client.count(countRequest).actionGet().getCount();
+            if (total <= 0) {
+                //TODO 日志
+                return;
+            }
             Set<String> newIndexes = new HashSet<String>();
             for(String s : indexes){
                 //索引的名称以"V + 数字"结尾
