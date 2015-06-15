@@ -1,128 +1,294 @@
 package com.nikoyo.ucontent.uc8.rest;
 
-import com.nikoyo.ucontent.uc8.file.FileSystem;
-import com.nikoyo.ucontent.uc8.file.FileSystemFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkItemResponse;
+import org.elasticsearch.action.bulk.BulkProcessor;
+import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.count.CountRequest;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.action.support.QuerySourceBuilder;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.hppc.cursors.ObjectObjectCursor;
+import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.rest.BaseRestHandler;
-import org.elasticsearch.rest.RestChannel;
-import org.elasticsearch.rest.RestController;
-import org.elasticsearch.rest.RestRequest;
+import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.rest.*;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.threadpool.ThreadPool;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
 
-/**
+/** 重建索引
  * Created by panw on 2015/6/3.
  */
 public class ReIndexAction extends BaseRestHandler {
 
+    @Inject
+    private ThreadPool threadPool;
 
+
+    @Inject
     protected ReIndexAction(Settings settings, RestController controller, Client client) {
         super(settings, controller, client);
-        controller.registerHandler(RestRequest.Method.PUT, "/_reIndex/{srcIndex}/{tarIndex}", this);
-        controller.registerHandler(RestRequest.Method.POST, "/_reIndex/{srcIndex}/{tarIndex}", this);
+        controller.registerHandler(RestRequest.Method.GET, "/_reindex/{index}", this);
     }
 
 
-    private void copyIndexMappings(Client client, String srcIndex, String tarIndex) {
-        if(!client.admin().indices().prepareExists(srcIndex).execute().actionGet().isExists()){
-            throw new RuntimeException("The index: " + srcIndex + " which to be reIndexed is not exist");
-        }
-        if(client.admin().indices().prepareExists(tarIndex).execute().actionGet().isExists()){
-            throw new RuntimeException("The index: " + tarIndex + " which to be reIndexed to is aleady exist");
-        }
+
+    private static void copyIndexMappings(Client client, String srcIndex, String tarIndex) throws ExecutionException, InterruptedException, IOException {
         GetMappingsRequest getMappingsRequest = new GetMappingsRequest();
         getMappingsRequest.indices(srcIndex);
-        try {
-            GetMappingsResponse getMappingsResponse = client.admin().indices().getMappings(getMappingsRequest).get();
-            Iterator<ObjectObjectCursor<String, ImmutableOpenMap<String, MappingMetaData>>> iterator = getMappingsResponse.mappings().iterator();
-            XContentBuilder xContentBuilder = XContentFactory.jsonBuilder();
-            xContentBuilder.startObject();
-            xContentBuilder.startObject("mappings");
-            while(iterator.hasNext()){
-                ObjectObjectCursor<String, ImmutableOpenMap<String, MappingMetaData>> entry = iterator.next();
-                for(ObjectObjectCursor<String, MappingMetaData> typeEntry : entry.value){
-                    xContentBuilder.field(typeEntry.key);
-                    xContentBuilder.map(typeEntry.value.sourceAsMap());
-                }
+        GetMappingsResponse getMappingsResponse = client.admin().indices().getMappings(getMappingsRequest).get();
+        Iterator<ObjectObjectCursor<String, ImmutableOpenMap<String, MappingMetaData>>> iterator = getMappingsResponse.mappings().iterator();
+        XContentBuilder xContentBuilder = XContentFactory.jsonBuilder();
+        xContentBuilder.startObject();
+        xContentBuilder.startObject("mappings");
+        while(iterator.hasNext()){
+            ObjectObjectCursor<String, ImmutableOpenMap<String, MappingMetaData>> entry = iterator.next();
+            for(ObjectObjectCursor<String, MappingMetaData> typeEntry : entry.value){
+                xContentBuilder.field(typeEntry.key);
+                xContentBuilder.map(typeEntry.value.sourceAsMap());
             }
-            xContentBuilder.endObject().endObject();
-            CreateIndexRequest createIndexRequest = new CreateIndexRequest(tarIndex);
-            createIndexRequest.source(xContentBuilder);
-            client.admin().indices().create(createIndexRequest).actionGet();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
+        xContentBuilder.endObject().endObject();
+        CreateIndexRequest createIndexRequest = new CreateIndexRequest(tarIndex);
+        createIndexRequest.source(xContentBuilder);
+        client.admin().indices().create(createIndexRequest).actionGet();
     }
 
-    public BulkResponse doReIndex(Client client, RestRequest request){
+    public static void doReIndex(Client client, String src, String target, RestRequest request, String token, long total){
         SearchRequest searchRequest = parseSearchRequest(request);
+        searchRequest.indices(src);
+        BulkProcessor bulkProcessor = initBulkProcessor(request, client, token, total);
         try {
             SearchResponse response = client.search(searchRequest).get();
-            BulkRequestBuilder bulkRequest = client.prepareBulk();
             do{
                 response = client.prepareSearchScroll(response.getScrollId()).setScroll("1m").execute().get();
+                System.out.println("hit length: " + response.getHits().getHits().length);
                 for(SearchHit hit : response.getHits().getHits()){
                     String type = hit.getType();
                     Map<String, Object> source = hit.getSource();
-                    bulkRequest.add(client.prepareIndex(request.param("tarIndex"), type).setSource(source));
+                    bulkProcessor.add(new IndexRequest(target, type).source(source));
                 }
             }while(response.getHits().getHits().length > 0);
-            return bulkRequest.execute().get();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
+        } finally{
+            bulkProcessor.flush();
+            bulkProcessor.close();
         }
-        return null;
     }
 
     public static SearchRequest parseSearchRequest(RestRequest request) {
         SearchRequest searchRequest = new SearchRequest();
-        searchRequest.indices(request.param("srcIndex"));
         searchRequest.searchType(SearchType.SCAN);
         searchRequest.scroll("1m");
-        searchRequest.extraSource(parseSearchSource(request));
+        QueryBuilder queryBuilder = parseQueryBuilder(request);
+        if (queryBuilder != null) {
+            searchRequest.extraSource(new SearchSourceBuilder().query(queryBuilder));
+        }
         return searchRequest;
     }
 
-    public static SearchSourceBuilder parseSearchSource(RestRequest request) {
-        QueryBuilder queryBuilder = QueryBuilders.rangeQuery("_creation_time").from(request.param("index_from")).to(request.param("index_to"));
-        return new SearchSourceBuilder().query(queryBuilder);
+    public static QueryBuilder parseQueryBuilder(RestRequest request) {
+        RangeQueryBuilder rangeQueryBuilder = null;
+        if(request.param("index_from") != null && !request.param("index_from").trim().equals("")){
+            rangeQueryBuilder = QueryBuilders.rangeQuery("_createAt");
+            rangeQueryBuilder.from(request.param("index_from"));
+        }
+        if(request.param("index_from") != null && !request.param("index_from").trim().equals("")){
+            if (rangeQueryBuilder == null) {
+                rangeQueryBuilder = QueryBuilders.rangeQuery("_createAt");
+            }
+            rangeQueryBuilder.to(request.param("index_from"));
+        }
+        return rangeQueryBuilder;
+    }
+
+    private static BulkProcessor initBulkProcessor(final RestRequest request, final Client client, final String token, final long total){
+        return BulkProcessor.builder(client, new BulkProcessor.Listener() {
+            public void beforeBulk(long executionId, BulkRequest request) {
+                //TODO
+                System.out.println("executionId:" + executionId + "本次提交请求个数：" + request.numberOfActions());
+            }
+
+            public void afterBulk(long executionId, BulkRequest bulkRequest, BulkResponse response) {
+                //记录该批次结果信息
+                try {
+                    UpdateRequest updateRequest = new UpdateRequest("system", "reindex_process", token)
+                            .script("ctx._source.finished += count").addScriptParam("count", bulkRequest.numberOfActions())
+                            .upsert(XContentFactory.jsonBuilder()
+                                    .startObject()
+                                    .field("token", token)
+                                    .field("index", request.param("index"))
+                                    .field("reIndex_from", request.param("reIndex_from"))
+                                    .field("reIndex_to", request.param("reIndex_to"))
+                                    .field("total", total)
+                                    .field("finished", bulkRequest.numberOfActions())
+                                    .field("startAt", new Date())
+                                    .endObject());
+                    client.update(updateRequest);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                // 记录该批次错误信息
+                BulkItemResponse[] responseItems = response.getItems();
+                XContentBuilder xContentBuilder = null;
+                try {
+                    for(BulkItemResponse item : responseItems){
+                        if (!item.isFailed()) {
+                            if(xContentBuilder == null){
+                                xContentBuilder = XContentFactory.jsonBuilder().startObject()
+                                        .field("token", token)
+                                        .field("createAt", new Date())
+                                        .startArray("failure");
+                            }
+                            xContentBuilder.startObject()
+                                    .field("index", item.getIndex())
+                                    .field("type", item.getType())
+                                    .field("id", item.getId())
+                                    .field("failureMessage", item.getFailureMessage())
+                                    .endObject();
+                        }
+                    }
+                    if(xContentBuilder != null){
+                        xContentBuilder.endArray().endObject();
+                        client.prepareIndex("system", "reindex_failures").setSource(xContentBuilder).execute();
+                    }
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+
+            public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
+                System.out.println(failure.getMessage());
+            }
+        }).setBulkActions(3000).setFlushInterval(TimeValue.timeValueSeconds(5)).setConcurrentRequests(0).build();
+    }
+
+    private static String[] originalName(Client client, String alias){
+        if(!client.admin().indices().prepareExists(alias).execute().actionGet().isExists()){
+            //TODO 日志
+            System.out.println("The index: " + alias + " which to be reIndexed is not exist");
+            return null;
+        }
+        GetIndexRequest getIndexRequest = new GetIndexRequest();
+        getIndexRequest.indices(alias);
+        return client.admin().indices().getIndex(getIndexRequest).actionGet().indices();
+    }
+
+    private static void clear(Client client, Set<String> indexes){
+        for(String name : indexes){
+            client.admin().indices().prepareDelete(name).execute();
+        }
     }
 
     @Override
-    protected void handleRequest(RestRequest request, RestChannel channel, Client client) throws Exception {
-        this.copyIndexMappings(client, request.param("srcIndex"), request.param("tarIndex"));
-        BulkResponse response = this.doReIndex(client, request);
-        if (response.hasFailures()) {
-            //TODO 日志
-            new RuntimeException(response.buildFailureMessage());
+    protected void handleRequest(RestRequest request, RestChannel channel, Client client) throws Exception{
+        String token = UUID.randomUUID().toString();
+        threadPool.scheduler().execute(new Reindex(request, channel, client, token));
+        XContentBuilder builder = channel.newBuilder().startObject()
+                .field("token", token).endObject();
+        channel.sendResponse(new BytesRestResponse(RestStatus.OK, builder));
+    }
+
+    class Reindex implements Runnable{
+        private RestRequest request;
+        private RestChannel channel;
+        private Client client;
+        private String token;
+
+        public Reindex(RestRequest request, RestChannel channel, Client client, String token) {
+            this.request = request;
+            this.channel = channel;
+            this.client = client;
+            this.token = token;
+        }
+
+        public void run() {
+            String[] indexes = ReIndexAction.originalName(client, request.param("index"));
+            if(indexes == null || indexes.length == 0){
+                //TODO 日志
+                return;
+            }
+            //计算需要迁移的总数
+            CountRequest countRequest = new CountRequest(request.param("index"));
+            QueryBuilder queryBuilder = parseQueryBuilder(request);
+            if(queryBuilder != null){
+                countRequest.source(new QuerySourceBuilder().setQuery(queryBuilder));
+            }
+            long total = client.count(countRequest).actionGet().getCount();
+            Set<String> newIndexes = new HashSet<String>();
+            for(String s : indexes){
+                //索引的名称以"V + 数字"结尾
+                int i = s.lastIndexOf("v");
+                String prefix = s.substring(0, i + 1);
+                int suffix = Integer.valueOf(s.substring(s.lastIndexOf("v") + 1)) + 1;
+                String newName = prefix + suffix;
+                while(client.admin().indices().prepareExists(newName).execute().actionGet().isExists()){
+                    newName = prefix + (++suffix);
+                }
+                try {
+                    //复制mappings
+                    ReIndexAction.copyIndexMappings(client, s, newName);
+                } catch (Exception e) {
+                    // TODO 日志
+                    e.printStackTrace();
+                    //出现异常回滚
+                    ReIndexAction.clear(client, newIndexes);
+                    return;
+                }
+                newIndexes.add(newName);
+                //拷贝数据
+                ReIndexAction.doReIndex(client, s, newName, request, token, total);
+            }
+            //更新别名
+            IndicesAliasesRequest indicesAliasesRequest = new IndicesAliasesRequest();
+            indicesAliasesRequest.removeAlias(indexes, request.param("index"));
+            indicesAliasesRequest.addAlias(request.param("index"), (String[]) newIndexes.toArray(new String[0]));
+            client.admin().indices().aliases(indicesAliasesRequest, new ActionListener<IndicesAliasesResponse>(){
+                public void onResponse(IndicesAliasesResponse indicesAliasesResponse) {
+                    //TODO 删除原索引
+                    //client.admin().indices().prepareDelete(request.param("index")).execute();
+                }
+
+                public void onFailure(Throwable e) {
+                    //TODO
+                }
+            });
+
         }
     }
+
+
+
+
 }
