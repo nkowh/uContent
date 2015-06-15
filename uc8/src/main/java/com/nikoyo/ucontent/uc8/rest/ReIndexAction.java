@@ -40,7 +40,6 @@ import org.elasticsearch.threadpool.ThreadPool;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Stream;
 
 
 /** 重建索引
@@ -59,10 +58,17 @@ public class ReIndexAction extends BaseRestHandler {
     }
 
 
-
-    private static void copyIndexMappings(Client client, String srcIndex, String tarIndex) throws ExecutionException, InterruptedException, IOException {
+    /**拷贝索引的mappings信息
+     * @param client
+     * @param index 需要重建的索引
+     * @param newIndex 新索引
+     * @throws ExecutionException
+     * @throws InterruptedException
+     * @throws IOException
+     */
+    private static void copyIndexMappings(Client client, String index, String newIndex) throws ExecutionException, InterruptedException, IOException {
         GetMappingsRequest getMappingsRequest = new GetMappingsRequest();
-        getMappingsRequest.indices(srcIndex);
+        getMappingsRequest.indices(index);
         GetMappingsResponse getMappingsResponse = client.admin().indices().getMappings(getMappingsRequest).get();
         Iterator<ObjectObjectCursor<String, ImmutableOpenMap<String, MappingMetaData>>> iterator = getMappingsResponse.mappings().iterator();
         XContentBuilder xContentBuilder = XContentFactory.jsonBuilder();
@@ -76,12 +82,20 @@ public class ReIndexAction extends BaseRestHandler {
             }
         }
         xContentBuilder.endObject().endObject();
-        CreateIndexRequest createIndexRequest = new CreateIndexRequest(tarIndex);
+        CreateIndexRequest createIndexRequest = new CreateIndexRequest(newIndex);
         createIndexRequest.source(xContentBuilder);
         client.admin().indices().create(createIndexRequest).actionGet();
     }
 
-    public static void doReIndex(Client client, String src, String target, RestRequest request, String token, long total){
+    /** 拷贝数据
+     * @param client
+     * @param src 源索引
+     * @param target 目标索引
+     * @param request
+     * @param token 本次重建唯一标识
+     * @param total 本次重建总的记录数
+     */
+    private static void doReIndex(Client client, String src, String target, RestRequest request, String token, long total){
         SearchRequest searchRequest = parseSearchRequest(request);
         searchRequest.indices(src);
         BulkProcessor bulkProcessor = initBulkProcessor(request, client, token, total);
@@ -89,7 +103,6 @@ public class ReIndexAction extends BaseRestHandler {
             SearchResponse response = client.search(searchRequest).get();
             do{
                 response = client.prepareSearchScroll(response.getScrollId()).setScroll("1m").execute().get();
-                System.out.println("hit length: " + response.getHits().getHits().length);
                 for(SearchHit hit : response.getHits().getHits()){
                     String type = hit.getType();
                     Map<String, Object> source = hit.getSource();
@@ -106,7 +119,7 @@ public class ReIndexAction extends BaseRestHandler {
         }
     }
 
-    public static SearchRequest parseSearchRequest(RestRequest request) {
+    private static SearchRequest parseSearchRequest(RestRequest request) {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.searchType(SearchType.SCAN);
         searchRequest.scroll("1m");
@@ -117,7 +130,7 @@ public class ReIndexAction extends BaseRestHandler {
         return searchRequest;
     }
 
-    public static QueryBuilder parseQueryBuilder(RestRequest request) {
+    private static QueryBuilder parseQueryBuilder(RestRequest request) {
         RangeQueryBuilder rangeQueryBuilder = null;
         if(request.param("index_from") != null && !request.param("index_from").trim().equals("")){
             rangeQueryBuilder = QueryBuilders.rangeQuery("_createAt");
@@ -194,6 +207,11 @@ public class ReIndexAction extends BaseRestHandler {
         }).setBulkActions(3000).setFlushInterval(TimeValue.timeValueSeconds(5)).setConcurrentRequests(0).build();
     }
 
+    /** 通过别名查询索引名
+     * @param client
+     * @param alias
+     * @return
+     */
     private static String[] originalName(Client client, String alias){
         if(!client.admin().indices().prepareExists(alias).execute().actionGet().isExists()){
             //TODO 日志
