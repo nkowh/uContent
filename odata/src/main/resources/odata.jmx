@@ -1,0 +1,875 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="2.8" jmeter="2.13 r1665067">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="测试计划" enabled="true">
+      <stringProp name="TestPlan.comments"></stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="host" elementType="Argument">
+            <stringProp name="Argument.name">host</stringProp>
+            <stringProp name="Argument.value">localhost</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="port" elementType="Argument">
+            <stringProp name="Argument.name">port</stringProp>
+            <stringProp name="Argument.value">8080</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="repositoryId" elementType="Argument">
+            <stringProp name="Argument.name">repositoryId</stringProp>
+            <stringProp name="Argument.value">trippin</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </Arguments>
+      <hashTree/>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="察看结果树" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>false</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <threadCounts>true</threadCounts>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="简单测试" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="循环控制器" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">3600</stringProp>
+        <longProp name="ThreadGroup.start_time">1437116079000</longProp>
+        <longProp name="ThreadGroup.end_time">1437116079000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP信息头管理器" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">Content-Type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree/>
+        <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="计数器" enabled="true">
+          <stringProp name="CounterConfig.start">0</stringProp>
+          <stringProp name="CounterConfig.end">100000000</stringProp>
+          <stringProp name="CounterConfig.incr">1</stringProp>
+          <stringProp name="CounterConfig.name">count</stringProp>
+          <stringProp name="CounterConfig.format"></stringProp>
+          <boolProp name="CounterConfig.per_user">false</boolProp>
+        </CounterConfig>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post_People_russellwhyte" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value"> {      &#xd;
+         &quot;UserName&quot;: &quot;russellwhyte&quot;,&#xd;
+         &quot;FirstName&quot;: &quot;Russell&quot;,&#xd;
+         &quot;LastName&quot;: &quot;Whyte&quot;,&#xd;
+         &quot;Emails&quot;: [&#xd;
+            &quot;Russell@example.com&quot;,&#xd;
+            &quot;Russell@contoso.com&quot;&#xd;
+         ],&#xd;
+         &quot;AddressInfo&quot;: [&#xd;
+            {&#xd;
+               &quot;Address&quot;: &quot;187 Suffolk Ln.&quot;,&#xd;
+               &quot;City&quot;: {&#xd;
+                  &quot;CountryRegion&quot;: &quot;United States&quot;,&#xd;
+                  &quot;Name&quot;: &quot;Boise&quot;,&#xd;
+                  &quot;Region&quot;: &quot;ID&quot;&#xd;
+               }&#xd;
+            }&#xd;
+         ],&#xd;
+         &quot;Gender&quot;: &quot;Male&quot;,&#xd;
+         &quot;Concurrency&quot;: 635727132515758812&#xd;
+      }</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post_People_scottketchum" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+         &quot;UserName&quot;: &quot;scottketchum&quot;,&#xd;
+         &quot;FirstName&quot;: &quot;Scott&quot;,&#xd;
+         &quot;LastName&quot;: &quot;Ketchum&quot;,&#xd;
+         &quot;Emails&quot;: [&#xd;
+            &quot;Scott@example.com&quot;&#xd;
+         ],&#xd;
+         &quot;AddressInfo&quot;: [&#xd;
+            {&#xd;
+               &quot;Address&quot;: &quot;2817 Milton Dr.&quot;,&#xd;
+               &quot;City&quot;: {&#xd;
+                  &quot;CountryRegion&quot;: &quot;United States&quot;,&#xd;
+                  &quot;Name&quot;: &quot;Albuquerque&quot;,&#xd;
+                  &quot;Region&quot;: &quot;NM&quot;&#xd;
+               }&#xd;
+            }&#xd;
+         ],&#xd;
+         &quot;Gender&quot;: &quot;Male&quot;,&#xd;
+         &quot;Concurrency&quot;: 635727132515758812&#xd;
+      }</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post_People_ronaldmundy" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{       &#xd;
+         &quot;UserName&quot;: &quot;ronaldmundy&quot;,&#xd;
+         &quot;FirstName&quot;: &quot;Ronald&quot;,&#xd;
+         &quot;LastName&quot;: &quot;Mundy&quot;,&#xd;
+         &quot;Emails&quot;: [&#xd;
+            &quot;Ronald@example.com&quot;,&#xd;
+            &quot;Ronald@contoso.com&quot;&#xd;
+         ],&#xd;
+         &quot;AddressInfo&quot;: [],&#xd;
+         &quot;Gender&quot;: &quot;Male&quot;,&#xd;
+         &quot;Concurrency&quot;: 635727132515758812&#xd;
+      },</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post_People_javieralfred" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value"> {      &#xd;
+         &quot;UserName&quot;: &quot;javieralfred&quot;,&#xd;
+         &quot;FirstName&quot;: &quot;Javier&quot;,&#xd;
+         &quot;LastName&quot;: &quot;Alfred&quot;,&#xd;
+         &quot;Emails&quot;: [&#xd;
+            &quot;Javier@example.com&quot;,&#xd;
+            &quot;Javier@contoso.com&quot;&#xd;
+         ],&#xd;
+         &quot;AddressInfo&quot;: [&#xd;
+            {&#xd;
+               &quot;Address&quot;: &quot;89 Jefferson Way Suite 2&quot;,&#xd;
+               &quot;City&quot;: {&#xd;
+                  &quot;CountryRegion&quot;: &quot;United States&quot;,&#xd;
+                  &quot;Name&quot;: &quot;Portland&quot;,&#xd;
+                  &quot;Region&quot;: &quot;WA&quot;&#xd;
+               }&#xd;
+            }&#xd;
+         ],&#xd;
+         &quot;Gender&quot;: &quot;Male&quot;,&#xd;
+         &quot;Concurrency&quot;: 635727132515758812&#xd;
+      }</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <TestAction guiclass="TestActionGui" testclass="TestAction" testname="pause" enabled="true">
+          <intProp name="ActionProcessor.action">1</intProp>
+          <intProp name="ActionProcessor.target">0</intProp>
+          <stringProp name="ActionProcessor.duration">1000</stringProp>
+        </TestAction>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get(People)" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post_People(&apos;russellwhyte&apos;)/Friends/$ref" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;@odata.id&quot;:&quot;http://${host}:${port}/${repositoryId}/People(&apos;scottketchum&apos;)&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People(&apos;russellwhyte&apos;)/Friends/$ref</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post_People(&apos;russellwhyte&apos;)/Friends/$ref" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;@odata.id&quot;:&quot;http://${host}:${port}/${repositoryId}/People(&apos;ronaldmundy&apos;)&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People(&apos;russellwhyte&apos;)/Friends/$ref</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post_People(&apos;russellwhyte&apos;)/Friends/$ref" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+    &quot;@odata.id&quot;:&quot;http://${host}:${port}/${repositoryId}/People(&apos;javieralfred&apos;)&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People(&apos;russellwhyte&apos;)/Friends/$ref</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get_People(&apos;russellwhyte&apos;)/Friends" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People(&apos;russellwhyte&apos;)/Friends</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post_People(&apos;russellwhyte&apos;)/Trips_3" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+&#xd;
+&quot;TripId&quot; : 3,&#xd;
+&quot;ShareId&quot; : null,&#xd;
+&quot;Description&quot; : &quot;Create Containment&quot;,&#xd;
+&quot;Name&quot; : &quot;Test Trip&quot;,&#xd;
+&quot;StartsAt&quot; : &quot;2014-01-01T00:00:00+08:00&quot;,&#xd;
+&quot;EndsAt&quot; : &quot;2014-02-01T00:00:00+08:00&quot;,&#xd;
+&quot;Budget&quot; : 1000,&#xd;
+&quot;Tags&quot; : [&#xd;
+&quot;Test Tag 1&quot;,&#xd;
+&quot;Test Tag 2&quot;&#xd;
+]&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People(&apos;russellwhyte&apos;)/Trips</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="get_People(&apos;russellwhyte&apos;)/Trips(3)/PlanItems" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People(&apos;russellwhyte&apos;)/Trips(3)/PlanItems</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post_People(&apos;russellwhyte&apos;)/Trips(3)/PlanItems/Flight" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+            &quot;PlanItemId&quot;: 11,&#xd;
+            &quot;ConfirmationCode&quot;: &quot;JH58493&quot;,&#xd;
+            &quot;StartsAt&quot;: &quot;2014-01-01T08:00:00+08:00&quot;,&#xd;
+            &quot;EndsAt&quot;: &quot;2014-01-01T09:20:00+08:00&quot;,&#xd;
+            &quot;Duration&quot;: &quot;PT0S&quot;,&#xd;
+            &quot;SeatNumber&quot;: null,&#xd;
+            &quot;FlightNumber&quot;: &quot;VA1930&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People(&apos;russellwhyte&apos;)/Trips(3)/PlanItems/Microsoft.OData.SampleService.Models.TripPin.Flight</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post_People(&apos;russellwhyte&apos;)/Trips(3)/PlanItems/Event" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&quot;PlanItemId&quot;:12,&quot;ConfirmationCode&quot;:&quot;4372899DD&quot;,&quot;StartsAt&quot;:&quot;2014-01-02T13:00:00Z&quot;,&quot;EndsAt&quot;:&quot;2014-01-02T16:00:00Z&quot;,&quot;Duration&quot;:&quot;PT3H&quot;,&quot;Description&quot;:&quot;Client Meeting&quot;,&quot;OccursAt&quot;:{&quot;Address&quot;:&quot;100 Church Street, 8th Floor, Manhattan, 10007&quot;,&quot;City&quot;:{&quot;CountryRegion&quot;:&quot;United States&quot;,&quot;Name&quot;:&quot;New York City&quot;,&quot;Region&quot;:&quot;New York&quot;},&quot;BuildingInfo&quot;:&quot;Regus Business Center&quot;}&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People(&apos;russellwhyte&apos;)/Trips(3)/PlanItems/Microsoft.OData.SampleService.Models.TripPin.Event</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post_People(&apos;russellwhyte&apos;)/Trips_3" enabled="false">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+&#xd;
+&quot;TripId&quot; : 3,&#xd;
+&quot;ShareId&quot; : null,&#xd;
+&quot;Description&quot; : &quot;Create Containment&quot;,&#xd;
+&quot;Name&quot; : &quot;Test Trip&quot;,&#xd;
+&quot;StartsAt&quot; : &quot;2014-01-01T00:00:00+08:00&quot;,&#xd;
+&quot;EndsAt&quot; : &quot;2014-02-01T00:00:00+08:00&quot;,&#xd;
+&quot;Budget&quot; : 1000,&#xd;
+&quot;Tags&quot; : [&#xd;
+&quot;Test Tag 1&quot;,&#xd;
+&quot;Test Tag 2&quot;&#xd;
+]&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People(&apos;russellwhyte&apos;)/Trips</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="聚合报告" enabled="false">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>false</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>false</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <threadCounts>true</threadCounts>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Create相关" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="循环控制器" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1437200591000</longProp>
+        <longProp name="ThreadGroup.end_time">1437200591000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post_People_scottketchum" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+         &quot;UserName&quot;: &quot;scottketchum&quot;,&#xd;
+         &quot;FirstName&quot;: &quot;Scott&quot;,&#xd;
+         &quot;LastName&quot;: &quot;Ketchum&quot;,&#xd;
+         &quot;Emails&quot;: [&#xd;
+            &quot;Scott@example.com&quot;&#xd;
+         ],&#xd;
+         &quot;AddressInfo&quot;: [&#xd;
+            {&#xd;
+               &quot;Address&quot;: &quot;2817 Milton Dr.&quot;,&#xd;
+               &quot;City&quot;: {&#xd;
+                  &quot;CountryRegion&quot;: &quot;United States&quot;,&#xd;
+                  &quot;Name&quot;: &quot;Albuquerque&quot;,&#xd;
+                  &quot;Region&quot;: &quot;NM&quot;&#xd;
+               }&#xd;
+            }&#xd;
+         ],&#xd;
+         &quot;Gender&quot;: &quot;Male&quot;,&#xd;
+         &quot;Concurrency&quot;: 635727132515758812&#xd;
+      }</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="post_People_ronaldmundy" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{       &#xd;
+         &quot;UserName&quot;: &quot;ronaldmundy&quot;,&#xd;
+         &quot;FirstName&quot;: &quot;Ronald&quot;,&#xd;
+         &quot;LastName&quot;: &quot;Mundy&quot;,&#xd;
+         &quot;Emails&quot;: [&#xd;
+            &quot;Ronald@example.com&quot;,&#xd;
+            &quot;Ronald@contoso.com&quot;&#xd;
+         ],&#xd;
+         &quot;AddressInfo&quot;: [],&#xd;
+         &quot;Gender&quot;: &quot;Male&quot;,&#xd;
+         &quot;Concurrency&quot;: 635727132515758812&#xd;
+      },</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">${port}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/People</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Update相关" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="循环控制器" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1437200617000</longProp>
+        <longProp name="ThreadGroup.end_time">1437200617000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="System" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="循环控制器" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <longProp name="ThreadGroup.start_time">1437536322000</longProp>
+        <longProp name="ThreadGroup.end_time">1437536322000</longProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="_refresh" enabled="false">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">9200</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/_refresh</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="deleteIndex" enabled="false">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">9200</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}</stringProp>
+          <stringProp name="HTTPSampler.method">DELETE</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="metadata" enabled="false">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{ &quot;value&quot;:&quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;utf-8\&quot;?&gt;&lt;edmx:Edmx Version=\&quot;4.0\&quot; xmlns:edmx=\&quot;http://docs.oasis-open.org/odata/ns/edmx\&quot;&gt;&lt;edmx:DataServices&gt;&lt;Schema Namespace=\&quot;Microsoft.OData.SampleService.Models.TripPin\&quot; xmlns=\&quot;http://docs.oasis-open.org/odata/ns/edm\&quot;&gt;&lt;EnumType Name=\&quot;PersonGender\&quot;&gt;&lt;Member Name=\&quot;Male\&quot; Value=\&quot;0\&quot; /&gt;&lt;Member Name=\&quot;Female\&quot; Value=\&quot;1\&quot; /&gt;&lt;Member Name=\&quot;Unknown\&quot; Value=\&quot;2\&quot; /&gt;&lt;/EnumType&gt;&lt;ComplexType Name=\&quot;City\&quot;&gt;&lt;Property Name=\&quot;CountryRegion\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Name\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Region\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/ComplexType&gt;&lt;ComplexType Name=\&quot;Location\&quot; OpenType=\&quot;true\&quot;&gt;&lt;Property Name=\&quot;Address\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;City\&quot; Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.City\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/ComplexType&gt;&lt;ComplexType Name=\&quot;EventLocation\&quot; BaseType=\&quot;Microsoft.OData.SampleService.Models.TripPin.Location\&quot; OpenType=\&quot;true\&quot;&gt;&lt;Property Name=\&quot;BuildingInfo\&quot; Type=\&quot;Edm.String\&quot; /&gt;&lt;/ComplexType&gt;&lt;ComplexType Name=\&quot;AirportLocation\&quot; BaseType=\&quot;Microsoft.OData.SampleService.Models.TripPin.Location\&quot; OpenType=\&quot;true\&quot;&gt;&lt;Property Name=\&quot;Loc\&quot; Type=\&quot;Edm.GeographyPoint\&quot; Nullable=\&quot;false\&quot; SRID=\&quot;4326\&quot; /&gt;&lt;/ComplexType&gt;&lt;EntityType Name=\&quot;Photo\&quot; HasStream=\&quot;true\&quot;&gt;&lt;Key&gt;&lt;PropertyRef Name=\&quot;Id\&quot; /&gt;&lt;/Key&gt;&lt;Property Name=\&quot;Id\&quot; Type=\&quot;Edm.Int64\&quot; Nullable=\&quot;false\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.Permissions\&quot;&gt;&lt;EnumMember&gt;Org.OData.Core.V1.Permission/Read&lt;/EnumMember&gt;&lt;/Annotation&gt;&lt;/Property&gt;&lt;Property Name=\&quot;Name\&quot; Type=\&quot;Edm.String\&quot; /&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.AcceptableMediaTypes\&quot;&gt;&lt;Collection&gt;&lt;String&gt;image/jpeg&lt;/String&gt;&lt;/Collection&gt;&lt;/Annotation&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Person\&quot; OpenType=\&quot;true\&quot;&gt;&lt;Key&gt;&lt;PropertyRef Name=\&quot;UserName\&quot; /&gt;&lt;/Key&gt;&lt;Property Name=\&quot;UserName\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.Permissions\&quot;&gt;&lt;EnumMember&gt;Org.OData.Core.V1.Permission/Read&lt;/EnumMember&gt;&lt;/Annotation&gt;&lt;/Property&gt;&lt;Property Name=\&quot;FirstName\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;LastName\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Emails\&quot; Type=\&quot;Collection(Edm.String)\&quot; /&gt;&lt;Property Name=\&quot;AddressInfo\&quot; Type=\&quot;Collection(Microsoft.OData.SampleService.Models.TripPin.Location)\&quot; /&gt;&lt;Property Name=\&quot;Gender\&quot; Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.PersonGender\&quot; /&gt;&lt;Property Name=\&quot;Concurrency\&quot; Type=\&quot;Edm.Int64\&quot; Nullable=\&quot;false\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.Computed\&quot; Bool=\&quot;true\&quot; /&gt;&lt;/Property&gt;&lt;NavigationProperty Name=\&quot;Friends\&quot; Type=\&quot;Collection(Microsoft.OData.SampleService.Models.TripPin.Person)\&quot; /&gt;&lt;NavigationProperty Name=\&quot;Trips\&quot; Type=\&quot;Collection(Microsoft.OData.SampleService.Models.TripPin.Trip)\&quot; ContainsTarget=\&quot;true\&quot; /&gt;&lt;NavigationProperty Name=\&quot;Photo\&quot; Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.Photo\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Airline\&quot;&gt;&lt;Key&gt;&lt;PropertyRef Name=\&quot;AirlineCode\&quot; /&gt;&lt;/Key&gt;&lt;Property Name=\&quot;AirlineCode\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.Permissions\&quot;&gt;&lt;EnumMember&gt;Org.OData.Core.V1.Permission/Read&lt;/EnumMember&gt;&lt;/Annotation&gt;&lt;/Property&gt;&lt;Property Name=\&quot;Name\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Airport\&quot;&gt;&lt;Key&gt;&lt;PropertyRef Name=\&quot;IcaoCode\&quot; /&gt;&lt;/Key&gt;&lt;Property Name=\&quot;IcaoCode\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.Permissions\&quot;&gt;&lt;EnumMember&gt;Org.OData.Core.V1.Permission/Read&lt;/EnumMember&gt;&lt;/Annotation&gt;&lt;/Property&gt;&lt;Property Name=\&quot;Name\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;IataCode\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.Immutable\&quot; Bool=\&quot;true\&quot; /&gt;&lt;/Property&gt;&lt;Property Name=\&quot;Location\&quot; Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.AirportLocation\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;PlanItem\&quot;&gt;&lt;Key&gt;&lt;PropertyRef Name=\&quot;PlanItemId\&quot; /&gt;&lt;/Key&gt;&lt;Property Name=\&quot;PlanItemId\&quot; Type=\&quot;Edm.Int32\&quot; Nullable=\&quot;false\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.Permissions\&quot;&gt;&lt;EnumMember&gt;Org.OData.Core.V1.Permission/Read&lt;/EnumMember&gt;&lt;/Annotation&gt;&lt;/Property&gt;&lt;Property Name=\&quot;ConfirmationCode\&quot; Type=\&quot;Edm.String\&quot; /&gt;&lt;Property Name=\&quot;StartsAt\&quot; Type=\&quot;Edm.DateTimeOffset\&quot; /&gt;&lt;Property Name=\&quot;EndsAt\&quot; Type=\&quot;Edm.DateTimeOffset\&quot; /&gt;&lt;Property Name=\&quot;Duration\&quot; Type=\&quot;Edm.Duration\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;PublicTransportation\&quot; BaseType=\&quot;Microsoft.OData.SampleService.Models.TripPin.PlanItem\&quot;&gt;&lt;Property Name=\&quot;SeatNumber\&quot; Type=\&quot;Edm.String\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Flight\&quot; BaseType=\&quot;Microsoft.OData.SampleService.Models.TripPin.PublicTransportation\&quot;&gt;&lt;Property Name=\&quot;FlightNumber\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;NavigationProperty Name=\&quot;From\&quot; Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.Airport\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;NavigationProperty Name=\&quot;To\&quot; Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.Airport\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;NavigationProperty Name=\&quot;Airline\&quot; Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.Airline\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Event\&quot; BaseType=\&quot;Microsoft.OData.SampleService.Models.TripPin.PlanItem\&quot; OpenType=\&quot;true\&quot;&gt;&lt;Property Name=\&quot;Description\&quot; Type=\&quot;Edm.String\&quot; /&gt;&lt;Property Name=\&quot;OccursAt\&quot; Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.EventLocation\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Trip\&quot;&gt;&lt;Key&gt;&lt;PropertyRef Name=\&quot;TripId\&quot; /&gt;&lt;/Key&gt;&lt;Property Name=\&quot;TripId\&quot; Type=\&quot;Edm.Int32\&quot; Nullable=\&quot;false\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.Permissions\&quot;&gt;&lt;EnumMember&gt;Org.OData.Core.V1.Permission/Read&lt;/EnumMember&gt;&lt;/Annotation&gt;&lt;/Property&gt;&lt;Property Name=\&quot;ShareId\&quot; Type=\&quot;Edm.Guid\&quot; /&gt;&lt;Property Name=\&quot;Description\&quot; Type=\&quot;Edm.String\&quot; /&gt;&lt;Property Name=\&quot;Name\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Budget\&quot; Type=\&quot;Edm.Single\&quot; Nullable=\&quot;false\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Measures.V1.ISOCurrency\&quot; String=\&quot;USD\&quot; /&gt;&lt;Annotation Term=\&quot;Org.OData.Measures.V1.Scale\&quot; Int=\&quot;2\&quot; /&gt;&lt;/Property&gt;&lt;Property Name=\&quot;StartsAt\&quot; Type=\&quot;Edm.DateTimeOffset\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;EndsAt\&quot; Type=\&quot;Edm.DateTimeOffset\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Tags\&quot; Type=\&quot;Collection(Edm.String)\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;NavigationProperty Name=\&quot;Photos\&quot; Type=\&quot;Collection(Microsoft.OData.SampleService.Models.TripPin.Photo)\&quot; /&gt;&lt;NavigationProperty Name=\&quot;PlanItems\&quot; Type=\&quot;Collection(Microsoft.OData.SampleService.Models.TripPin.PlanItem)\&quot; ContainsTarget=\&quot;true\&quot; /&gt;&lt;/EntityType&gt;&lt;Function Name=\&quot;GetFavoriteAirline\&quot; IsBound=\&quot;true\&quot; EntitySetPath=\&quot;person/Trips/PlanItems/Microsoft.OData.SampleService.Models.TripPin.Flight/Airline\&quot; IsComposable=\&quot;true\&quot;&gt;&lt;Parameter Name=\&quot;person\&quot; Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.Person\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;ReturnType Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.Airline\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/Function&gt;&lt;Function Name=\&quot;GetInvolvedPeople\&quot; IsBound=\&quot;true\&quot; IsComposable=\&quot;true\&quot;&gt;&lt;Parameter Name=\&quot;trip\&quot; Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.Trip\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;ReturnType Type=\&quot;Collection(Microsoft.OData.SampleService.Models.TripPin.Person)\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/Function&gt;&lt;Function Name=\&quot;GetFriendsTrips\&quot; IsBound=\&quot;true\&quot; EntitySetPath=\&quot;person/Friends/Trips\&quot; IsComposable=\&quot;true\&quot;&gt;&lt;Parameter Name=\&quot;person\&quot; Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.Person\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Parameter Name=\&quot;userName\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;ReturnType Type=\&quot;Collection(Microsoft.OData.SampleService.Models.TripPin.Trip)\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/Function&gt;&lt;Function Name=\&quot;GetNearestAirport\&quot; IsComposable=\&quot;true\&quot;&gt;&lt;Parameter Name=\&quot;lat\&quot; Type=\&quot;Edm.Double\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Parameter Name=\&quot;lon\&quot; Type=\&quot;Edm.Double\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;ReturnType Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.Airport\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/Function&gt;&lt;Action Name=\&quot;ResetDataSource\&quot; /&gt;&lt;Action Name=\&quot;ShareTrip\&quot; IsBound=\&quot;true\&quot;&gt;&lt;Parameter Name=\&quot;person\&quot; Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.Person\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Parameter Name=\&quot;userName\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Parameter Name=\&quot;tripId\&quot; Type=\&quot;Edm.Int32\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/Action&gt;&lt;EntityContainer Name=\&quot;DefaultContainer\&quot;&gt;&lt;EntitySet Name=\&quot;Photos\&quot; EntityType=\&quot;Microsoft.OData.SampleService.Models.TripPin.Photo\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.ResourcePath\&quot; String=\&quot;Photos\&quot; /&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.SearchRestrictions\&quot;&gt;&lt;Record&gt;&lt;PropertyValue Property=\&quot;Searchable\&quot; Bool=\&quot;true\&quot; /&gt;&lt;PropertyValue Property=\&quot;UnsupportedExpressions\&quot;&gt;&lt;EnumMember&gt;Org.OData.Capabilities.V1.SearchExpressions/none&lt;/EnumMember&gt;&lt;/PropertyValue&gt;&lt;/Record&gt;&lt;/Annotation&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.InsertRestrictions\&quot;&gt;&lt;Record&gt;&lt;PropertyValue Property=\&quot;Insertable\&quot; Bool=\&quot;true\&quot; /&gt;&lt;PropertyValue Property=\&quot;NonInsertableNavigationProperties\&quot;&gt;&lt;Collection /&gt;&lt;/PropertyValue&gt;&lt;/Record&gt;&lt;/Annotation&gt;&lt;/EntitySet&gt;&lt;EntitySet Name=\&quot;People\&quot; EntityType=\&quot;Microsoft.OData.SampleService.Models.TripPin.Person\&quot;&gt;&lt;NavigationPropertyBinding Path=\&quot;Friends\&quot; Target=\&quot;People\&quot; /&gt;&lt;NavigationPropertyBinding Path=\&quot;Microsoft.OData.SampleService.Models.TripPin.Flight/Airline\&quot; Target=\&quot;Airlines\&quot; /&gt;&lt;NavigationPropertyBinding Path=\&quot;Microsoft.OData.SampleService.Models.TripPin.Flight/From\&quot; Target=\&quot;Airports\&quot; /&gt;&lt;NavigationPropertyBinding Path=\&quot;Microsoft.OData.SampleService.Models.TripPin.Flight/To\&quot; Target=\&quot;Airports\&quot; /&gt;&lt;NavigationPropertyBinding Path=\&quot;Photo\&quot; Target=\&quot;Photos\&quot; /&gt;&lt;NavigationPropertyBinding Path=\&quot;Microsoft.OData.SampleService.Models.TripPin.Trip/Photos\&quot; Target=\&quot;Photos\&quot; /&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.OptimisticConcurrency\&quot;&gt;&lt;Collection&gt;&lt;PropertyPath&gt;Concurrency&lt;/PropertyPath&gt;&lt;/Collection&gt;&lt;/Annotation&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.ResourcePath\&quot; String=\&quot;People\&quot; /&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.NavigationRestrictions\&quot;&gt;&lt;Record&gt;&lt;PropertyValue Property=\&quot;Navigability\&quot;&gt;&lt;EnumMember&gt;Org.OData.Capabilities.V1.NavigationType/None&lt;/EnumMember&gt;&lt;/PropertyValue&gt;&lt;PropertyValue Property=\&quot;RestrictedProperties\&quot;&gt;&lt;Collection&gt;&lt;Record&gt;&lt;PropertyValue Property=\&quot;NavigationProperty\&quot; NavigationPropertyPath=\&quot;Friends\&quot; /&gt;&lt;PropertyValue Property=\&quot;Navigability\&quot;&gt;&lt;EnumMember&gt;Org.OData.Capabilities.V1.NavigationType/Recursive&lt;/EnumMember&gt;&lt;/PropertyValue&gt;&lt;/Record&gt;&lt;/Collection&gt;&lt;/PropertyValue&gt;&lt;/Record&gt;&lt;/Annotation&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.SearchRestrictions\&quot;&gt;&lt;Record&gt;&lt;PropertyValue Property=\&quot;Searchable\&quot; Bool=\&quot;true\&quot; /&gt;&lt;PropertyValue Property=\&quot;UnsupportedExpressions\&quot;&gt;&lt;EnumMember&gt;Org.OData.Capabilities.V1.SearchExpressions/none&lt;/EnumMember&gt;&lt;/PropertyValue&gt;&lt;/Record&gt;&lt;/Annotation&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.InsertRestrictions\&quot;&gt;&lt;Record&gt;&lt;PropertyValue Property=\&quot;Insertable\&quot; Bool=\&quot;true\&quot; /&gt;&lt;PropertyValue Property=\&quot;NonInsertableNavigationProperties\&quot;&gt;&lt;Collection&gt;&lt;NavigationPropertyPath&gt;Trips&lt;/NavigationPropertyPath&gt;&lt;NavigationPropertyPath&gt;Friends&lt;/NavigationPropertyPath&gt;&lt;/Collection&gt;&lt;/PropertyValue&gt;&lt;/Record&gt;&lt;/Annotation&gt;&lt;/EntitySet&gt;&lt;EntitySet Name=\&quot;Airlines\&quot; EntityType=\&quot;Microsoft.OData.SampleService.Models.TripPin.Airline\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.ResourcePath\&quot; String=\&quot;Airlines\&quot; /&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.SearchRestrictions\&quot;&gt;&lt;Record&gt;&lt;PropertyValue Property=\&quot;Searchable\&quot; Bool=\&quot;true\&quot; /&gt;&lt;PropertyValue Property=\&quot;UnsupportedExpressions\&quot;&gt;&lt;EnumMember&gt;Org.OData.Capabilities.V1.SearchExpressions/none&lt;/EnumMember&gt;&lt;/PropertyValue&gt;&lt;/Record&gt;&lt;/Annotation&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.InsertRestrictions\&quot;&gt;&lt;Record&gt;&lt;PropertyValue Property=\&quot;Insertable\&quot; Bool=\&quot;true\&quot; /&gt;&lt;PropertyValue Property=\&quot;NonInsertableNavigationProperties\&quot;&gt;&lt;Collection /&gt;&lt;/PropertyValue&gt;&lt;/Record&gt;&lt;/Annotation&gt;&lt;/EntitySet&gt;&lt;EntitySet Name=\&quot;Airports\&quot; EntityType=\&quot;Microsoft.OData.SampleService.Models.TripPin.Airport\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.ResourcePath\&quot; String=\&quot;Airports\&quot; /&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.SearchRestrictions\&quot;&gt;&lt;Record&gt;&lt;PropertyValue Property=\&quot;Searchable\&quot; Bool=\&quot;true\&quot; /&gt;&lt;PropertyValue Property=\&quot;UnsupportedExpressions\&quot;&gt;&lt;EnumMember&gt;Org.OData.Capabilities.V1.SearchExpressions/none&lt;/EnumMember&gt;&lt;/PropertyValue&gt;&lt;/Record&gt;&lt;/Annotation&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.InsertRestrictions\&quot;&gt;&lt;Record&gt;&lt;PropertyValue Property=\&quot;Insertable\&quot; Bool=\&quot;false\&quot; /&gt;&lt;PropertyValue Property=\&quot;NonInsertableNavigationProperties\&quot;&gt;&lt;Collection /&gt;&lt;/PropertyValue&gt;&lt;/Record&gt;&lt;/Annotation&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.DeleteRestrictions\&quot;&gt;&lt;Record&gt;&lt;PropertyValue Property=\&quot;Deletable\&quot; Bool=\&quot;false\&quot; /&gt;&lt;PropertyValue Property=\&quot;NonDeletableNavigationProperties\&quot;&gt;&lt;Collection /&gt;&lt;/PropertyValue&gt;&lt;/Record&gt;&lt;/Annotation&gt;&lt;/EntitySet&gt;&lt;Singleton Name=\&quot;Me\&quot; Type=\&quot;Microsoft.OData.SampleService.Models.TripPin.Person\&quot;&gt;&lt;NavigationPropertyBinding Path=\&quot;Friends\&quot; Target=\&quot;People\&quot; /&gt;&lt;NavigationPropertyBinding Path=\&quot;Microsoft.OData.SampleService.Models.TripPin.Flight/Airline\&quot; Target=\&quot;Airlines\&quot; /&gt;&lt;NavigationPropertyBinding Path=\&quot;Microsoft.OData.SampleService.Models.TripPin.Flight/From\&quot; Target=\&quot;Airports\&quot; /&gt;&lt;NavigationPropertyBinding Path=\&quot;Microsoft.OData.SampleService.Models.TripPin.Flight/To\&quot; Target=\&quot;Airports\&quot; /&gt;&lt;NavigationPropertyBinding Path=\&quot;Photo\&quot; Target=\&quot;Photos\&quot; /&gt;&lt;NavigationPropertyBinding Path=\&quot;Microsoft.OData.SampleService.Models.TripPin.Trip/Photos\&quot; Target=\&quot;Photos\&quot; /&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.ResourcePath\&quot; String=\&quot;Me\&quot; /&gt;&lt;/Singleton&gt;&lt;FunctionImport Name=\&quot;GetNearestAirport\&quot; Function=\&quot;Microsoft.OData.SampleService.Models.TripPin.GetNearestAirport\&quot; EntitySet=\&quot;Airports\&quot; IncludeInServiceDocument=\&quot;true\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.ResourcePath\&quot; String=\&quot;Microsoft.OData.SampleService.Models.TripPin.GetNearestAirport\&quot; /&gt;&lt;/FunctionImport&gt;&lt;ActionImport Name=\&quot;ResetDataSource\&quot; Action=\&quot;Microsoft.OData.SampleService.Models.TripPin.ResetDataSource\&quot; /&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.Description\&quot; String=\&quot;TripPin service is a sample service for OData V4.\&quot; /&gt;&lt;/EntityContainer&gt;&lt;Annotations Target=\&quot;Microsoft.OData.SampleService.Models.TripPin.DefaultContainer\&quot;&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.DereferenceableIDs\&quot; Bool=\&quot;true\&quot; /&gt;&lt;Annotation Term=\&quot;Org.OData.Core.V1.ConventionalIDs\&quot; Bool=\&quot;true\&quot; /&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.ConformanceLevel\&quot;&gt;&lt;EnumMember&gt;Org.OData.Capabilities.V1.ConformanceLevelType/Advanced&lt;/EnumMember&gt;&lt;/Annotation&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.SupportedFormats\&quot;&gt;&lt;Collection&gt;&lt;String&gt;application/json;odata.metadata=full;IEEE754Compatible=false;odata.streaming=true&lt;/String&gt;&lt;String&gt;application/json;odata.metadata=minimal;IEEE754Compatible=false;odata.streaming=true&lt;/String&gt;&lt;String&gt;application/json;odata.metadata=none;IEEE754Compatible=false;odata.streaming=true&lt;/String&gt;&lt;/Collection&gt;&lt;/Annotation&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.AsynchronousRequestsSupported\&quot; Bool=\&quot;true\&quot; /&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.BatchContinueOnErrorSupported\&quot; Bool=\&quot;false\&quot; /&gt;&lt;Annotation Term=\&quot;Org.OData.Capabilities.V1.FilterFunctions\&quot;&gt;&lt;Collection&gt;&lt;String&gt;contains&lt;/String&gt;&lt;String&gt;endswith&lt;/String&gt;&lt;String&gt;startswith&lt;/String&gt;&lt;String&gt;length&lt;/String&gt;&lt;String&gt;indexof&lt;/String&gt;&lt;String&gt;substring&lt;/String&gt;&lt;String&gt;tolower&lt;/String&gt;&lt;String&gt;toupper&lt;/String&gt;&lt;String&gt;trim&lt;/String&gt;&lt;String&gt;concat&lt;/String&gt;&lt;String&gt;year&lt;/String&gt;&lt;String&gt;month&lt;/String&gt;&lt;String&gt;day&lt;/String&gt;&lt;String&gt;hour&lt;/String&gt;&lt;String&gt;minute&lt;/String&gt;&lt;String&gt;second&lt;/String&gt;&lt;String&gt;round&lt;/String&gt;&lt;String&gt;floor&lt;/String&gt;&lt;String&gt;ceiling&lt;/String&gt;&lt;String&gt;cast&lt;/String&gt;&lt;String&gt;isof&lt;/String&gt;&lt;/Collection&gt;&lt;/Annotation&gt;&lt;/Annotations&gt;&lt;/Schema&gt;&lt;/edmx:DataServices&gt;&lt;/edmx:Edmx&gt;&quot; }</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">9200</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/$system/metadata</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="_file" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="properties" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&quot;Id&quot;:111,&quot;Name&quot;:&quot;piapiapia&quot;}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">properties</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">8080</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/Photos</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">true</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <elementProp name="HTTPsampler.Files" elementType="HTTPFileArgs">
+            <collectionProp name="HTTPFileArgs.files">
+              <elementProp name="C:\Users\XQL\Pictures\-7_552b68ccc9de8.gif" elementType="HTTPFileArg">
+                <stringProp name="File.path">C:\Users\XQL\Pictures\-7_552b68ccc9de8.gif</stringProp>
+                <stringProp name="File.paramname">stream</stringProp>
+                <stringProp name="File.mimetype"></stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+      </hashTree>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
