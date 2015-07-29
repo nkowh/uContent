@@ -15,6 +15,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
+
 import org.springframework.web.context.request.RequestContextListener;
 
 @SpringBootApplication
@@ -24,7 +25,6 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
 
-
     @Bean
     public ServletRegistrationBean servletRegistrationFavicon(FaviconServlet servlet) {
         ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(servlet, "/favicon.ico");
@@ -33,9 +33,16 @@ public class Application {
     }
 
     @Bean
+    public ServletRegistrationBean servletRegistrationError(ErrorServlet servlet) {
+        ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(servlet, "/error");
+        servletRegistrationBean.setOrder(2);
+        return servletRegistrationBean;
+    }
+
+    @Bean
     public ServletRegistrationBean servletRegistrationOData(ODataServlet servlet) {
         ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(servlet, "/*");
-        servletRegistrationBean.setOrder(2);
+        servletRegistrationBean.setOrder(3);
         return servletRegistrationBean;
     }
 

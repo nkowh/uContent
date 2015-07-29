@@ -183,6 +183,9 @@ public class DefaultEdmxParser {
         p.setDefaultValue(attributes.getString("DefaultValue"));
         setType(attributes.getString("Type"), p);
         p.setNullable(attributes.getBoolean("Nullable", true));
+        p.setPrecision(attributes.getInt("Precision"));
+        p.setMaxLength(attributes.getInt("MaxLength"));
+        p.setScale(attributes.getInt("Scale"));
         return p;
     }
 
@@ -376,6 +379,11 @@ public class DefaultEdmxParser {
 
         public String getString(String key) {
             return innerMap.get(key);
+        }
+
+        public Integer getInt(String key) {
+            if (innerMap.containsKey(key)) return Integer.valueOf(innerMap.get(key));
+            return null;
         }
 
         public boolean getBoolean(String key) {

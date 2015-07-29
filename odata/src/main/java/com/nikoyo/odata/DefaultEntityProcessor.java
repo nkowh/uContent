@@ -71,7 +71,6 @@ public class DefaultEntityProcessor implements MediaEntityProcessor {
         SelectOption selectOption = UriInfoUtils.getSelect(uriInfo);
         JsonObj entityObj = persistenceDataService.readEntity(uriInfo, odata, serviceMetadata);
         try {
-
             Entity respEntity = entityObj.toEntity(odata);
             EdmEntityType entityType = entityObj.getType();
             ContextURL contextUrl = ContextURL.with().entitySet(edmEntitySet).suffix(ContextURL.Suffix.ENTITY).build();
@@ -125,7 +124,7 @@ public class DefaultEntityProcessor implements MediaEntityProcessor {
     public void readMediaEntity(ODataRequest request, ODataResponse response, UriInfo uriInfo, ContentType responseFormat) throws ODataApplicationException, SerializerException {
         byte[] buffer = persistenceDataService.readMediaEntity(uriInfo, request, odata, serviceMetadata);
         try {
-            MediaType mediaType = org.apache.tika.mime.MimeTypes.getDefaultMimeTypes().detect(new AutoCloseInputStream(new ByteArrayInputStream(buffer)), new Metadata());
+            MediaType mediaType = org.apache.tika.mime.MimeTypes.getDefaultMimeTypes().detect((new ByteArrayInputStream(buffer)), new Metadata());
             response.setContent(new AutoCloseInputStream(new ByteArrayInputStream(buffer)));
             response.setStatusCode(HttpStatusCode.OK.getStatusCode());
             response.setHeader(HttpHeader.CONTENT_TYPE, mediaType.toString());

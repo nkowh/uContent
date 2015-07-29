@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+	<edmx:DataServices>
+		<Schema Namespace="com.nikoyo.uContent.dm" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+			<EntityType Abstract="true" Name="Object" >
+				<Key>
+					<PropertyRef Name="Id" />
+				</Key>
+				<Property Name="Id" Type="Edm.String" Nullable="false" />
+				<Property Name="Name" Type="Edm.String" Nullable="false" />
+				<Property Name="CreateBy" Type="Edm.String" Nullable="true" />
+				<Property Name="LastUpdatedBy" Type="Edm.String" Nullable="true" />
+				<Property Name="CreatedOn" Type="Edm.DateTimeOffset" Nullable="true" Precision="3" />
+				<Property Name="LastUpdatedOn" Type="Edm.DateTimeOffset" Nullable="true" Precision="3" />
+			</EntityType>
+			<EnumType Name="Permission" IsFlag="true">
+				<Member Name="Read" Value="1" />
+				<Member Name="Update" Value="2" />		
+				<Member Name="Delete" Value="4" />
+			</EnumType>
+			<EnumType Name="PageType" >
+				<Member Name="Png" Value="1" />
+				<Member Name="Jpeg" Value="2" />		
+				<Member Name="Tiff" Value="3" />
+			</EnumType>
+			<ComplexType Name="Ace">
+				<Property Name="principals" Type="Edm.String" Nullable="false" />
+				<Property Name="Permission" Type="com.nikoyo.uContent.dm.Permission" Nullable="false" />
+				<Property Name="IsGroup" Type="Edm.Boolean" Nullable="false" />
+			</ComplexType>
+			<EntityType Name="Document" BaseType="com.nikoyo.uContent.dm.Object">
+				<Property Name="Acl" Type="Collection(com.nikoyo.uContent.dm.Ace)" Nullable="false" />
+				<NavigationProperty Name="Pages" Type="Collection(com.nikoyo.uContent.dm.Page)" ContainsTarget="true"/>
+			</EntityType>
+			<EntityType Name="AAA" BaseType="com.nikoyo.uContent.dm.Document">
+				<Property Name="aaa" Type="Edm.String" Nullable="false" />
+				<Property Name="bbb" Type="Edm.Bool" Nullable="false" />
+				<Property Name="ccc" Type="Edm.Int32" Nullable="false" />
+				<Property Name="ddd" Type="Edm.Double" Nullable="false" />
+				<Property Name="eee" Type="Edm.DateTimeOffset" Nullable="false" />
+				<NavigationProperty Name="Children" Type="Collection(com.nikoyo.uContent.dm.Document)"/>
+			</EntityType>
+			<EntityType Name="BBB" BaseType="com.nikoyo.uContent.dm.Document">
+				<Property Name="fff" Type="Edm.String" Nullable="false" />
+				<Property Name="ggg" Type="Edm.String" Nullable="false" />
+			</EntityType>
+			<EntityType Name="Stream" Abstract="true" HasStream="true" BaseType="com.nikoyo.uContent.dm.Object">
+				
+			</EntityType>
+			<EntityType Name="Page" BaseType="com.nikoyo.uContent.dm.Stream" HasStream="true" >
+				<Property Name="Order" Type="Edm.Int32" Nullable="false" />
+				<Property Name="Type" Type="com.nikoyo.uContent.dm.PageType" Nullable="false" />
+			</EntityType>
+			<EntityType Name="User" BaseType="com.nikoyo.uContent.dm.Object">				
+				<Property Name="Password" Type="Edm.String" Nullable="false" />
+			</EntityType>
+			<EntityType Name="Group" BaseType="com.nikoyo.uContent.dm.Object">
+				<NavigationProperty Name="Users" Type="Collection(com.nikoyo.uContent.dm.User)" />
+				<NavigationProperty Name="Children" Type="Collection(com.nikoyo.uContent.dm.Group)" />
+			</EntityType>
+			<EntityType Name="Log" >				
+				<Property Name="CreatedOn" Type="Edm.DateTimeOffset" Nullable="false" />
+				<Property Name="UserId" Type="Edm.String" Nullable="false" />
+				<Property Name="Method" Type="Edm.String" Nullable="false" />
+				<Property Name="Url" Type="Edm.String" Nullable="false" />
+				<Property Name="Body" Type="Edm.String" Nullable="false" />
+			</EntityType>
+			<EntityContainer Name="DefaultContainer">
+				<EntitySet Name="BBBs" EntityType="com.nikoyo.uContent.dm.Document">
+				</EntitySet>
+				<EntitySet Name="AAAs" EntityType="com.nikoyo.uContent.dm.Document">
+					<NavigationPropertyBinding Path="Children" Target="Documents" />
+				</EntitySet>
+				<EntitySet Name="Documents" EntityType="com.nikoyo.uContent.dm.Document">
+				</EntitySet>	
+				<EntitySet Name="Users" EntityType="com.nikoyo.uContent.dm.User">
+				</EntitySet>	
+				<EntitySet Name="Groups" EntityType="com.nikoyo.uContent.dm.Group">
+					<NavigationPropertyBinding Path="Users" Target="Users" />
+					<NavigationPropertyBinding Path="Children" Target="Groups" />
+				</EntitySet>
+				<EntitySet Name="Logs" EntityType="com.nikoyo.uContent.dm.Log">
+				</EntitySet>					
+			</EntityContainer>			
+		</Schema>
+	</edmx:DataServices>
+</edmx:Edmx>

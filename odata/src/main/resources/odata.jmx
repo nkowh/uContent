@@ -15,7 +15,7 @@
         <collectionProp name="Arguments.arguments">
           <elementProp name="host" elementType="Argument">
             <stringProp name="Argument.name">host</stringProp>
-            <stringProp name="Argument.value">localhost</stringProp>
+            <stringProp name="Argument.value">192.168.1.20</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="port" elementType="Argument">
@@ -25,7 +25,7 @@
           </elementProp>
           <elementProp name="repositoryId" elementType="Argument">
             <stringProp name="Argument.name">repositoryId</stringProp>
-            <stringProp name="Argument.value">trippin</stringProp>
+            <stringProp name="Argument.value">dm</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -831,7 +831,7 @@
           <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="_file" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="_file" enabled="false">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="用户定义的变量" enabled="true">
             <collectionProp name="Arguments.arguments">
               <elementProp name="properties" elementType="HTTPArgument">
@@ -865,6 +865,66 @@
               </elementProp>
             </collectionProp>
           </elementProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="dm" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{ &quot;value&quot;:&#xd;
+&quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;utf-8\&quot;?&gt;&lt;edmx:Edmx Version=\&quot;4.0\&quot; xmlns:edmx=\&quot;http://docs.oasis-open.org/odata/ns/edmx\&quot;&gt;&lt;edmx:DataServices&gt;&lt;Schema Namespace=\&quot;com.nikoyo.uContent.dm\&quot; xmlns=\&quot;http://docs.oasis-open.org/odata/ns/edm\&quot;&gt;&lt;EntityType Abstract=\&quot;true\&quot; Name=\&quot;Object\&quot; &gt;&lt;Key&gt;&lt;PropertyRef Name=\&quot;Id\&quot; /&gt;&lt;/Key&gt;&lt;Property Name=\&quot;Id\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Name\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;CreateBy\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;true\&quot; /&gt;&lt;Property Name=\&quot;LastUpdatedBy\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;true\&quot; /&gt;&lt;Property Name=\&quot;CreatedOn\&quot; Type=\&quot;Edm.DateTimeOffset\&quot; Nullable=\&quot;true\&quot; Precision=\&quot;3\&quot; /&gt;&lt;Property Name=\&quot;LastUpdatedOn\&quot; Type=\&quot;Edm.DateTimeOffset\&quot; Nullable=\&quot;true\&quot; Precision=\&quot;3\&quot; /&gt;&lt;/EntityType&gt;&lt;EnumType Name=\&quot;Permission\&quot; IsFlag=\&quot;true\&quot;&gt;&lt;Member Name=\&quot;Read\&quot; Value=\&quot;1\&quot; /&gt;&lt;Member Name=\&quot;Update\&quot; Value=\&quot;2\&quot; /&gt;&lt;Member Name=\&quot;Delete\&quot; Value=\&quot;4\&quot; /&gt;&lt;/EnumType&gt;&lt;EnumType Name=\&quot;PageType\&quot; &gt;&lt;Member Name=\&quot;Png\&quot; Value=\&quot;1\&quot; /&gt;&lt;Member Name=\&quot;Jpeg\&quot; Value=\&quot;2\&quot; /&gt;&lt;Member Name=\&quot;Tiff\&quot; Value=\&quot;3\&quot; /&gt;&lt;/EnumType&gt;&lt;ComplexType Name=\&quot;Ace\&quot;&gt;&lt;Property Name=\&quot;principals\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Permission\&quot; Type=\&quot;com.nikoyo.uContent.dm.Permission\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;IsGroup\&quot; Type=\&quot;Edm.Boolean\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/ComplexType&gt;&lt;EntityType Name=\&quot;Document\&quot; BaseType=\&quot;com.nikoyo.uContent.dm.Object\&quot;&gt;&lt;Property Name=\&quot;Acl\&quot; Type=\&quot;Collection(com.nikoyo.uContent.dm.Ace)\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;NavigationProperty Name=\&quot;Pages\&quot; Type=\&quot;Collection(com.nikoyo.uContent.dm.Page)\&quot; ContainsTarget=\&quot;true\&quot;/&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;AAA\&quot; BaseType=\&quot;com.nikoyo.uContent.dm.Document\&quot;&gt;&lt;Property Name=\&quot;aaa\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;bbb\&quot; Type=\&quot;Edm.Bool\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;ccc\&quot; Type=\&quot;Edm.Int32\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;ddd\&quot; Type=\&quot;Edm.Double\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;eee\&quot; Type=\&quot;Edm.DateTimeOffset\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;NavigationProperty Name=\&quot;Children\&quot; Type=\&quot;Collection(com.nikoyo.uContent.dm.Document)\&quot;/&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;BBB\&quot; BaseType=\&quot;com.nikoyo.uContent.dm.Document\&quot;&gt;&lt;Property Name=\&quot;fff\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;ggg\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Stream\&quot; Abstract=\&quot;true\&quot; HasStream=\&quot;true\&quot; BaseType=\&quot;com.nikoyo.uContent.dm.Object\&quot;&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Page\&quot; BaseType=\&quot;com.nikoyo.uContent.dm.Stream\&quot; HasStream=\&quot;true\&quot; &gt;&lt;Property Name=\&quot;Order\&quot; Type=\&quot;Edm.Int32\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Type\&quot; Type=\&quot;com.nikoyo.uContent.dm.PageType\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;User\&quot; BaseType=\&quot;com.nikoyo.uContent.dm.Object\&quot;&gt;&lt;Property Name=\&quot;Password\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Group\&quot; BaseType=\&quot;com.nikoyo.uContent.dm.Object\&quot;&gt;&lt;NavigationProperty Name=\&quot;Users\&quot; Type=\&quot;Collection(com.nikoyo.uContent.dm.User)\&quot; /&gt;&lt;NavigationProperty Name=\&quot;Children\&quot; Type=\&quot;Collection(com.nikoyo.uContent.dm.Group)\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Log\&quot; &gt;&lt;Property Name=\&quot;CreatedOn\&quot; Type=\&quot;Edm.DateTimeOffset\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;UserId\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Method\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Url\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Body\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityContainer Name=\&quot;DefaultContainer\&quot;&gt;&lt;EntitySet Name=\&quot;BBBs\&quot; EntityType=\&quot;com.nikoyo.uContent.dm.Document\&quot;&gt;&lt;/EntitySet&gt;&lt;EntitySet Name=\&quot;AAAs\&quot; EntityType=\&quot;com.nikoyo.uContent.dm.Document\&quot;&gt;&lt;NavigationPropertyBinding Path=\&quot;Children\&quot; Target=\&quot;Documents\&quot; /&gt;&lt;/EntitySet&gt;&lt;EntitySet Name=\&quot;Documents\&quot; EntityType=\&quot;com.nikoyo.uContent.dm.Document\&quot;&gt;&lt;/EntitySet&gt;&lt;EntitySet Name=\&quot;Users\&quot; EntityType=\&quot;com.nikoyo.uContent.dm.User\&quot;&gt;&lt;/EntitySet&gt;&lt;EntitySet Name=\&quot;Groups\&quot; EntityType=\&quot;com.nikoyo.uContent.dm.Group\&quot;&gt;&lt;NavigationPropertyBinding Path=\&quot;Users\&quot; Target=\&quot;Users\&quot; /&gt;&lt;NavigationPropertyBinding Path=\&quot;Children\&quot; Target=\&quot;Groups\&quot; /&gt;&lt;/EntitySet&gt;&lt;EntitySet Name=\&quot;Logs\&quot; EntityType=\&quot;com.nikoyo.uContent.dm.Log\&quot;&gt;&lt;/EntitySet&gt;&lt;/EntityContainer&gt;&lt;/Schema&gt;&lt;/edmx:DataServices&gt;&lt;/edmx:Edmx&gt;&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${host}</stringProp>
+          <stringProp name="HTTPSampler.port">9200</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/${repositoryId}/$system/metadata</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          <boolProp name="HTTPSampler.monitor">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="document" enabled="false">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{ &quot;value&quot;:&#xd;
+&quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;utf-8\&quot;?&gt;&lt;edmx:Edmx Version=\&quot;4.0\&quot; xmlns:edmx=\&quot;http://docs.oasis-open.org/odata/ns/edmx\&quot;&gt;&lt;edmx:DataServices&gt;&lt;Schema Namespace=\&quot;com.nikoyo.uContent.dm\&quot; xmlns=\&quot;http://docs.oasis-open.org/odata/ns/edm\&quot;&gt;&lt;EntityType Abstract=\&quot;true\&quot; Name=\&quot;Object\&quot; &gt;&lt;Key&gt;&lt;PropertyRef Name=\&quot;Id\&quot; /&gt;&lt;/Key&gt;&lt;Property Name=\&quot;Id\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Name\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;CreateBy\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;true\&quot; /&gt;&lt;Property Name=\&quot;LastUpdatedBy\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;true\&quot; /&gt;&lt;Property Name=\&quot;CreatedOn\&quot; Type=\&quot;Edm.DateTimeOffset\&quot; Nullable=\&quot;true\&quot; /&gt;&lt;Property Name=\&quot;LastUpdatedOn\&quot; Type=\&quot;Edm.DateTimeOffset\&quot; Nullable=\&quot;true\&quot; /&gt;&lt;/EntityType&gt;&lt;EnumType Name=\&quot;Permission\&quot; IsFlag=\&quot;true\&quot;&gt;&lt;Member Name=\&quot;Read\&quot; Value=\&quot;1\&quot; /&gt;&lt;Member Name=\&quot;Update\&quot; Value=\&quot;2\&quot; /&gt;&lt;Member Name=\&quot;Delete\&quot; Value=\&quot;4\&quot; /&gt;&lt;/EnumType&gt;&lt;EnumType Name=\&quot;PageType\&quot; &gt;&lt;Member Name=\&quot;Png\&quot; Value=\&quot;1\&quot; /&gt;&lt;Member Name=\&quot;Jpeg\&quot; Value=\&quot;2\&quot; /&gt;&lt;Member Name=\&quot;Tiff\&quot; Value=\&quot;3\&quot; /&gt;&lt;/EnumType&gt;&lt;ComplexType Name=\&quot;Ace\&quot;&gt;&lt;Property Name=\&quot;principals\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Permission\&quot; Type=\&quot;com.nikoyo.uContent.dm.Permission\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;IsGroup\&quot; Type=\&quot;Edm.Boolean\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/ComplexType&gt;&lt;EntityType Name=\&quot;Document\&quot; BaseType=\&quot;com.nikoyo.uContent.dm.Object\&quot;&gt;&lt;Property Name=\&quot;Acl\&quot; Type=\&quot;Collection(com.nikoyo.uContent.dm.Ace)\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;NavigationProperty Name=\&quot;Pages\&quot; Type=\&quot;Collection(com.nikoyo.uContent.dm.Page)\&quot; ContainsTarget=\&quot;true\&quot;/&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Stream\&quot; Abstract=\&quot;true\&quot; HasStream=\&quot;true\&quot;&gt;&lt;Key&gt;&lt;PropertyRef Name=\&quot;Id\&quot; /&gt;&lt;/Key&gt;&lt;Property Name=\&quot;Id\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Name\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Page\&quot; BaseType=\&quot;com.nikoyo.uContent.dm.Stream\&quot; &gt;&lt;Property Name=\&quot;Order\&quot; Type=\&quot;Edm.Int32\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Type\&quot; Type=\&quot;com.nikoyo.uContent.dm.PageType\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;User\&quot; BaseType=\&quot;com.nikoyo.uContent.dm.Object\&quot;&gt;&lt;Property Name=\&quot;Password\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Group\&quot; BaseType=\&quot;com.nikoyo.uContent.dm.Object\&quot;&gt;&lt;NavigationProperty Name=\&quot;Users\&quot; Type=\&quot;Collection(com.nikoyo.uContent.dm.User)\&quot; /&gt;&lt;NavigationProperty Name=\&quot;Children\&quot; Type=\&quot;Collection(com.nikoyo.uContent.dm.Group)\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityType Name=\&quot;Log\&quot; &gt;&lt;Property Name=\&quot;CreatedOn\&quot; Type=\&quot;Edm.DateTimeOffset\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;UserId\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Method\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Url\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;Property Name=\&quot;Body\&quot; Type=\&quot;Edm.String\&quot; Nullable=\&quot;false\&quot; /&gt;&lt;/EntityType&gt;&lt;EntityContainer Name=\&quot;DefaultContainer\&quot;&gt;&lt;EntitySet Name=\&quot;Documents\&quot; EntityType=\&quot;com.nikoyo.uContent.dm.Document\&quot;&gt;&lt;/EntitySet&gt;&lt;EntitySet Name=\&quot;Users\&quot; EntityType=\&quot;com.nikoyo.uContent.dm.User\&quot;&gt;&lt;/EntitySet&gt;&lt;EntitySet Name=\&quot;Groups\&quot; EntityType=\&quot;com.nikoyo.uContent.dm.Group\&quot;&gt;&lt;NavigationPropertyBinding Path=\&quot;Users\&quot; Target=\&quot;Users\&quot; /&gt;&lt;NavigationPropertyBinding Path=\&quot;Children\&quot; Target=\&quot;Groups\&quot; /&gt;&lt;/EntitySet&gt;&lt;EntitySet Name=\&quot;Logs\&quot; EntityType=\&quot;com.nikoyo.uContent.dm.Log\&quot;&gt;&lt;/EntitySet&gt;&lt;/EntityContainer&gt;&lt;/Schema&gt;&lt;/edmx:DataServices&gt;&lt;/edmx:Edmx&gt;&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
+          <stringProp name="HTTPSampler.port">8080</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          <stringProp name="HTTPSampler.protocol"></stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/dm/Documents</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           <boolProp name="HTTPSampler.monitor">false</boolProp>
           <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
         </HTTPSamplerProxy>

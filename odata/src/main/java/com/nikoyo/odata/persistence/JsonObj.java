@@ -139,6 +139,7 @@ public class JsonObj extends HashMap<String, Object> {
     public Entity toEntity(OData odata) throws ODataApplicationException {
         try {
             Object $stream = this.remove("$stream");
+
             ODataDeserializer deserializer = odata.createDeserializer(ODataFormat.JSON);
             Entity entity = deserializer.entity(toInputStream(), edmEntityType).getEntity();
             entity.setType(this.getType().getFullQualifiedName().getFullQualifiedNameAsString());
@@ -151,7 +152,6 @@ public class JsonObj extends HashMap<String, Object> {
         }
 
     }
-
 
     public boolean isKey(String propertyName) {
         List<EdmKeyPropertyRef> keyPropertyRefs = edmEntityType.getKeyPropertyRefs();

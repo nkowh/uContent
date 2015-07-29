@@ -44,6 +44,7 @@ import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.io.stream.InputStreamStreamInput;
 import org.elasticsearch.common.io.stream.StreamInput;
+import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.index.VersionType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -118,6 +119,12 @@ public class PersistenceDataService {
 
     public JsonObj createEntity(UriInfo uriInfo, Map<String, Object> source, OData odata, ServiceMetadata serviceMetadata) throws ODataApplicationException {
         try {
+            DateTime dt = new DateTime();
+            source.put("CreateBy", reqctx.getHttpServletRequest().getUserPrincipal().getName());
+            source.put("LastUpdatedBy", reqctx.getHttpServletRequest().getUserPrincipal().getName());
+            source.put("CreatedOn", dt.toString());
+            source.put("LastUpdatedOn", dt.toString());
+
             UriInfoContext ctx = getUriInfoContext(uriInfo);
             EdmNavigationProperty edmNavigationProperty = ctx.edmNavigationProperty;
             ObjectMapper mapper = new ObjectMapper();
@@ -182,7 +189,7 @@ public class PersistenceDataService {
                 entityObj.put(edmNavigationProperty.getName(), jsonObjList.get(0));
             }
         }
-
+        entityObj.remove("$stream");
         return entityObj;
     }
 
