@@ -26,23 +26,30 @@ public class Application {
     }
 
     @Bean
+    public ServletRegistrationBean servletRegistrationAssets(AssetsServlet servlet) {
+        ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(servlet, "/assets/*");
+        servletRegistrationBean.setOrder(1);
+        return servletRegistrationBean;
+    }
+
+    @Bean
     public ServletRegistrationBean servletRegistrationFavicon(FaviconServlet servlet) {
         ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(servlet, "/favicon.ico");
-        servletRegistrationBean.setOrder(1);
+        servletRegistrationBean.setOrder(2);
         return servletRegistrationBean;
     }
 
     @Bean
     public ServletRegistrationBean servletRegistrationError(ErrorServlet servlet) {
         ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(servlet, "/error");
-        servletRegistrationBean.setOrder(2);
+        servletRegistrationBean.setOrder(3);
         return servletRegistrationBean;
     }
 
     @Bean
     public ServletRegistrationBean servletRegistrationOData(ODataServlet servlet) {
         ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(servlet, "/*");
-        servletRegistrationBean.setOrder(3);
+        servletRegistrationBean.setOrder(4);
         return servletRegistrationBean;
     }
 
