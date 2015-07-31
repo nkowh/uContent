@@ -4,6 +4,7 @@ package com.nikoyo.odata;
 import com.nikoyo.odata.file.FileSystem;
 import com.nikoyo.odata.file.FileSystemFactory;
 import com.nikoyo.odata.file.FsConfig;
+import org.apache.catalina.servlets.DefaultServlet;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.ImmutableSettings;
@@ -17,6 +18,7 @@ import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 
 import org.springframework.web.context.request.RequestContextListener;
+import org.springframework.web.servlet.ResourceServlet;
 
 @SpringBootApplication
 public class Application {

@@ -34,7 +34,7 @@
 			</EntityType>
 			<EntityType Name="AAA" BaseType="com.nikoyo.uContent.dm.Document">
 				<Property Name="aaa" Type="Edm.String" Nullable="false" />
-				<Property Name="bbb" Type="Edm.Bool" Nullable="false" />
+				<Property Name="bbb" Type="Edm.Boolean" Nullable="false" />
 				<Property Name="ccc" Type="Edm.Int32" Nullable="false" />
 				<Property Name="ddd" Type="Edm.Double" Nullable="false" />
 				<Property Name="eee" Type="Edm.DateTimeOffset" Nullable="false" />

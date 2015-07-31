@@ -56,7 +56,6 @@ public class ODataServlet extends HttpServlet {
 
     @Override
     public void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-
         OData odata = OData.newInstance();
         context.setRepositoryId(getRepositoryId(req));
         context.setHttpServletRequest(req);
@@ -76,4 +75,5 @@ public class ODataServlet extends HttpServlet {
     private String getRepositoryId(final HttpServletRequest req) {
         return req.getRequestURI().split("/")[1];
     }
+
 }

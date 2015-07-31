@@ -2,40 +2,52 @@ Ext.define('dm.view.Menu', {
     extend: 'Ext.tab.Panel',
 
     tabPosition: 'left',
+    tabRotation: 0,
+    activeTab: null,
     items: [
         {
             title: 'Search',
-            glyph: 0xf002,
-            html: 'KitchenSink.DummyText.Search'
+            class: 'dm.view.Search',
+            glyph: 0xf002
         },
         {
             title: 'Create',
-            glyph: 0xf044,
-            html: 'KitchenSink.DummyText.Create'
+            class: 'dm.view.Create',
+            glyph: 0xf044
         },
         {
             title: 'Dashboard',
-            glyph: 0xf0e4,
-            html: 'KitchenSink.DummyText.longText'
+            class: 'dm.view.Dashboard',
+            glyph: 0xf0e4
         }, {
             title: 'Users',
-            glyph: 0xf007,
-            html: 'KitchenSink.DummyText.extraLongText'
+            glyph: 0xf007
         }, {
             title: 'Groups',
-            glyph: 0xf0c0,
-            html: 'KitchenSink.DummyText.longText'
+            glyph: 0xf0c0
         }, {
             title: 'Settings',
-            glyph: 0xf085,
-            items: [{
-                html: '<h1>aaabbbbbb</h1>'
-            }]
+            class: 'dm.view.Settings',
+            glyph: 0xf085
         }, {
             title: 'FAQ',
-            glyph: 0xf128,
-            html: 'KitchenSink.DummyText.FAQ'
+            class: 'dm.view.FAQ',
+            glyph: 0xf128
         }
+    ],
 
-    ]
+    listeners: {
+
+        afterrender: function (tabPanel, eOpts) {
+            tabPanel.setActiveTab(0);
+        },
+
+        tabchange: function (tabPanel, newCard, oldCard, eOpts) {
+            if (!newCard.class)return;
+            var panel = Ext.getCmp('centerContent');
+            panel.removeAll(true);
+            panel.add(Ext.create(newCard.class, {}));
+            console.log(tabPanel);
+        }
+    }
 });

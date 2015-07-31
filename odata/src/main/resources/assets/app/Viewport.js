@@ -9,22 +9,37 @@ Ext.define('dm.Viewport', {
 
     defaults: {
         collapsible: false,
-        split: true
+        split: false
     },
 
     items: [
-        {
-            header: false,
-            layout: 'fit',
-            region: 'north',
-            margin: '5 0 0 0',
-            html: '<h1>aaa</h1>'
-        },
+
         Ext.create('dm.view.Menu', {
-            region: 'center',
+            region: 'west',
             layout: 'fit',
             margin: '0 0 0 0'
-        })
+        }), {
+            header: false,
+            region: 'center',
+            layout: 'border',
+            margin: '0 0 0 0',
+            items:[
+                Ext.create('dm.view.Header', {
+                    header: false,
+                    layout: 'fit',
+                    region: 'north'
+                    //padding:'0 0 0 5'
+                }),
+                {
+                    header: false,
+                    region: 'center',
+                    layout: 'fit',
+                    id:'centerContent'
+                    //padding: '0 0 0 5',
+
+                }
+            ]
+        }
     ]
 
 });

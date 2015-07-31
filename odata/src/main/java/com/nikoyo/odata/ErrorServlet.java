@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,26 +26,6 @@ public class ErrorServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger LOG = LoggerFactory.getLogger(ErrorServlet.class);
 
-    @Autowired
-    RequestContext context;
-
-    @Autowired
-    private DefaultEntityProcessor entityProcessor;
-
-    @Autowired
-    private DefaultEntityCollectionProcessor entityCollectionProcessor;
-
-    @Autowired
-    private ReferenceProcessor referenceProcessor;
-
-    @Autowired
-    private DefaultProcessor defaultProcessor;
-
-    @Autowired
-    private DefaultPrimitiveProcessor primitiveProcessor;
-
-
-
     public ErrorServlet() {
         super();
     }
@@ -52,8 +33,18 @@ public class ErrorServlet extends HttpServlet {
 
     @Override
     public void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
-        resp.getOutputStream().print("error");
-        resp.getOutputStream().close();
+        // resp.getOutputStream().print("error");
+        //resp.getOutputStream().close();
+        // resp.setContentType("text/html");
+        PrintWriter out = resp.getWriter();
+
+
+        Integer status_code = (Integer) req.getAttribute("javax.servlet.error.status_code");
+        // messageObj = req.getAttribute("javax.servlet.error.message");
+        Exception exception = (Exception) req.getAttribute("javax.servlet.error.exception");
+        if (exception != null)
+            exception.printStackTrace(out);
+        resp.setHeader("Status", String.valueOf(status_code));
     }
 
 
