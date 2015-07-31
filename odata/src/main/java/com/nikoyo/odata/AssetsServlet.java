@@ -1,5 +1,6 @@
 package com.nikoyo.odata;
 
+import org.apache.catalina.servlets.DefaultServlet;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -14,6 +15,7 @@ import org.apache.tika.mime.MimeTypes;
 import org.apache.tika.mime.ProbabilisticMimeDetectionSelector;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -24,10 +26,10 @@ import java.io.*;
 public class AssetsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        InputStream inputStream = null;
         String path = req.getRequestURI().replace(req.getServletPath(), AssetsServlet.class.getClassLoader().getResource("assets").getFile());
-        File file=new File(path);
-        if(!file.exists()){
+        InputStream inputStream = null;
+        File file = new File(path);
+        if (!file.exists()) {
             resp.setStatus(HttpStatusCode.NOT_FOUND.getStatusCode());
             return;
         }
