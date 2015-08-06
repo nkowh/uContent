@@ -83,6 +83,7 @@ public class DefaultEdmxParser {
             if ("Term".equals(child.getNodeName())) {
                 schema.getTerms().add(parseTerm(child));
             }
+
         }
         return schema;
     }
@@ -341,10 +342,10 @@ public class DefaultEdmxParser {
         XmlAttributes attributes = new XmlAttributes(node.getAttributes());
         functionImport.setName(attributes.getString("Name"));
         functionImport.setFunction(attributes.getString("Function"));
+        functionImport.setEntitySet(attributes.getString("EntitySet"));
         functionImport.setIncludeInServiceDocument(attributes.getBoolean("IncludeInServiceDocument"));
         return functionImport;
     }
-
 
     private static void setType(String type, Object obj) {
         try {
