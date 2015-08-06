@@ -5,6 +5,7 @@ Ext.define('dm.view.document.IndexDocumentModel', {
 
     data: {
         title: '导入文档'
+
     }
 
 });

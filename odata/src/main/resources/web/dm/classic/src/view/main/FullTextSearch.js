@@ -3,9 +3,7 @@ Ext.define('dm.view.main.FullTextSearch', {
     xtype: 'fulltextsearch',
 
     requires: [
-        'dm.store.Personnel',
-        'dm.view.indexdocument.IndexDocumentController',
-        'dm.view.fulltextSearch.FullTextSearchModel'
+        'dm.store.Personnel'
     ],
 
     controller: 'fulltextsearch',

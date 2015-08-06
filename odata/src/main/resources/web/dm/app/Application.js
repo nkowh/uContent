@@ -1,12 +1,10 @@
 Ext.define('dm.Application', {
     extend: 'Ext.app.Application',
-    
+
     name: 'dm',
-    models:[
-
-    ],
+    models: [],
     stores: [
-
+        'dm.store.Documents'
     ],
 
     launch: function () {
