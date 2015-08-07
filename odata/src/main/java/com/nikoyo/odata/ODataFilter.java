@@ -23,7 +23,7 @@ public class ODataFilter implements Filter {
 
 		HttpServletRequest request = (HttpServletRequest) req;
 		context.setRepositoryId(getRepositoryId(request));
-		context.setHttpServletRequest(request);
+
 
 		HttpServletResponse response = (HttpServletResponse) res;
 		response.setHeader("Access-Control-Allow-Origin", "*");

@@ -56,7 +56,7 @@ public class ODataServlet extends HttpServlet {
     @Override
     public void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
         OData odata = OData.newInstance();
-
+        context.setHttpServletRequest(req);
         List<EdmxReference> references = new ArrayList<>();
         ServiceMetadata serviceMetadata = odata.createServiceMetadata(context.getProvider(), references);
         ODataHttpHandler handler = odata.createHandler(serviceMetadata);
