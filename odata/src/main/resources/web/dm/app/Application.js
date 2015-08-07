@@ -3,10 +3,11 @@ Ext.define('dm.Application', {
 
     name: 'dm',
     models: [],
-    stores: [
-        'dm.store.Documents'
-    ],
+    stores: [],
 
+    requires: [
+        'Ext.data.proxy.OData'
+    ],
     launch: function () {
         // TODO - Launch the application
     },

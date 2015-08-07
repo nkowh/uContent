@@ -3,23 +3,19 @@ Ext.define('dm.view.document.FullTextSearchController', {
 
     alias: 'controller.fulltextsearch',
 
-    onItemSelected: function (sender, record) {
-        var store = Ext.data.StoreManager.lookup('servicemetadata');
-        store.setListeners({
-            load:function( store, records, successful, eOpts ){
-                console.log(successful);
-            }
-        });
-        store.load(function(){
-
-        });
-
-        Ext.Msg.confirm('aaaaa', 'Are you sure?', 'onConfirm', this);
+    save:function(){
+        this.getView().getStore().sync();
     },
 
-    onConfirm: function (choice) {
-        if (choice === 'yes') {
-            //
-        }
+    'delete':function(sender, index){
+        this.getView().getStore().removeAt(index);
+    },
+
+    onDocumentSelected: function (sender, record) {
+
+        record.set('Name',Ext.Number.randomInt(1,998));
+        Ext.Msg.confirm('aaaaa', 'Are you sure?', 'onConfirm', this);
     }
+
+
 });

@@ -14,7 +14,7 @@ Ext.define('Ext.data.proxy.OData', {
     defaultActionMethods: {
         create: 'POST',
         read: 'GET',
-        update: 'PUT',
+        update: 'PATCH',
         destroy: 'DELETE'
     },
 

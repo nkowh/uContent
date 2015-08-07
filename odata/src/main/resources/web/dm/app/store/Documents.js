@@ -3,14 +3,12 @@ Ext.define('dm.store.Documents', {
     alias: 'store.documents',
     autoLoad: true,
     proxy: {
-        type: 'rest',
+        type: 'odata',
         url: '/dm/Documents',
         reader: {
             type: 'json',
             rootProperty: 'value'
         }
     },
-    fields: [
-        'Id', 'Name', 'CreateBy', 'LastUpdatedBy', 'CreatedOn', 'LastUpdatedOn'
-    ]
+    model:'dm.model.Document'
 });
