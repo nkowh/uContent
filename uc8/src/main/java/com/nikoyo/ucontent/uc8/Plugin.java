@@ -45,6 +45,7 @@ public class Plugin extends AbstractPlugin {
 
         module.addRestAction(DeleteAction.class);
         module.addRestAction(UpdateAction.class);
+        module.addRestAction(ReIndexAction.class);
 
     }
 

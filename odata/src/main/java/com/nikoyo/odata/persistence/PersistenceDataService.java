@@ -9,9 +9,9 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.AutoCloseInputStream;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.olingo.commons.api.ODataException;
 import org.apache.olingo.commons.api.edm.*;
 import org.apache.olingo.commons.api.format.ODataFormat;
 import org.apache.olingo.commons.api.http.HttpMethod;
@@ -30,31 +30,24 @@ import org.apache.olingo.server.api.uri.queryoption.ExpandOption;
 import org.apache.olingo.server.api.uri.queryoption.FilterOption;
 import org.apache.olingo.server.core.uri.parser.Parser;
 import org.apache.olingo.server.core.uri.queryoption.ExpandOptionImpl;
-import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.WriteConsistencyLevel;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
-import org.elasticsearch.action.deletebyquery.IndexDeleteByQueryResponse;
+import org.elasticsearch.action.exists.ExistsRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.io.stream.InputStreamStreamInput;
-import org.elasticsearch.common.io.stream.StreamInput;
+import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.joda.time.DateTime;
-import org.elasticsearch.index.VersionType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.*;
@@ -85,6 +78,9 @@ public class PersistenceDataService {
 
     @Autowired
     private FileSystem fs;
+
+    @Autowired
+    private com.nikoyo.odata.persistence.ValidateUtils validateUtils;
 
 
     public JsonCollection readEntityCollection(UriInfo uriInfo, OData odata, ServiceMetadata serviceMetadata) throws ODataApplicationException {
@@ -126,6 +122,9 @@ public class PersistenceDataService {
             source.put("LastUpdatedOn", dt.toString());
 
             UriInfoContext ctx = getUriInfoContext(uriInfo);
+            //检验字段合法性
+            validateUtils.checkEntityType(ctx, source);
+
             EdmNavigationProperty edmNavigationProperty = ctx.edmNavigationProperty;
             ObjectMapper mapper = new ObjectMapper();
             ODataValidation.entity(odata, ctx.getType(), mapper.writeValueAsBytes(source));
@@ -154,9 +153,16 @@ public class PersistenceDataService {
         ref.put("target", target.getId());
         ref.put("targetType", target.getType().getFullQualifiedName().getFullQualifiedNameAsString());
         String type = String.format("%s@%s", source.getType().getFullQualifiedName().getFullQualifiedNameAsString(), navigationName);
-        IndexResponse indexResponse = client.prepareIndex(reqctx.getRepositoryId(), type)
-                .setSource(ref)
-                .execute().actionGet();
+        checkExist(reqctx.getRepositoryId(), ref.get("sourceType").toString(), ref.get("source").toString());
+        checkExist(reqctx.getRepositoryId(), ref.get("targetType").toString(), ref.get("target").toString());
+        IndexResponse indexResponse = client.prepareIndex(reqctx.getRepositoryId(), type).setSource(ref).execute().actionGet();
+    }
+
+    private void checkExist(String index, String type, String id) throws ODataApplicationException {
+        GetResponse rep = client.prepareGet(index, type, id).setFields(Strings.EMPTY_ARRAY).execute().actionGet();
+        if (!rep.isExists()) {
+            throw new ODataApplicationException(String.format("The doc %s of type %s in %s is not exist", id, type, index), HttpStatusCode.NOT_FOUND.getStatusCode(), Locale.getDefault());
+        }
     }
 
     private JsonObj retrieveEntity(JsonObj condition, ExpandOption expandOption) throws ODataApplicationException {
@@ -272,14 +278,16 @@ public class PersistenceDataService {
             JsonObj updateEntity = JsonObj.parse(content, ctx.getType());
             for (String propName : ctx.entity.getType().getPropertyNames()) {
                 if (ctx.entity.isKey(propName)) continue;
-                if (request.getMethod().equals(HttpMethod.PUT)) ctx.entity.remove(propName);
+//                if (request.getMethod().equals(HttpMethod.PUT)) ctx.entity.remove(propName);
                 if (updateEntity.containsKey(propName)) {
                     ctx.entity.put(propName, updateEntity.get(propName));
                 }
             }
-
+            validateUtils.checkEntityType(ctx, ctx.entity);
             updateEntity(ctx.entity);
         } catch (IOException e) {
+            throw new ODataApplicationException(e.getMessage(), HttpStatusCode.INTERNAL_SERVER_ERROR.getStatusCode(), Locale.getDefault());
+        } catch (ODataException e) {
             throw new ODataApplicationException(e.getMessage(), HttpStatusCode.INTERNAL_SERVER_ERROR.getStatusCode(), Locale.getDefault());
         }
     }
@@ -415,6 +423,7 @@ public class PersistenceDataService {
         String fileId = entityObj.get("$stream").toString();
         return fs.read(fileId);
     }
+
 
     class UriInfoContext {
         JsonObj entity;

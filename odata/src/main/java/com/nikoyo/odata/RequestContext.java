@@ -4,6 +4,7 @@ package com.nikoyo.odata;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.olingo.commons.api.edm.provider.CsdlAbstractEdmProvider;
+import org.apache.olingo.server.api.ServiceMetadata;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
@@ -35,6 +36,8 @@ public class RequestContext {
 
     private DefaultEdmProvider provider;
 
+    private ServiceMetadata serviceMetadata;
+
     @Autowired
     private Client client;
 
@@ -52,6 +55,14 @@ public class RequestContext {
 
     public void setHttpServletRequest(HttpServletRequest httpServletRequest) {
         this.httpServletRequest = httpServletRequest;
+    }
+
+    public ServiceMetadata getServiceMetadata() {
+        return serviceMetadata;
+    }
+
+    public void setServiceMetadata(ServiceMetadata serviceMetadata) {
+        this.serviceMetadata = serviceMetadata;
     }
 
     public CsdlAbstractEdmProvider getProvider() {
