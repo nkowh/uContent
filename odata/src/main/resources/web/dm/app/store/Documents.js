@@ -4,7 +4,7 @@ Ext.define('dm.store.Documents', {
     autoLoad: true,
     proxy: {
         type: 'odata',
-        url: '/dm/Documents',
+        url: '/dm/Users',
         reader: {
             type: 'json',
             rootProperty: 'value'

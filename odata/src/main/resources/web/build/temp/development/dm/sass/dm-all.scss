@@ -142,6 +142,7 @@ $include-ext-data-model: dynamic(true);;
 $include-ext-data-modelmanager: dynamic(true);;
 $include-ext-data-nodeinterface: dynamic(true);;
 $include-ext-data-nodestore: dynamic(true);;
+$include-ext-data-odataproxy: dynamic(true);;
 $include-ext-data-operation: dynamic(true);;
 $include-ext-data-pagemap: dynamic(true);;
 $include-ext-data-proxy: dynamic(true);;
@@ -194,6 +195,7 @@ $include-ext-data-proxy-direct: dynamic(true);;
 $include-ext-data-proxy-jsonp: dynamic(true);;
 $include-ext-data-proxy-localstorage: dynamic(true);;
 $include-ext-data-proxy-memory: dynamic(true);;
+$include-ext-data-proxy-odata: dynamic(true);;
 $include-ext-data-proxy-proxy: dynamic(true);;
 $include-ext-data-proxy-rest: dynamic(true);;
 $include-ext-data-proxy-server: dynamic(true);;
@@ -535,6 +537,7 @@ $include-ext-viewport-wp: dynamic(true);;
 $include-ext-viewport-windowsphone: dynamic(true);;
 $include-dm-application: dynamic(true);;
 $include-dm-document-advancedsearchcontroller: dynamic(true);;
+$include-dm-model-document: dynamic(true);;
 $include-dm-store-documents: dynamic(true);;
 $include-dm-store-personnel: dynamic(true);;
 $include-dm-store-servicemetadata: dynamic(true);;
@@ -590,6 +593,14 @@ $current-package: 'font-awesome';
 $current-resource-root: $font-awesome-resource-root;
 $relative-image-path-for-uis: $font-awesome-resource-path;
 @import '../../../../../ext/packages/font-awesome/sass/etc/all';
+
+/* including package odata */
+$odata-resource-root: 'odata' !default;
+$odata-resource-path: 'odata/images' !default;
+$current-package: 'odata';
+$current-resource-root: $odata-resource-root;
+$relative-image-path-for-uis: $odata-resource-path;
+@import '../../../../../packages/local/odata/sass/etc/all';
 
 /* including package dm */
 $dm-resource-root: '' !default;

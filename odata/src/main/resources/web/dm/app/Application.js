@@ -6,7 +6,7 @@ Ext.define('dm.Application', {
     stores: [],
 
     requires: [
-        'Ext.data.proxy.OData'
+       // 'Ext.data.proxy.OData'
     ],
     launch: function () {
         // TODO - Launch the application

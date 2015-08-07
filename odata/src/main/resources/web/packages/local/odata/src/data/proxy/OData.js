@@ -1,6 +1,6 @@
 Ext.define('Ext.data.proxy.OData', {
     extend: 'Ext.data.proxy.Ajax',
-    alternateClassName: 'Ext.data.RestProxy',
+    alternateClassName: 'Ext.data.ODataProxy',
     alias: 'proxy.odata',
 
     /**
@@ -22,6 +22,9 @@ Ext.define('Ext.data.proxy.OData', {
     periodRe: /\.$/,
 
     config: {
+        limitParam:'$top',
+        pageParam:'',
+        startParam:'$skip',
         /**
          * @cfg {Boolean} appendId
          * True to automatically append the ID of a Model instance when performing a request based on that single instance.

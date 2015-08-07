@@ -2,10 +2,6 @@ Ext.define('dm.view.main.IndexDocument', {
     extend: 'Ext.form.Panel',
     xtype: 'indexdocument',
 
-    requires: [
-        'dm.store.Personnel'
-    ],
-
     controller: 'indexdocument',
     viewModel: 'indexdocument',
 
