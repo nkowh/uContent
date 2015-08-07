@@ -83,11 +83,28 @@ public class DefaultEdmProvider extends CsdlAbstractEdmProvider {
     }
 
     @Override
+    public List<CsdlFunction> getFunctions(FullQualifiedName functionName) throws ODataException {
+        for (CsdlSchema schema : schemas) {
+            if (schema.getNamespace().equals(functionName.getNamespace())) {
+                return schema.getFunctions(functionName.getName());
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public CsdlFunctionImport getFunctionImport(FullQualifiedName entityContainer, String functionImportName) throws ODataException {
+        return getEntityContainer().getFunctionImport(functionImportName);
+    }
+
+    @Override
     public CsdlEntityContainer getEntityContainer() throws ODataException {
         CsdlEntityContainer entityContainer = new CsdlEntityContainer();
         for (CsdlSchema schema : schemas) {
             CsdlEntityContainer container = schema.getEntityContainer();
             entityContainer.getEntitySets().addAll(container.getEntitySets());
+            entityContainer.getFunctionImports().addAll(container.getFunctionImports());
+            entityContainer.getActionImports().addAll(container.getActionImports());
         }
 
         return entityContainer;

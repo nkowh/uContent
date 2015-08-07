@@ -19,6 +19,12 @@ import java.util.Locale;
 public class UriInfoUtils {
 
 
+    public static boolean isFunction(UriInfo uriInfo) {
+        List<UriResource> uriResources = uriInfo.getUriResourceParts();
+        UriResource lastUriResource = uriResources.get(uriResources.size() - 1);
+        return lastUriResource.getKind() == UriResourceKind.function;
+    }
+
     public static EdmEntitySet getEdmEntitySet(UriInfoResource uriInfo) throws ODataApplicationException {
 
         List<UriResource> resourcePaths = uriInfo.getUriResourceParts();

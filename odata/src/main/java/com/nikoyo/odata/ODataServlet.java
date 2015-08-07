@@ -30,7 +30,7 @@ public class ODataServlet extends HttpServlet {
     private static final Logger LOG = LoggerFactory.getLogger(ODataServlet.class);
 
     @Autowired
-    RequestContext context;
+    private RequestContext context;
 
     @Autowired
     private DefaultEntityProcessor entityProcessor;
@@ -48,7 +48,6 @@ public class ODataServlet extends HttpServlet {
     private DefaultPrimitiveProcessor primitiveProcessor;
 
 
-
     public ODataServlet() {
         super();
     }
@@ -57,8 +56,7 @@ public class ODataServlet extends HttpServlet {
     @Override
     public void service(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
         OData odata = OData.newInstance();
-        context.setRepositoryId(getRepositoryId(req));
-        context.setHttpServletRequest(req);
+
         List<EdmxReference> references = new ArrayList<>();
         ServiceMetadata serviceMetadata = odata.createServiceMetadata(context.getProvider(), references);
         ODataHttpHandler handler = odata.createHandler(serviceMetadata);
@@ -71,9 +69,5 @@ public class ODataServlet extends HttpServlet {
         handler.process(req, resp);
     }
 
-
-    private String getRepositoryId(final HttpServletRequest req) {
-        return req.getRequestURI().split("/")[1];
-    }
 
 }

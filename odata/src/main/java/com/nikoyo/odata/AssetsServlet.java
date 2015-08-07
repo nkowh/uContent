@@ -16,6 +16,7 @@ import org.apache.tika.mime.ProbabilisticMimeDetectionSelector;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -24,9 +25,12 @@ import java.io.*;
 
 @Service
 public class AssetsServlet extends HttpServlet {
+
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String path = req.getRequestURI().replace(req.getServletPath(), AssetsServlet.class.getClassLoader().getResource("assets").getFile());
+        String dir = this.getInitParameter("dir");
+        String path = req.getRequestURI().replace(req.getServletPath(), AssetsServlet.class.getClassLoader().getResource(dir).getFile());
         InputStream inputStream = null;
         File file = new File(path);
         if (!file.exists()) {
