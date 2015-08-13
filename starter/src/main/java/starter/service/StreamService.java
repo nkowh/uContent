@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import starter.RequestContext;
+import starter.service.fs.FileSystem;
 
 import java.io.InputStream;
 import java.util.List;
@@ -15,6 +16,9 @@ public class StreamService {
 
     @Autowired
     private RequestContext context;
+
+    @Autowired
+    private FileSystem fs;
 
     public XContentBuilder all(String type, String id) {
         return null;

@@ -16,7 +16,7 @@ public class RequestContext {
     @Autowired
     private EsConfig esConfig;
 
-    private String getIndex(){
+    public String getIndex(){
         return esConfig.getIndex();
     }
 
