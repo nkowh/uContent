@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Component
 @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class RequestContext {
@@ -16,11 +18,22 @@ public class RequestContext {
     @Autowired
     private EsConfig esConfig;
 
-    public String getIndex(){
+    @Autowired
+    HttpServletRequest request;
+
+    public String getIndex() {
         return esConfig.getIndex();
     }
 
     public Client getClient() {
         return client;
+    }
+
+    public HttpServletRequest getRequest() {
+        return request;
+    }
+
+    public String getUserName() {
+        return this.request.getUserPrincipal().getName();
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import starter.RequestContext;
 import starter.service.DocumentService;
 import starter.uContentException;
 
@@ -22,6 +23,9 @@ public class Documents {
 
     @Autowired
     private DocumentService documentService;
+
+    @Autowired
+    private RequestContext context;
 
     @RequestMapping(value = "{type}", method = {RequestMethod.POST}, headers = {"_method=QUERY"})
     public String query(@PathVariable String type,
