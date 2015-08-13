@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value="svc/",produces = MediaType.APPLICATION_JSON_VALUE)
 public class Documents {
 
     @Autowired

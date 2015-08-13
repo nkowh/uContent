@@ -12,7 +12,7 @@ import starter.uContentException;
 import java.io.IOException;
 
 @RestController
-@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value="svc/",produces = MediaType.APPLICATION_JSON_VALUE)
 public class Acl {
 
     @Autowired

@@ -7,13 +7,20 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import starter.service.fs.FileSystem;
 import starter.service.fs.FileSystemFactory;
 import starter.service.fs.FsConfig;
 
 @SpringBootApplication
-public class StarterApplication {
+public class StarterApplication extends SpringBootServletInitializer {
+
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(StarterApplication.class);
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(StarterApplication.class, args);

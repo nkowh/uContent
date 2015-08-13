@@ -18,7 +18,7 @@ import java.io.InputStream;
 import java.util.List;
 
 @RestController
-@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value="svc/",produces = MediaType.APPLICATION_JSON_VALUE)
 public class Streams {
 
     @Autowired

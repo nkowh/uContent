@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value="svc/",produces = MediaType.APPLICATION_JSON_VALUE)
 public class Systems {
     @Autowired
     private TypeService typeService;
