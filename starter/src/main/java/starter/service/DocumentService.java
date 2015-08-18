@@ -1,6 +1,7 @@
 package starter.service;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequestBuilder;
@@ -9,16 +10,25 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.joda.time.DateTime;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.get.GetField;
+import org.elasticsearch.index.query.BoolFilterBuilder;
+import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.TermFilterBuilder;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.sort.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -43,12 +53,59 @@ public class DocumentService {
     @Autowired
     private ValidateUtils validateUtils;
 
-    public XContentBuilder query(String type, Json parse, int start, int limit, String sort) throws IOException {
-        Json filter = new Json();
-        Map<String, Object> m1 = new HashMap<String, Object>();
-//        m1.put("term","user",context.getUserName())
-        context.getClient().prepareSearch().setQuery(parse).setFrom(start).setSize(limit);
-        return null;
+    public XContentBuilder query(String type, Json query, int start, int limit, String sort, boolean allowableActions) throws IOException {
+        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setTypes(type).setFrom(start).setSize(limit);
+        if (query != null && !query.isEmpty()) {
+            searchRequestBuilder.setQuery(query);
+        }
+        //排序规则
+        if (StringUtils.isNotBlank(sort)) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            List list = objectMapper.readValue(sort, List.class);
+            for(Object obj : list){
+                Map<String, Object> map = (Map<String, Object>) obj;
+                Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
+                while (it.hasNext()){
+                    Map.Entry<String, Object> entry = it.next();
+                    SortBuilder sortBuilder = SortBuilders.fieldSort(entry.getKey());
+                    Map<String, Object> m = (Map<String, Object>)entry.getValue();
+                    String order = m.get("order").toString();
+                    sortBuilder.order(order.equalsIgnoreCase("asc") ? SortOrder.ASC : SortOrder.DESC);
+                    searchRequestBuilder.addSort(sortBuilder);
+                    break;
+                }
+            }
+        }
+        //权限过滤
+        TermFilterBuilder termFilter1 = FilterBuilders.termFilter("_acl.user", context.getUserName());
+        TermFilterBuilder termFilter2 = FilterBuilders.termFilter("_acl.permission", Constant.Permission.READ);
+        BoolFilterBuilder boolFilter = FilterBuilders.boolFilter().must(termFilter1, termFilter2);
+        FilterBuilder filter = FilterBuilders.nestedFilter("_acl", boolFilter);
+        searchRequestBuilder.setPostFilter(filter);
+        //结果处理
+        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+        XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
+        xContentBuilder.startArray();
+        for(SearchHit hit : searchResponse.getHits().getHits()){
+            xContentBuilder.startObject();
+            xContentBuilder.field("_index", hit.getIndex())
+                    .field("_type", hit.getType())
+                    .field("_id", hit.getId())
+                    .field("_score", hit.getScore())
+                    .field("_version", hit.getVersion());
+            Map<String, Object> source = hit.getSource();
+            Iterator<Map.Entry<String, Object>> iterator = source.entrySet().iterator();
+            while (iterator.hasNext()){
+                Map.Entry<String, Object> entry = iterator.next();
+                xContentBuilder.field(entry.getKey(), entry.getValue());
+            }
+            if (allowableActions) {
+                xContentBuilder.field("_allowableActions", getUserPermission(context.getUserName(), source.get("_acl")));
+            }
+            xContentBuilder.endObject();
+        }
+        xContentBuilder.endArray();
+        return xContentBuilder;
     }
 
     public XContentBuilder create(String type, Json body) throws IOException {
@@ -91,7 +148,7 @@ public class DocumentService {
         return processGet(getResponse, head, allowableActions);
     }
 
-    public Json update(String type, String id, Json body) throws IOException {
+    public XContentBuilder update(String type, String id, Json body) throws IOException {
         GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
@@ -102,20 +159,21 @@ public class DocumentService {
         processAcl(body, getResponse.getSource().get("_acl"));
         processJson(body);
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
-        Json json = new Json();
-        json.put("_index", context.getIndex());
-        json.put("_type", type);
-        json.put("_id", id);
-        json.put("_version", updateResponse.getVersion());
-        json.put("_isCreated", updateResponse.isCreated());
-        return json;
+        XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
+        xContentBuilder.startObject()
+                .field("_index", context.getIndex())
+                .field("_type", type)
+                .field("_id", id)
+                .field("_version", updateResponse.getVersion())
+                .field("_isCreated", updateResponse.isCreated());
+        return xContentBuilder;
     }
 
-    public Json patch(String type, String id, Json body) throws IOException {
+    public XContentBuilder patch(String type, String id, Json body) throws IOException {
         return update(type, id, body);
     }
 
-    public Json delete(String type, String id) throws IOException {
+    public XContentBuilder delete(String type, String id) throws IOException {
         GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
@@ -123,16 +181,17 @@ public class DocumentService {
         if (!hasPermission(context.getUserName(), getResponse.getSource().get("_acl"), Constant.Permission.DELETE)) {
             throw new uContentException("Forbidden", HttpStatus.FORBIDDEN);
         }
-        Json json = new Json();
-        json.put("_index", context.getIndex());
-        json.put("_type", type);
-        json.put("_id", id);
+        XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
+        xContentBuilder.startObject()
+                .field("_index", context.getIndex())
+                .field("_type", type)
+                .field("_id", id);
         DeleteResponse deleteResponse = context.getClient().prepareDelete(context.getIndex(), type, id).execute().actionGet();
-        json.put("_found", deleteResponse.isFound());
+        xContentBuilder.field("_found", deleteResponse.isFound());
         if (deleteResponse.isFound()) {
-            json.put("_version", deleteResponse.getVersion());
+            xContentBuilder.field("_version", deleteResponse.getVersion());
         }
-        return json;
+        return xContentBuilder;
     }
 
 
@@ -180,7 +239,6 @@ public class DocumentService {
         }
         return json;
     }
-
 
     private Set getUserPermission(String user, Object acl){
         Set uPermission = getPermissionByUser(user, acl);

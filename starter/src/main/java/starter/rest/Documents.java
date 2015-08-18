@@ -37,8 +37,8 @@ public class Documents {
                         @RequestParam String sort,
                         @RequestParam(defaultValue = "true") boolean allowableActions) {
         try {
-            XContentBuilder result = documentService.query(type, query, start, limit, sort);
-            return result.string();
+            XContentBuilder xContentBuilder = documentService.query(type, query, start, limit, sort, allowableActions);
+            return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -90,8 +90,8 @@ public class Documents {
     @RequestMapping(value = "{type}/{id}", method = RequestMethod.PUT, consumes = "application/json")
     public String updateWithoutStream(@PathVariable String type, @PathVariable String id, @RequestBody Json body) {
         try {
-            Json json = documentService.update(type, id, body);
-            return json.toXContentBuilder().string();
+            XContentBuilder xContentBuilder = documentService.update(type, id, body);
+            return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -100,18 +100,18 @@ public class Documents {
     @RequestMapping(value = "{type}/{id}", method = RequestMethod.PATCH, consumes = "application/json")
     public String patchWithoutStream(@PathVariable String type, @PathVariable String id, @RequestParam Json body) {
         try {
-            Json json = documentService.patch(type, id, body);
-            return json.toXContentBuilder().string();
+            XContentBuilder xContentBuilder = documentService.patch(type, id, body);
+            return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @RequestMapping(value = "{type}/{id}", method = RequestMethod.DELETE)
-    public String patch(@PathVariable String type, @PathVariable String id) {
+    public String delete(@PathVariable String type, @PathVariable String id) {
         try {
-            Json json = documentService.delete(type, id);
-            return json.toXContentBuilder().string();
+            XContentBuilder xContentBuilder = documentService.delete(type, id);
+            return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
