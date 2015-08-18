@@ -105,6 +105,12 @@ Ext.define('starter.view.main.Main', {
             xtype: 'groups'
         }]
     }, {
+        title: '监控',
+        iconCls: 'fa-cog',
+        items: [{
+            xtype: 'monitorOs'
+        }]
+    },{
         title: '配置',
         iconCls: 'fa-cog',
         bind: {

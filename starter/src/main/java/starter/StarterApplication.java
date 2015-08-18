@@ -10,11 +10,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import starter.service.fs.FileSystem;
 import starter.service.fs.FileSystemFactory;
 import starter.service.fs.FsConfig;
 
 @SpringBootApplication
+@EnableScheduling
 public class StarterApplication extends SpringBootServletInitializer {
 
     @Override
