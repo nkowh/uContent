@@ -165,7 +165,8 @@ public class DocumentService {
                 .field("_type", type)
                 .field("_id", id)
                 .field("_version", updateResponse.getVersion())
-                .field("_isCreated", updateResponse.isCreated());
+                .field("_isCreated", updateResponse.isCreated())
+                .endObject();
         return xContentBuilder;
     }
 
@@ -191,6 +192,7 @@ public class DocumentService {
         if (deleteResponse.isFound()) {
             xContentBuilder.field("_version", deleteResponse.getVersion());
         }
+        xContentBuilder.endObject();
         return xContentBuilder;
     }
 
@@ -300,7 +302,7 @@ public class DocumentService {
         }
     }
 
-    private void processAcl(Json body, Object srcAcl){
+    public void processAcl(Json body, Object srcAcl){
         Object newAcl = body.get("_acl");
         if (newAcl != null) {
             Object addAcl = ((Map<String, Object>) newAcl).get("add");
