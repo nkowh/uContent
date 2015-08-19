@@ -23,8 +23,8 @@ public class Acl {
     @RequestMapping(value = "{type}/{id}/_acl", method = RequestMethod.GET, consumes = "application/json")
     public String all(@PathVariable String type, @PathVariable String id) {
         try {
-            List<Map<String, Object>> acls = aclService.all(type, id);
-            return XContentBuilderUtils.toXContentBuilder(acls).string();
+            XContentBuilder xContentBuilder = aclService.all(type, id);
+            return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -36,8 +36,8 @@ public class Acl {
     @RequestMapping(value = "{type}/{id}/_acl", method = RequestMethod.PUT, consumes = "application/json")
     public String update(@PathVariable String type, @PathVariable String id, @RequestBody Json body) {
         try {
-            Json json = aclService.update(type, id, body);
-            return json.toXContentBuilder().string();
+            XContentBuilder xContentBuilder = aclService.update(type, id, body);
+            return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
