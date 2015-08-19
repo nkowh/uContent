@@ -188,6 +188,9 @@ public class TypeService {
                         .endObject()
                         .endObject();
 
+                //组装_acl属性
+                builder.startObject("_acl").field("type", "nested").endObject();
+
                 //组装创建信息属性
                 builder.startObject("createBy").field("type", "string").field("store", "yes").endObject()
                         .startObject("creationDate").field("type", "date").field("store", "yes").endObject()

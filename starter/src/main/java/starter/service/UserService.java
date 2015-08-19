@@ -4,6 +4,7 @@ package starter.service;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
@@ -13,6 +14,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -40,7 +42,7 @@ public class UserService {
         SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(userTypeName).execute().actionGet();
         SearchHits hits = searchResponse.getHits();
         XContentBuilder builder= XContentFactory.jsonBuilder();
-        builder.startObject();
+        builder.startObject().field("total", searchResponse.getHits().totalHits());
         builder.startArray("users");
         for (SearchHit searchHitFields : searchResponse.getHits()) {
             builder.startObject()
@@ -58,6 +60,44 @@ public class UserService {
         builder.endArray();
         builder.endObject();
         //System.out.println(builder.string());
+        return builder;
+    }
+
+    public XContentBuilder all(Json query, int start, int limit, String sort, String sord) throws IOException {
+        Client client = context.getClient();
+        SearchResponse searchResponse = null;
+        if (limit>0){
+            SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex())
+                    .setTypes(userTypeName).setFrom(start).
+                            setSize(limit).addSort(sort, sord.equalsIgnoreCase("asc")?SortOrder.ASC:SortOrder.DESC);
+            if (query != null && !query.isEmpty()) {
+                searchRequestBuilder.setQuery(query);
+            }
+            searchResponse = searchRequestBuilder.execute().actionGet();
+        }else{
+            searchResponse = client.prepareSearch(context.getIndex()).setTypes(userTypeName).execute().actionGet();
+        }
+
+        SearchHits hits = searchResponse.getHits();
+        XContentBuilder builder= XContentFactory.jsonBuilder();
+        builder.startObject().field("total", searchResponse.getHits().totalHits());
+        builder.startArray("users");
+        for (SearchHit searchHitFields : searchResponse.getHits()) {
+            builder.startObject()
+                    .field("_id", searchHitFields.getId())
+                    .field("userId", searchHitFields.getSource().get("userId"))
+                    .field("userName", searchHitFields.getSource().get("userName"))
+                    .field("email", searchHitFields.getSource().get("email"))
+                    .field("password", searchHitFields.getSource().get("password"))
+                    .field("createBy", searchHitFields.getSource().get("createBy"))
+                    .field("creationDate", searchHitFields.getSource().get("creationDate"))
+                    .field("lastModifiedBy", searchHitFields.getSource().get("lastModifiedBy"))
+                    .field("lastModificationDate", searchHitFields.getSource().get("lastModificationDate"))
+                    .endObject();
+        }
+        builder.endArray();
+        builder.endObject();
+        System.out.println(builder.string());
         return builder;
     }
 
@@ -94,6 +134,20 @@ public class UserService {
                 .field("lastModifiedBy", source.get("lastModifiedBy"))
                 .field("lastModificationDate", source.get("lastModificationDate"))
                 .endObject();
+        System.out.println(builder.string());
+        return builder;
+    }
+
+    public XContentBuilder ifUserExist(String userId) throws IOException {
+        Client client = context.getClient();
+        QueryBuilder queryBuilder = QueryBuilders.matchQuery("userId", userId);
+        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(userTypeName).setQuery(queryBuilder).execute().actionGet();
+        XContentBuilder builder= XContentFactory.jsonBuilder();
+        if(searchResponse.getHits().totalHits()>0){
+            builder.startObject().field("exist", true).endObject();
+        }else{
+            builder.startObject().field("exist", false).endObject();
+        }
         System.out.println(builder.string());
         return builder;
     }
