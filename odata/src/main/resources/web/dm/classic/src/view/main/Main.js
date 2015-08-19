@@ -88,15 +88,15 @@ Ext.define('dm.view.main.Main', {
     }, {
         title: '用户',
         iconCls: 'fa-user',
-        bind: {
-            html: '{loremIpsum}'
-        }
+        items: [{
+            xtype: 'users'
+        }]
     }, {
         title: '组',
         iconCls: 'fa-users',
-        bind: {
-            html: '{loremIpsum}'
-        }
+        items: [{
+            xtype: 'groups'
+        }]
     }, {
         title: '配置',
         iconCls: 'fa-cog',
