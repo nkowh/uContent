@@ -279,10 +279,12 @@ public class TypeService {
         return null;
     }
 
-    public XContentBuilder delete(String id) {
+    public XContentBuilder delete(String id) throws IOException {
         Client client = context.getClient();
+        boolean acknowledged = false;
         DeleteMappingRequest mapping = Requests.deleteMappingRequest(indices).types(id);
         DeleteMappingResponse deleteMappingResponse = client.admin().indices().deleteMapping(mapping).actionGet();
-        return null;
+        acknowledged = deleteMappingResponse.isAcknowledged();
+        return XContentFactory.jsonBuilder().startObject().field("acknowledged",acknowledged).endObject();
     }
 }
