@@ -148,12 +148,8 @@ public class DocumentService {
         xContentBuilder.startObject()
                 .field("_index", context.getIndex())
                 .field("_type", type)
-                .field("_id", id);
-        if (updateResponse.getVersion() != getResponse.getVersion()) {
-            xContentBuilder.field("_update", true);
-        }else{
-            xContentBuilder.field("_update", false);
-        }
+                .field("_id", id)
+                .field("_version", updateResponse.getVersion());
         xContentBuilder.endObject();
         return xContentBuilder;
     }
@@ -171,7 +167,7 @@ public class DocumentService {
                 .field("_id", id);
         DeleteResponse deleteResponse = context.getClient().prepareDelete(context.getIndex(), type, id).execute().actionGet();
         xContentBuilder.field("_version", deleteResponse.getVersion());
-        xContentBuilder.field("_delete", deleteResponse.isFound());
+        xContentBuilder.field("_found", deleteResponse.isFound());
         xContentBuilder.endObject();
         return xContentBuilder;
     }
@@ -198,6 +194,7 @@ public class DocumentService {
         json.put("_index", getResponse.getIndex());
         json.put("_type", getResponse.getType());
         json.put("_id", getResponse.getId());
+        json.put("_found", getResponse.isExists());
         if (getResponse.isExists()) {
             json.put("_version", getResponse.getVersion());
             if (!head){

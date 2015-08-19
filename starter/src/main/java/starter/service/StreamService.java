@@ -84,11 +84,6 @@ public class StreamService {
                     .field("_type", type)
                     .field("_id", id)
                     .field("_version", updateResponse.getVersion());
-        if (updateResponse.getVersion() != getResponse.getVersion()) {
-            xContentBuilder.field("_update", true);
-        }else{
-            xContentBuilder.field("_update", false);
-        }
         xContentBuilder.endObject();
         return xContentBuilder;
     }
@@ -153,12 +148,7 @@ public class StreamService {
                     Map<String, Object> streamsMap = new HashMap<String, Object>();
                     streamsMap.put("_streams", _streams);
                     UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(streamsMap).execute().actionGet();
-                    xContentBuilder.field("_version", updateResponse.getVersion());
-                    if (updateResponse.getVersion() != getResponse.getVersion()) {
-                        xContentBuilder.field("_update", true);
-                    }else{
-                        xContentBuilder.field("_update", false);
-                    }
+                    xContentBuilder.field("_version", updateResponse.getVersion()).field("_update", true);
                     xContentBuilder.endObject();
                     return xContentBuilder;
                 }
@@ -200,12 +190,7 @@ public class StreamService {
             Map<String, Object> streamsMap = new HashMap<String, Object>();
             streamsMap.put("_streams", _streams);
             UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(streamsMap).execute().actionGet();
-            xContentBuilder.field("_version", updateResponse.getVersion());
-            if (updateResponse.getVersion() != getResponse.getVersion()) {
-                xContentBuilder.field("_update", true);
-            }else{
-                xContentBuilder.field("_update", false);
-            }
+            xContentBuilder.field("_version", updateResponse.getVersion()).field("_update", true);
             xContentBuilder.endObject();
             return xContentBuilder;
         }
@@ -231,12 +216,7 @@ public class StreamService {
                     Map<String, Object> map = new HashMap<String, Object>();
                     map.put("_streams", _streams);
                     UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(map).execute().actionGet();
-                    xContentBuilder.field("_version", updateResponse.getVersion());
-                    if (updateResponse.getVersion() != getResponse.getVersion()) {
-                        xContentBuilder.field("_update", true);
-                    }else{
-                        xContentBuilder.field("_update", false);
-                    }
+                    xContentBuilder.field("_version", updateResponse.getVersion()).field("_update", true);
                     xContentBuilder.endObject();
                     return xContentBuilder;
                 }
