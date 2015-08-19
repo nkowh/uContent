@@ -113,9 +113,8 @@ public class LogAspect {
         threadLocalMap.put(METHOD_NAME, methodName);
 
         Object[] args = joinpoint.getArgs();
-        String paramNames = MSG_NONE;
         if (args != null && args.length > 0) {
-            paramNames = Arrays.toString(args);
+            String paramNames = Arrays.toString(args);
             threadLocalMap.put(PARAM_NAMES, paramNames);
         }
 
@@ -137,11 +136,6 @@ public class LogAspect {
 
         //存入本地线程变量
         setThreadLocal(threadLocalMap);
-
-        //展示结果
-        String startTime = new SimpleDateFormat(SIMPLE_DATE_FORMAT).format(startTimeMillis);//格式化,为了展示使用
-        System.out.println("doBefore end.. \n用户：" + username + "\nIP地址：" + ipAddress + "\n访问URL：" + url + "\n开始时间：" +
-                startTime + "\n目标类：" + className + "\n方法：" + methodName + "\n参数：" + paramNames);
     }
 
 
@@ -153,6 +147,7 @@ public class LogAspect {
 
         //计算耗时
         long startTimeMillis = (long) getThreadLocal(START_TIME_MILLIS);
+        String startTime = new SimpleDateFormat(SIMPLE_DATE_FORMAT).format(startTimeMillis);//格式化,为了展示使用
         String time_consuming_string = new DecimalFormat(DECIMAL_FORMAT).format((endTimeMillis - startTimeMillis)) +
                 "ms";//格式化,为了展示使用
 
@@ -180,9 +175,10 @@ public class LogAspect {
         }
 
         //展示结果
-        System.out.println("doAfter end.. \n用户：" + username + "\nIP地址：" + ipAddress + "\n访问URL：" + url + "\n结束时间：" +
-                endTime + "\n耗时：" + time_consuming_string + "\n目标类：" + className + "\n方法：" + methodName + "\n参数：" +
-                paramNames + "\n异常信息：" + error_msg + "\n返回信息：" + result_msg);
+        System.out.println("用户：" + username + "\nIP地址：" + ipAddress + "\n访问URL：" + url
+                + "\n开始时间：" + startTime + "\n结束时间：" + endTime + "\n耗时：" + time_consuming_string
+                + "\n目标类：" + className + "\n方法：" + methodName + "\n参数：" + paramNames
+                + "\n异常信息：" + error_msg + "\n返回信息：" + result_msg);
     }
 
     //获取远程IP的真实地址
