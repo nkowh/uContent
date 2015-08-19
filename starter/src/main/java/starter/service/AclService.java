@@ -4,13 +4,10 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.hibernate.validator.constraints.br.CNPJ;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import starter.RequestContext;
 import starter.rest.Json;
-import starter.uContentException;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,13 +25,7 @@ public class AclService {
     private DocumentService documentService;
 
     public XContentBuilder all(String type, String id) throws IOException {
-        GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).execute().actionGet();
-        if (!getResponse.isExists()) {
-            throw new uContentException("Not found", HttpStatus.NOT_FOUND);
-        }
-        if(!documentService.hasPermission(context.getUserName(), getResponse.getSource().get("_acl"), Constant.Permission.READ)){
-            throw new uContentException("Forbidden", HttpStatus.FORBIDDEN);
-        }
+        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.READ);
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
         xContentBuilder.startArray();
         List<Map<String, Object>> acl =  (List<Map<String, Object>>)getResponse.getSource().get("_acl");
@@ -52,13 +43,7 @@ public class AclService {
     }
 
     public XContentBuilder update(String type, String id, Json body) throws IOException {
-        GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).execute().actionGet();
-        if (!getResponse.isExists()) {
-            throw new uContentException("Not found", HttpStatus.NOT_FOUND);
-        }
-        if (!documentService.hasPermission(context.getUserName(), getResponse.getSource().get("_acl"), Constant.Permission.UPDATE)) {
-            throw new uContentException("Forbidden", HttpStatus.FORBIDDEN);
-        }
+        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.UPDATE);
         documentService.processAcl(body, getResponse.getSource().get("_acl"));
         Map<String, Object> acl = new HashMap<String, Object>();
         acl.put("_acl", getResponse.getSource().get("_acl"));
