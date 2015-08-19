@@ -4,7 +4,6 @@ package starter;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.After;
-import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -130,10 +129,9 @@ public class LogAspect {
             result_msg = result + "";
         }
 
-        Throwable error = (Throwable) getThreadLocal(ERROR);
         String error_msg = MSG_NONE;
-        if (error != null) {
-            error_msg = error + "";
+        if (getThreadLocal().containsKey(ERROR)) {
+            error_msg = (String) getThreadLocal(ERROR);
         }
 
         System.out.println("@After end.. 用户：" + username + " IP地址：" + ipAddress + " 访问URL：" + url + " 结束时间：" + endTime +
@@ -151,8 +149,8 @@ public class LogAspect {
             throw new RuntimeException("测试业务逻辑抛出异常的情况。。");
 
             //if (result != null) {
-                //Map<String, Object> threadLocalMap = getThreadLocal();
-                //threadLocalMap.put(RESULT, result);
+            //Map<String, Object> threadLocalMap = getThreadLocal();
+            //threadLocalMap.put(RESULT, result);
             //}
 
             //System.out.println("around end..");
@@ -160,19 +158,32 @@ public class LogAspect {
 
         } catch (Throwable ex) {
             System.out.println("error in around..");
+
+            StringBuffer ex_sb = new StringBuffer();
+            ex_sb.append(ex + "\r\n");
+            for (StackTraceElement stackTraceElement : ex.getStackTrace()) {
+                ex_sb.append(stackTraceElement.toString() + "\r\n");
+            }
+            Map<String, Object> threadLocalMap = getThreadLocal();
+            threadLocalMap.put(ERROR, ex_sb.toString());
+
             throw ex;
         }
     }
 
-    @AfterThrowing(pointcut = "recordLog()", throwing = "error")
-    public void afterThrowing(JoinPoint joinpoint, Throwable error) {
-        if (error != null) {
-            System.out.println("error:" + error);
-
-            Map<String, Object> threadLocalMap = getThreadLocal();
-            threadLocalMap.put(ERROR, error);
-        }
-    }
+    //@AfterThrowing(pointcut = "recordLog()", throwing = "error") //注意执行顺序!
+    //public void afterThrowing(JoinPoint joinpoint, Throwable error) {
+    //    if (error != null) {
+    //        System.out.println("error:" + error);
+    //        System.out.println("error.getCause:" + error.getCause());
+    //        //System.out.println("error.getMessage:" + error.getMessage());
+    //        //System.out.println("error.getLocalizedMessage:" + error.getLocalizedMessage());
+    //        //System.out.println("error.getStackTrace:" + error.getStackTrace());
+    //        for (StackTraceElement stackTraceElement : error.getStackTrace()) {
+    //            System.out.println("error.stackTraceElement:" + stackTraceElement.toString());
+    //        }
+    //    }
+    //}
 
 
     private static String getIpAddress(HttpServletRequest request) {
