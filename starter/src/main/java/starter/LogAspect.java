@@ -81,15 +81,21 @@ public class LogAspect {
             //记录异常信息
             StringBuffer ex_sb = new StringBuffer();
             ex_sb.append(ex + "\r\n");
-            if (ex instanceof uContentException) {//获取异常信息中http状态码
+
+            //记录异常信息中http状态码
+            if (ex instanceof uContentException) {
                 ex_sb.append("状态码：" + ((uContentException) ex).getStatusCode() + "\r\n");
             }
 
+            //记录异常栈信息
             for (StackTraceElement stackTraceElement : ex.getStackTrace()) {
                 ex_sb.append(stackTraceElement.toString() + "\r\n");
             }
+
+            //存入本地线程变量
             Map<String, Object> threadLocalMap = getThreadLocal();
             threadLocalMap.put(ERROR, ex_sb.toString());
+            setThreadLocal(threadLocalMap);
 
             //抛出异常给业务逻辑处理
             throw ex;
