@@ -58,7 +58,7 @@ public class Systems {
     @RequestMapping(value = "types/{id}", method = RequestMethod.PUT)
     public String updateType(@PathVariable String id,@RequestBody Json body) {
         try {
-            XContentBuilder result = typeService.update(id);
+            XContentBuilder result = typeService.update(id, body);
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -78,15 +78,29 @@ public class Systems {
 
     /***************************** users ******************************/
 
-    @RequestMapping(value = "users", method = RequestMethod.GET)
-    public String allUsers() {
+    @RequestMapping(value = "users", method = {RequestMethod.POST}, headers = {"_method=QUERY"})
+    public String allUsers(@RequestBody Json query,
+                           @RequestParam(defaultValue = "0") int start,
+                           @RequestParam(defaultValue = "10") int limit,
+                           @RequestParam String sort,
+                           @RequestParam(defaultValue = "asc") String sord) {
         try {
-            XContentBuilder result = userService.all();
+            XContentBuilder result = userService.all(query, start, limit, sort, sord);
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+//    @RequestMapping(value = "users", method = RequestMethod.GET)
+//    public String allUsers() {
+//        try {
+//            XContentBuilder result = userService.all();
+//            return result.string();
+//        } catch (IOException e) {
+//            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
     @RequestMapping(value = "users", method = RequestMethod.POST)
     public String createUser(@RequestBody Json body) {
@@ -108,10 +122,20 @@ public class Systems {
         }
     }
 
-    @RequestMapping(value = "users/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = "users/{userId}/exist", method = RequestMethod.GET)
+    public String ifUserExist(@PathVariable String userId) {
+        try {
+            XContentBuilder result = userService.ifUserExist(userId);
+            return result.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(value = "users/{id}", method = RequestMethod.PATCH)
     public String updateUser(@PathVariable String id,@RequestBody Json body) {
         try {
-            XContentBuilder result = userService.update(id);
+            XContentBuilder result = userService.update(id, body);
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -141,10 +165,24 @@ public class Systems {
 
     /****************************** groups ******************************/
 
-    @RequestMapping(value = "groups", method = RequestMethod.GET)
-    public String allGroups() {
+//    @RequestMapping(value = "groups", method = RequestMethod.GET)
+//    public String allGroups() {
+//        try {
+//            XContentBuilder result = groupService.all();
+//            return result.string();
+//        } catch (IOException e) {
+//            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
+
+    @RequestMapping(value = "groups", method = {RequestMethod.POST}, headers = {"_method=QUERY"})
+    public String allGroups(@RequestBody Json query,
+                            @RequestParam(defaultValue = "0") int start,
+                            @RequestParam(defaultValue = "10") int limit,
+                            @RequestParam String sort,
+                            @RequestParam(defaultValue = "asc") String sord) {
         try {
-            XContentBuilder result = groupService.all();
+            XContentBuilder result = groupService.all(query, start, limit, sort, sord);
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -192,10 +230,10 @@ public class Systems {
         }
     }
 
-    @RequestMapping(value = "groups/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = "groups/{id}", method = RequestMethod.PATCH)
     public String updateGroup(@PathVariable String id,@RequestBody Json body) {
         try {
-            XContentBuilder result = groupService.update(id);
+            XContentBuilder result = groupService.update(id, body);
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);

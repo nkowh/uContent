@@ -30,16 +30,14 @@ import java.util.Map;
 @Service
 public class TypeService {
 
-    private static String indices="yuanyewen";
-
     @Autowired
     private RequestContext context;
 
     public XContentBuilder all() throws IOException {
         Client client = context.getClient();
-        GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(indices).get();
+        GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).get();
         ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getMappingsResponse.getMappings();
-        ImmutableOpenMap<String, MappingMetaData> types = mappings.get(indices);
+        ImmutableOpenMap<String, MappingMetaData> types = mappings.get(context.getIndex());
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject();
         builder.startArray("documentTypes");
@@ -190,6 +188,9 @@ public class TypeService {
                         .endObject()
                         .endObject();
 
+                //组装_acl属性
+                builder.startObject("_acl").field("type", "nested").endObject();
+
                 //组装创建信息属性
                 builder.startObject("createBy").field("type", "string").field("store", "yes").endObject()
                         .startObject("creationDate").field("type", "date").field("store", "yes").endObject()
@@ -220,7 +221,7 @@ public class TypeService {
             System.out.println(builder.string());
 
             //创建mapping
-            PutMappingRequest mapping = Requests.putMappingRequest(indices).type(typeName).source(builder);
+            PutMappingRequest mapping = Requests.putMappingRequest(context.getIndex()).type(typeName).source(builder);
             PutMappingResponse putMappingResponse = client.admin().indices().putMapping(mapping).actionGet();
             acknowledged = putMappingResponse.isAcknowledged();
             //System.out.println(builder.string());
@@ -238,10 +239,10 @@ public class TypeService {
     public XContentBuilder get(String id) throws IOException {
         Client client = context.getClient();
         XContentBuilder builder= XContentFactory.jsonBuilder();
-        GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(indices).
+        GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).
                 addTypes(id).get();
         ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getMappingsResponse.getMappings();
-        MappingMetaData mappingMetaData = mappings.get(indices).get(id);
+        MappingMetaData mappingMetaData = mappings.get(context.getIndex()).get(id);
         if (mappingMetaData!=null){
             String source = mappingMetaData.source().string();
             Json parse = Json.parse(source);
@@ -277,7 +278,7 @@ public class TypeService {
         return builder;
     }
 
-    public XContentBuilder update(String id) {
+    public XContentBuilder update(String id, Json body) {
 
 
         return null;
@@ -286,7 +287,7 @@ public class TypeService {
     public XContentBuilder delete(String id) throws IOException {
         Client client = context.getClient();
         boolean acknowledged = false;
-        DeleteMappingRequest mapping = Requests.deleteMappingRequest(indices).types(id);
+        DeleteMappingRequest mapping = Requests.deleteMappingRequest(context.getIndex()).types(id);
         DeleteMappingResponse deleteMappingResponse = client.admin().indices().deleteMapping(mapping).actionGet();
         acknowledged = deleteMappingResponse.isAcknowledged();
         return XContentFactory.jsonBuilder().startObject().field("acknowledged",acknowledged).endObject();

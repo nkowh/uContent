@@ -111,6 +111,12 @@ Ext.define('starter.view.main.Main', {
             xtype: 'monitorOs'
         }]
     },{
+        title: '类型',
+        iconCls: 'fa-cubes',
+        items: [{
+            xtype: 'types'
+        }]
+    }, {
         title: '配置',
         iconCls: 'fa-cog',
         bind: {
