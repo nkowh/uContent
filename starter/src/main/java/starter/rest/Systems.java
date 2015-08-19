@@ -82,7 +82,7 @@ public class Systems {
     public String allUsers(@RequestBody Json query,
                            @RequestParam(defaultValue = "0") int start,
                            @RequestParam(defaultValue = "10") int limit,
-                           @RequestParam String sort,
+                           @RequestParam(defaultValue = "") String sort,
                            @RequestParam(defaultValue = "asc") String sord) {
         try {
             XContentBuilder result = userService.all(query, start, limit, sort, sord);
@@ -179,7 +179,7 @@ public class Systems {
     public String allGroups(@RequestBody Json query,
                             @RequestParam(defaultValue = "0") int start,
                             @RequestParam(defaultValue = "10") int limit,
-                            @RequestParam String sort,
+                            @RequestParam(defaultValue = "") String sort,
                             @RequestParam(defaultValue = "asc") String sord) {
         try {
             XContentBuilder result = groupService.all(query, start, limit, sort, sord);
