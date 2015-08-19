@@ -81,6 +81,10 @@ public class LogAspect {
             //记录异常信息
             StringBuffer ex_sb = new StringBuffer();
             ex_sb.append(ex + "\r\n");
+            if (ex instanceof uContentException) {//获取异常信息中http状态码
+                ex_sb.append("状态码：" + ((uContentException) ex).getStatusCode() + "\r\n");
+            }
+
             for (StackTraceElement stackTraceElement : ex.getStackTrace()) {
                 ex_sb.append(stackTraceElement.toString() + "\r\n");
             }
