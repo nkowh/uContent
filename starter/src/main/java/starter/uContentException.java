@@ -22,4 +22,8 @@ public class uContentException extends RuntimeException {
         super(cause);
         this.statusCode = statusCode.value();
     }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
 }

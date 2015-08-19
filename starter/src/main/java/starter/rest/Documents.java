@@ -2,17 +2,21 @@ package starter.rest;
 
 import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import starter.RequestContext;
 import starter.service.DocumentService;
 import starter.uContentException;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +27,9 @@ public class Documents {
     @Autowired
     private DocumentService documentService;
 
+    @Autowired
+    private RequestContext context;
+
     @RequestMapping(value = "{type}", method = {RequestMethod.POST}, headers = {"_method=QUERY"})
     public String query(@PathVariable String type,
                         @RequestBody Json query,
@@ -31,8 +38,8 @@ public class Documents {
                         @RequestParam String sort,
                         @RequestParam(defaultValue = "true") boolean allowableActions) {
         try {
-            XContentBuilder result = documentService.query(type, query, start, limit, sort);
-            return result.string();
+            XContentBuilder xContentBuilder = documentService.query(type, query, start, limit, sort, allowableActions);
+            return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -62,8 +69,8 @@ public class Documents {
     @RequestMapping(value = "{type}/{id}", method = RequestMethod.HEAD)
     public String head(@PathVariable String type, @PathVariable String id) {
         try {
-            XContentBuilder result = documentService.head(type, id);
-            return result.string();
+            Json json = documentService.head(type, id);
+            return json.toXContentBuilder().string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -74,18 +81,18 @@ public class Documents {
                       @PathVariable String id,
                       @RequestParam(defaultValue = "true") boolean allowableActions) {
         try {
-            XContentBuilder result = documentService.get(type, id);
-            return result.string();
+            Json json = documentService.get(type, id, false, allowableActions);
+            return json.toXContentBuilder().string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @RequestMapping(value = "{type}/{id}", method = RequestMethod.PUT, consumes = "application/json")
-    public String updateWithoutStream(@PathVariable String type, @PathVariable String id, @RequestParam Json body) {
+    public String updateWithoutStream(@PathVariable String type, @PathVariable String id, @RequestBody Json body) {
         try {
-            XContentBuilder result = documentService.update(type, id, body);
-            return result.string();
+            XContentBuilder xContentBuilder = documentService.update(type, id, body);
+            return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -94,18 +101,18 @@ public class Documents {
     @RequestMapping(value = "{type}/{id}", method = RequestMethod.PATCH, consumes = "application/json")
     public String patchWithoutStream(@PathVariable String type, @PathVariable String id, @RequestParam Json body) {
         try {
-            XContentBuilder result = documentService.patch(type, id, body);
-            return result.string();
+            XContentBuilder xContentBuilder = documentService.patch(type, id, body);
+            return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @RequestMapping(value = "{type}/{id}", method = RequestMethod.DELETE)
-    public String patch(@PathVariable String type, @PathVariable String id) {
+    public String delete(@PathVariable String type, @PathVariable String id) {
         try {
-            XContentBuilder result = documentService.delete(type, id);
-            return result.string();
+            XContentBuilder xContentBuilder = documentService.delete(type, id);
+            return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }

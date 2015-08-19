@@ -10,6 +10,8 @@ import starter.service.StreamService;
 import starter.uContentException;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value="svc/",produces = MediaType.APPLICATION_JSON_VALUE)
@@ -21,8 +23,8 @@ public class Acl {
     @RequestMapping(value = "{type}/{id}/_acl", method = RequestMethod.GET, consumes = "application/json")
     public String all(@PathVariable String type, @PathVariable String id) {
         try {
-            XContentBuilder result = aclService.all(type, id);
-            return result.string();
+            XContentBuilder xContentBuilder = aclService.all(type, id);
+            return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -34,8 +36,8 @@ public class Acl {
     @RequestMapping(value = "{type}/{id}/_acl", method = RequestMethod.PUT, consumes = "application/json")
     public String update(@PathVariable String type, @PathVariable String id, @RequestBody Json body) {
         try {
-            XContentBuilder result = aclService.update(type, id, body);
-            return result.string();
+            XContentBuilder xContentBuilder = aclService.update(type, id, body);
+            return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
