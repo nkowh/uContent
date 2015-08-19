@@ -6,7 +6,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -60,12 +59,43 @@ public class LogAspect {
     public void recordLog() {
     }
 
-    @Before("recordLog()")
-    public void before(JoinPoint joinpoint) {
-        System.out.println("@Before start..");
+    @Around("recordLog()")
+    public Object around(ProceedingJoinPoint pjp) throws Throwable {
+        try {
+            doBefore(pjp);
 
+            Object result = pjp.proceed();
+
+            //throw new RuntimeException("测试业务逻辑抛出异常的情况。。。");
+
+            //记录返回信息
+            if (result != null) {
+                Map<String, Object> threadLocalMap = getThreadLocal();
+                threadLocalMap.put(RESULT, result);
+            }
+
+            //返回结果给业务逻辑处理
+            return result;
+
+        } catch (Throwable ex) {
+            //记录异常信息
+            StringBuffer ex_sb = new StringBuffer();
+            ex_sb.append(ex + "\r\n");
+            for (StackTraceElement stackTraceElement : ex.getStackTrace()) {
+                ex_sb.append(stackTraceElement.toString() + "\r\n");
+            }
+            Map<String, Object> threadLocalMap = getThreadLocal();
+            threadLocalMap.put(ERROR, ex_sb.toString());
+
+            //抛出异常给业务逻辑处理
+            throw ex;
+        }
+    }
+
+    public void doBefore(JoinPoint joinpoint) {
         Map<String, Object> threadLocalMap = new HashMap<>();
 
+        //从joinpoint获取相关信息
         String className = joinpoint.getSignature().getDeclaringTypeName();
         threadLocalMap.put(CLASS_NAME, className);
 
@@ -79,6 +109,7 @@ public class LogAspect {
             threadLocalMap.put(PARAM_NAMES, paramNames);
         }
 
+        //从request获取相关信息
         HttpServletRequest request = context.getRequest();
 
         String username = request.getUserPrincipal().getName();
@@ -87,31 +118,35 @@ public class LogAspect {
         String url = request.getRequestURI();
         threadLocalMap.put(URL, url);
 
-        String ipAddress = getIpAddress(request);
+        String ipAddress = LogAspect.getIpAddress(request);
         threadLocalMap.put(IP_ADDRESS, ipAddress);
 
+        //记录开始时间
         long startTimeMillis = System.currentTimeMillis();
         threadLocalMap.put(START_TIME_MILLIS, startTimeMillis);
 
+        //存入本地线程变量
         setThreadLocal(threadLocalMap);
 
-        String startTime = new SimpleDateFormat(SIMPLE_DATE_FORMAT).format(startTimeMillis);
-
-        System.out.println("@Before end.. 用户：" + username + " IP地址：" + ipAddress + " 访问URL：" + url + " 开始时间：" +
-                startTime + " 目标类：" + className + " 方法：" + methodName + " 参数：" + paramNames);
+        //展示结果
+        String startTime = new SimpleDateFormat(SIMPLE_DATE_FORMAT).format(startTimeMillis);//格式化,为了展示使用
+        System.out.println("doBefore end.. \n用户：" + username + "\nIP地址：" + ipAddress + "\n访问URL：" + url + "\n开始时间：" +
+                startTime + "\n目标类：" + className + "\n方法：" + methodName + "\n参数：" + paramNames);
     }
 
 
     @After("recordLog()")
-    public void after(JoinPoint joinpoint) {
-        System.out.println("@After start..");
-
+    public void doAfter() {
+        //记录结束时间
         long endTimeMillis = System.currentTimeMillis();
-        String endTime = new SimpleDateFormat(SIMPLE_DATE_FORMAT).format(endTimeMillis);
+        String endTime = new SimpleDateFormat(SIMPLE_DATE_FORMAT).format(endTimeMillis);//格式化,为了展示使用
 
+        //计算耗时
         long startTimeMillis = (long) getThreadLocal(START_TIME_MILLIS);
         String time_consuming_string = new DecimalFormat(DECIMAL_FORMAT).format((endTimeMillis - startTimeMillis)) +
-                "ms";
+                "ms";//格式化,为了展示使用
+
+        //从本地线程变量获取信息
         String username = (String) getThreadLocal(USER_NAME);
         String url = (String) getThreadLocal(URL);
         String ipAddress = (String) getThreadLocal(IP_ADDRESS);
@@ -134,58 +169,13 @@ public class LogAspect {
             error_msg = (String) getThreadLocal(ERROR);
         }
 
-        System.out.println("@After end.. 用户：" + username + " IP地址：" + ipAddress + " 访问URL：" + url + " 结束时间：" + endTime +
-                " " + " 总耗时：" + time_consuming_string + " 目标类：" + className + " 方法：" + methodName + " 参数：" +
-                paramNames + " 异常信息：" + error_msg + " 返回信息：" + result_msg);
+        //展示结果
+        System.out.println("doAfter end.. \n用户：" + username + "\nIP地址：" + ipAddress + "\n访问URL：" + url + "\n结束时间：" +
+                endTime + "\n耗时：" + time_consuming_string + "\n目标类：" + className + "\n方法：" + methodName + "\n参数：" +
+                paramNames + "\n异常信息：" + error_msg + "\n返回信息：" + result_msg);
     }
 
-    @Around("recordLog()")
-    public Object around(ProceedingJoinPoint pjp) throws Throwable {
-        System.out.println("around start..");
-
-        try {
-            Object result = pjp.proceed();
-
-            throw new RuntimeException("测试业务逻辑抛出异常的情况。。");
-
-            //if (result != null) {
-            //Map<String, Object> threadLocalMap = getThreadLocal();
-            //threadLocalMap.put(RESULT, result);
-            //}
-
-            //System.out.println("around end..");
-            //return result;
-
-        } catch (Throwable ex) {
-            System.out.println("error in around..");
-
-            StringBuffer ex_sb = new StringBuffer();
-            ex_sb.append(ex + "\r\n");
-            for (StackTraceElement stackTraceElement : ex.getStackTrace()) {
-                ex_sb.append(stackTraceElement.toString() + "\r\n");
-            }
-            Map<String, Object> threadLocalMap = getThreadLocal();
-            threadLocalMap.put(ERROR, ex_sb.toString());
-
-            throw ex;
-        }
-    }
-
-    //@AfterThrowing(pointcut = "recordLog()", throwing = "error") //注意执行顺序!
-    //public void afterThrowing(JoinPoint joinpoint, Throwable error) {
-    //    if (error != null) {
-    //        System.out.println("error:" + error);
-    //        System.out.println("error.getCause:" + error.getCause());
-    //        //System.out.println("error.getMessage:" + error.getMessage());
-    //        //System.out.println("error.getLocalizedMessage:" + error.getLocalizedMessage());
-    //        //System.out.println("error.getStackTrace:" + error.getStackTrace());
-    //        for (StackTraceElement stackTraceElement : error.getStackTrace()) {
-    //            System.out.println("error.stackTraceElement:" + stackTraceElement.toString());
-    //        }
-    //    }
-    //}
-
-
+    //获取远程IP的真实地址
     private static String getIpAddress(HttpServletRequest request) {
         String ip = request.getHeader("x-forwarded-for");
 
@@ -212,11 +202,4 @@ public class LogAspect {
         return ip.equals("0:0:0:0:0:0:0:1") ? "127.0.0.1" : ip;
     }
 
-
 }
-
-//Map<String, String[]> parameterMap = request.getParameterMap();
-//String param_msg = "";
-//if (parameterMap != null && parameterMap.size() != 0) {
-//    //" 输入参数：";
-//}
