@@ -56,8 +56,12 @@ public class TypeService {
                         if (typeInfo!=null){
                             boolean isDocType = (boolean)typeInfo.get("isDocType");
                             String displayName = String.valueOf(typeInfo.get("displayName"));
-                            if ((displayName!=null)&&(isDocType)){
-                                builder.startObject().field("name", typeName).field("displayName", displayName).endObject();
+                            String description = String.valueOf(typeInfo.get("description"));
+                            if (isDocType){
+                                builder.startObject().field("name", typeName)
+                                        .field("displayName", displayName)
+                                        .field("description", description)
+                                        .endObject();
                             }
                         }
                     }
