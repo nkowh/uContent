@@ -23,13 +23,27 @@ Ext.define('starter.view.main.system.group.Modify', {
     // The fields
     defaultType: 'textfield',
     items: [{
-        fieldLabel: 'Name',
-        name: 'Name',
+        fieldLabel: 'Group Name',
+        name: 'groupName',
         allowBlank: false
     },{
-        name: 'Id',
+        name: '_id',
         xtype: 'hiddenfield',
         allowBlank: false
+    },{
+        xtype: 'itemselector',
+        name: 'Users',
+        id: 'itemselector-Users',
+        anchor: '100%',
+        fieldLabel: 'Users',
+        bind : {
+            store : 'users'
+        },
+        displayField: 'Name',
+        valueField: 'Id',
+        msgTarget: 'side',
+        fromTitle: 'Available',
+        toTitle: 'Selected'
     }],
     listeners: {
         afterrender : 'loadModifyData'
