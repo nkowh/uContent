@@ -8,12 +8,13 @@ Ext.define('starter.view.main.system.user.Users', {
         title: '{listTitle}',
         store :  '{users}'
     },
-    columns: [
-        { text: 'Name',width: 200, flex : 1, dataIndex: 'Name' },
-        { text: 'CreateBy',width: 130, dataIndex: 'CreateBy' },
-        { text: 'CreatedOn',width: 150, dataIndex: 'CreatedOn'},
-        { text: 'LastUpdatedBy',width: 130, dataIndex: 'LastUpdatedBy' },
-        { text: 'LastUpdatedOn',width: 150, dataIndex: 'LastUpdatedOn' }
+        columns: [
+        { text: 'UserId',width: 200, flex : 1, dataIndex: 'userId' },
+        { text: 'UserName',width: 200, flex : 1, dataIndex: 'userName' },
+        { text: 'CreateBy',width: 130, dataIndex: 'createBy' },
+        { text: 'CreationDate',width: 150, dataIndex: 'creationDate', xtype: 'datecolumn',   format:'Y-m-d' },
+        { text: 'LastModifiedBy',width: 130, dataIndex: 'lastModifiedBy' },
+        { text: 'LastModificationDate',width: 150, dataIndex: 'lastModificationDate', xtype: 'datecolumn',   format:'Y-m-d' }
     ],
     dockedItems: [{
         xtype: 'toolbar',
@@ -22,15 +23,17 @@ Ext.define('starter.view.main.system.user.Users', {
             { xtype: 'button', text: 'Add', handler: 'openCreateWin' },
             { xtype: 'button', text: 'Delete',handler: 'deleteUser'}
         ]
-    },{
-        xtype : 'slider',
-        bind: {
-            value: '{size}',
-            fieldLabel: '显示数量' + '{size}'
-        }
-        //value: 10,
-
-    },{
+    }
+    //    ,{
+    //    xtype : 'slider',
+    //    bind: {
+    //        value: '{size}',
+    //        fieldLabel: '显示数量' + '{size}'
+    //    }
+    //    //value: 10,
+    //
+    //}
+        ,{
         xtype: 'pagingtoolbar',
         dock: 'bottom',
         bind: {

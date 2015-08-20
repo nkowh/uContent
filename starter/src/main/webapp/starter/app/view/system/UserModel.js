@@ -3,9 +3,9 @@ Ext.define('starter.system.UserModel', {
 
     alias: 'viewmodel.user',
     stores: {
-        users: {type: 'users',pageSize : '{pageSize}'}
+        users: {type: 'users'}
     },
-    formulas: {
+    /*formulas: {
         size: {
             get : function(get){
                 return get('pageSize');
@@ -16,7 +16,7 @@ Ext.define('starter.system.UserModel', {
                 this.getStore('users').load();
             }
         }
-    },
+    },*/
     data: {
         pageSize : 10,
         listTitle: '用户管理',
