@@ -42,21 +42,25 @@ Ext.define('starter.system.GroupController', {
         }
     },
     createSave : function(e){
-        var form = e.up('form').getForm();
+        var me = this;
+        var form = this.getView().getForm();
         if (form.isValid()) {
-            //var url  = '/dm/Users';
-            var  uuid = Ext.data.identifier.Uuid.createRandom()();
-            e.up('form').down('hiddenfield[name=Id]').setValue(uuid);
-            var user = Ext.create('dm.model.Group', form.getValues());
-            user.phantom =true;
-            var store = this.getViewModel().getStore('groups');
-            store.add(user);
-            this.getView().up('window').close();
-            //store.load({
-            //    callback: function(records, operation, success) {
-            //        Ext.Msg.alert('info', '加载完毕');
-            //    }
-            //});
+            var groupName = form.down('textfield[name=groupName]').getValue();
+            Ext.Ajax.request({
+                url: '/svc/groups',
+                callback: function (options, success, response) {
+                    if (!success) {
+                        return;
+                    }
+                    if( response.responseText==''){
+                        var group = Ext.create('starter.model.Group', form.getValues());
+                        var store = this.getViewModel().getStore('groups');
+                        store.add(group);
+                        me.getView().up('window').close();
+                    }
+                }
+            });
+
         }
     },
     modifySave : function(e){
@@ -64,15 +68,10 @@ Ext.define('starter.system.GroupController', {
         var userValues = form.getValues();
         if (form.isValid()) {
             var store = this.getViewModel().getStore('groups');
-            var user =form.getRecord();
-            form.updateRecord(user);
+            var group =form.getRecord();
+            form.updateRecord(group);
             store.commitChanges();
             this.getView().up('window').close();
-            //store.load({
-            //    callback: function(records, operation, success) {
-            //        Ext.Msg.alert('info', '加载完毕');
-            //    }
-            //});
         }
 
     }
