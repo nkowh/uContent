@@ -262,4 +262,15 @@ public class Systems {
     }
 
 
+    @RequestMapping(value = "system", method = RequestMethod.POST)
+    public String systemInitial() {
+        try {
+            //XContentBuilder result = groupService.create(body);
+            userService.initialUserMapping();
+            groupService.initialGroupMapping();
+            return "";
+        } catch (Exception e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
