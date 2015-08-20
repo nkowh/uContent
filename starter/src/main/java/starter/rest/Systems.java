@@ -55,7 +55,7 @@ public class Systems {
         }
     }
 
-    @RequestMapping(value = "types/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = "types/{id}", method = RequestMethod.PATCH)
     public String updateType(@PathVariable String id,@RequestBody Json body) {
         try {
             XContentBuilder result = typeService.update(id, body);
