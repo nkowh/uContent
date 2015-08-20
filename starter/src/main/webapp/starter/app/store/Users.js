@@ -4,24 +4,28 @@ Ext.define('starter.store.Users', {
     model: 'starter.model.User',
     pageSize: 10,
     autoSync : true,
+    remoteSort : true,
+    sorters  : [{
+        property : "userId",
+        direction: "DESC"
+    }],
     proxy: {
         type: 'rest',
-        startParam : '$skip',
-        pageParam : '',
-        limitParam : '$top',
-        url: '/dm/Users',
+        url: '/svc/users',
+        headers: {
+            //'_method' : 'QUERY',
+            //'Content-Type' : 'application/json;charset=UTF-8'
+        },
+        //paramsAsJson :true,
+        actionMethods : {
+            update: 'PATCH'
+            //read : 'POST'
+        },
         reader: {
             type: 'json',
             rootProperty: 'value',
             totalProperty: 'total'
         }
     },
-    //listeners: {
-    //    datachanged : {
-    //        element: 'body', //bind to the underlying body property on the panel
-    //        fn: function(){ alert('操作成功！'); }
-    //    }
-    //},
-
     autoLoad: true
 });
