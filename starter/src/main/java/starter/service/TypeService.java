@@ -278,10 +278,8 @@ public class TypeService {
         return builder;
     }
 
-    public XContentBuilder update(String id, Json body) {
-
-
-        return null;
+    public XContentBuilder update(String id, Json body) throws IOException {
+        return create(body);
     }
 
     public XContentBuilder delete(String id) throws IOException {
