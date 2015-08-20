@@ -31,8 +31,6 @@ public class Acl {
     }
 
 
-
-
     @RequestMapping(value = "{type}/{id}/_acl", method = RequestMethod.PUT, consumes = "application/json")
     public String update(@PathVariable String type, @PathVariable String id, @RequestBody Json body) {
         try {

@@ -27,8 +27,6 @@ public class Documents {
     @Autowired
     private DocumentService documentService;
 
-    @Autowired
-    private RequestContext context;
 
     @RequestMapping(value = "{type}", method = {RequestMethod.POST}, headers = {"_method=QUERY"})
     public String query(@PathVariable String type,

@@ -42,37 +42,59 @@ Ext.define('starter.system.UserController', {
         }
     },
     createSave : function(e){
-        var form = e.up('form').getForm();
+        var me = this;
+        var form = this.getView().getForm();
         if (form.isValid()) {
-            //var url  = '/dm/Users';
-            var  uuid = Ext.data.identifier.Uuid.createRandom()();
-            e.up('form').down('hiddenfield[name=Id]').setValue(uuid);
-            var user = Ext.create('dm.model.User', form.getValues());
-            user.phantom =true;
-            var store = this.getViewModel().getStore('users');
-            store.add(user);
-            this.getView().up('window').close();
-            //store.load({
-            //    callback: function(records, operation, success) {
-            //        Ext.Msg.alert('info', '加载完毕');
-            //    }
-            //});
+            var userId = form.down('textfield[name=userId]').getValue();
+            Ext.Ajax.request({
+                url: '/svc/users/'+userId+'/exist',
+                callback: function (options, success, response) {
+                    if (!success) {
+                        return;
+                    }
+                    if( response.responseText!=''){
+                        var data =  Ext.decode(response.responseText);
+                        if(data.exist){
+                            Ext.Msg.alert('message', 'The user with the same userId already exists.');
+                        }else{
+                            var user = Ext.create('starter.model.User', form.getValues());
+                            var store = this.getViewModel().getStore('users');
+                            store.add(user);
+                            me.getView().up('window').close();
+                        }
+                    }
+                }
+            });
+
         }
     },
     modifySave : function(e){
+        var me = this;
         var form = e.up('form').getForm();
         var userValues = form.getValues();
         if (form.isValid()) {
-            var store = this.getViewModel().getStore('users');
-            var user =form.getRecord();
-            form.updateRecord(user);
-            store.commitChanges();
-            this.getView().up('window').close();
-            //store.load({
-            //    callback: function(records, operation, success) {
-            //        Ext.Msg.alert('info', '加载完毕');
-            //    }
-            //});
+            var userId = form.down('textfield[name=userId]').getValue();
+            Ext.Ajax.request({
+                url: '/svc/users/'+userId+'/exist',
+                callback: function (options, success, response) {
+                    if (!success) {
+                        return;
+                    }
+                    if( response.responseText==''){
+                        var data =  Ext.decode(response.responseText);
+                        if(data.exist){
+                            Ext.Msg.alert('message', 'The user with the same userId already exists.');
+                        }else {
+                            var store = me.getViewModel().getStore('users');
+                            var user = form.getRecord();
+                            form.updateRecord(user);
+                            store.commitChanges();
+                            me.getView().up('window').close();
+                        }
+                    }
+                }
+            });
+
         }
 
     }

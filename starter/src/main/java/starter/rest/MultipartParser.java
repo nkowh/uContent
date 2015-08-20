@@ -33,12 +33,13 @@ class MultipartParser {
         for (String name : fileMap.keySet()) {
             MultipartFile item = fileMap.get(name);
             if (item.isEmpty()) continue;
-            if (StringUtils.isNotBlank(item.getOriginalFilename())) {
-                files.add(item);
-            } else {
-                body.put(name, new String(item.getBytes()));
-            }
+            files.add(item);
         }
+        Map<String, String[]> parameterMap = request.getParameterMap();
+        for (String key : parameterMap.keySet()) {
+            body.put(key, parameterMap.get(key)[0]);
+        }
+
         return this;
     }
 }

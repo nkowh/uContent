@@ -2,33 +2,24 @@ package starter.service;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.elasticsearch.action.ActionResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
-import org.elasticsearch.action.get.GetRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateResponse;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.lang3.StringUtils;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.elasticsearch.index.get.GetField;
 import org.elasticsearch.index.query.BoolFilterBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.TermFilterBuilder;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.sort.*;
+import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -50,15 +41,14 @@ public class DocumentService {
     @Autowired
     private FileSystem fs;
 
-    @Autowired
-    private ValidateUtils validateUtils;
 
     public XContentBuilder query(String type, Json query, int start, int limit, String sort, boolean allowableActions) throws IOException {
         SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setTypes(type).setFrom(start).setSize(limit);
+        //set query
         if (query != null && !query.isEmpty()) {
             searchRequestBuilder.setQuery(query);
         }
-        //排序规则
+        //process sort
         if (StringUtils.isNotBlank(sort)) {
             ObjectMapper objectMapper = new ObjectMapper();
             List list = objectMapper.readValue(sort, List.class);
@@ -76,13 +66,13 @@ public class DocumentService {
                 }
             }
         }
-        //权限过滤
+        //process acl filter
         TermFilterBuilder termFilter1 = FilterBuilders.termFilter("_acl.user", context.getUserName());
         TermFilterBuilder termFilter2 = FilterBuilders.termFilter("_acl.permission", Constant.Permission.READ);
         BoolFilterBuilder boolFilter = FilterBuilders.boolFilter().must(termFilter1, termFilter2);
         FilterBuilder filter = FilterBuilders.nestedFilter("_acl", boolFilter);
         searchRequestBuilder.setPostFilter(filter);
-        //结果处理
+        //process result
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
         xContentBuilder.startArray();
@@ -117,24 +107,25 @@ public class DocumentService {
                 .field("_type", indexResponse.getType())
                 .field("_id", indexResponse.getId())
                 .field("_version", indexResponse.getVersion())
-                .field("created", indexResponse.isCreated())
+                .field("_created", indexResponse.isCreated())
                 .endObject();
         return builder;
     }
 
     public XContentBuilder create(String type, Json body, List<MultipartFile> files) throws IOException {
         if (!files.isEmpty()) {
-            List<Map<String, Object>> pages = new ArrayList<Map<String, Object>>();
+            List<Map<String, Object>> streams = new ArrayList<Map<String, Object>>();
             for(MultipartFile file : files){
-                Map<String, Object> page = new HashMap<String, Object>();
-                page.put("name", file.getName());
-                page.put("size", file.getSize());
-                page.put("contentType", file.getContentType());
+                Map<String, Object> stream = new HashMap<String, Object>();
+                stream.put("streamId", UUID.randomUUID().toString());
+                stream.put("name", file.getName());
+                stream.put("size", file.getSize());
+                stream.put("contentType", file.getContentType());
                 String fileId = fs.write(file.getBytes());
-                page.put("fileId", fileId);
-                pages.add(page);
+                stream.put("fileId", fileId);
+                streams.add(stream);
             }
-            body.put("pages", pages);
+            body.put("_streams", streams);
         }
         return create(type, body);
     }
@@ -144,29 +135,26 @@ public class DocumentService {
     }
 
     public Json get(String type, String id, boolean head, boolean allowableActions) throws IOException {
-        GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).execute().actionGet();
+        GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.READ);
         return processGet(getResponse, head, allowableActions);
     }
 
     public XContentBuilder update(String type, String id, Json body) throws IOException {
-        GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).execute().actionGet();
-        if (!getResponse.isExists()) {
-            throw new uContentException("Not found", HttpStatus.NOT_FOUND);
-        }
-        if (!hasPermission(context.getUserName(), getResponse.getSource().get("_acl"), Constant.Permission.UPDATE)) {
-            throw new uContentException("Forbidden", HttpStatus.FORBIDDEN);
-        }
+        GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.UPDATE);
         processAcl(body, getResponse.getSource().get("_acl"));
-        processJson(body);
+        beforeUpdate(body);
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
         xContentBuilder.startObject()
                 .field("_index", context.getIndex())
                 .field("_type", type)
-                .field("_id", id)
-                .field("_version", updateResponse.getVersion())
-                .field("_isCreated", updateResponse.isCreated())
-                .endObject();
+                .field("_id", id);
+        if (updateResponse.getVersion() != getResponse.getVersion()) {
+            xContentBuilder.field("_update", true);
+        }else{
+            xContentBuilder.field("_update", false);
+        }
+        xContentBuilder.endObject();
         return xContentBuilder;
     }
 
@@ -175,23 +163,15 @@ public class DocumentService {
     }
 
     public XContentBuilder delete(String type, String id) throws IOException {
-        GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).execute().actionGet();
-        if (!getResponse.isExists()) {
-            throw new uContentException("Not found", HttpStatus.NOT_FOUND);
-        }
-        if (!hasPermission(context.getUserName(), getResponse.getSource().get("_acl"), Constant.Permission.DELETE)) {
-            throw new uContentException("Forbidden", HttpStatus.FORBIDDEN);
-        }
+        checkPermission(type, id, context.getUserName(), Constant.Permission.DELETE);
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
         xContentBuilder.startObject()
                 .field("_index", context.getIndex())
                 .field("_type", type)
                 .field("_id", id);
         DeleteResponse deleteResponse = context.getClient().prepareDelete(context.getIndex(), type, id).execute().actionGet();
-        xContentBuilder.field("_found", deleteResponse.isFound());
-        if (deleteResponse.isFound()) {
-            xContentBuilder.field("_version", deleteResponse.getVersion());
-        }
+        xContentBuilder.field("_version", deleteResponse.getVersion());
+        xContentBuilder.field("_delete", deleteResponse.isFound());
         xContentBuilder.endObject();
         return xContentBuilder;
     }
@@ -210,7 +190,7 @@ public class DocumentService {
         ace.put("permission", permission);
         List<Map<String, Object>> acl = new ArrayList<Map<String, Object>>();
         acl.add(ace);
-        body.put("_acl",acl);
+        body.put("_acl", acl);
     }
 
     private Json processGet(GetResponse getResponse, boolean head, boolean allowableActions) throws IOException {
@@ -218,12 +198,7 @@ public class DocumentService {
         json.put("_index", getResponse.getIndex());
         json.put("_type", getResponse.getType());
         json.put("_id", getResponse.getId());
-        json.put("_found", getResponse.isExists());
         if (getResponse.isExists()) {
-            Object acl = getResponse.getSource().get("_acl");
-            if(!hasPermission(context.getUserName(), acl, Constant.Permission.READ)){
-                throw new uContentException("Forbidden", HttpStatus.FORBIDDEN);
-            }
             json.put("_version", getResponse.getVersion());
             if (!head){
                 Map<String, Object> source = getResponse.getSource();
@@ -236,7 +211,7 @@ public class DocumentService {
                 }
             }
             if (allowableActions) {
-                json.put("_allowableActions", getUserPermission(context.getUserName(), acl));
+                json.put("_allowableActions", getUserPermission(context.getUserName(), getResponse.getSource().get("_acl")));
             }
         }
         return json;
@@ -283,7 +258,7 @@ public class DocumentService {
         return permission;
     }
 
-    public boolean hasPermission(String user, Object acl, Constant.Permission action){
+    private boolean hasPermission(String user, Object acl, Constant.Permission action){
         List<Map<String, Object>> _acl = (List<Map<String, Object>>)acl;
         Set permission = getPermissionByUser(user, _acl);
         if (permission.contains(action.toString())) {
@@ -295,7 +270,7 @@ public class DocumentService {
         }
     }
 
-    private void processJson(Json body){
+    private void beforeUpdate(Json body){
         if(body != null){
             body.put("lastUpdatedBy", context.getUserName());
             body.put("lastUpdated", new DateTime());
@@ -394,6 +369,18 @@ public class DocumentService {
             }
             body.put("_acl", _srcAcl);
         }
+    }
+
+
+    public GetResponse checkPermission(String type, String id, String user, Constant.Permission permission){
+        GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).execute().actionGet();
+        if (!getResponse.isExists()) {
+            throw new uContentException("Not found", HttpStatus.NOT_FOUND);
+        }
+        if (!hasPermission(user, getResponse.getSource().get("_acl"), permission)) {
+            throw new uContentException("Forbidden", HttpStatus.FORBIDDEN);
+        }
+        return getResponse;
     }
 
 }

@@ -7,11 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import starter.service.DocumentService;
 import starter.service.StreamService;
 import starter.uContentException;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,12 +47,12 @@ public class Streams {
 
 
     @RequestMapping(value = "{type}/{id}/_streams", method = RequestMethod.POST, consumes = "multipart/*")
-    public Object create(@PathVariable String type, @PathVariable String id,
+    public Object update(@PathVariable String type, @PathVariable String id,
                          @RequestParam(required = false) Integer order,
                          MultipartHttpServletRequest request) {
         try {
             MultipartParser parser = new MultipartParser(request).invoke();
-            XContentBuilder result = streamService.create(type, id, order, parser.getFiles());
+            XContentBuilder result = streamService.update(type, id, order, parser.getFiles());
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -73,11 +71,15 @@ public class Streams {
 
     @RequestMapping(value = "{type}/{id}/_streams/{streamId}", method = RequestMethod.GET, produces = "image/*")
     public void getStream(@PathVariable String type, @PathVariable String id, @RequestParam String streamId, HttpServletResponse response) {
+        InputStream stream = null;
         try {
-            InputStream stream = streamService.getStream(type, id, streamId);
+            stream = streamService.getStream(type, id, streamId);
             IOUtils.copy(stream, response.getOutputStream());
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        } finally {
+            IOUtils.closeQuietly(stream);
+
         }
     }
 

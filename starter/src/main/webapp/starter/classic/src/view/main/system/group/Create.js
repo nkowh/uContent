@@ -35,12 +35,8 @@ Ext.define('starter.view.main.system.group.Create', {
     // The fields
     defaultType: 'textfield',
     items: [{
-        fieldLabel: 'Name',
-        name: 'Name',
-        allowBlank: false
-    },{
-        name: 'Id',
-        xtype: 'hiddenfield',
+        fieldLabel: 'Group Name',
+        name: 'groupName',
         allowBlank: false
     },{
         xtype: 'itemselector',
