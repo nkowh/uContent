@@ -8,6 +8,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.SortBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import starter.RequestContext;
@@ -23,17 +24,23 @@ public class LogService {
 
     private final String LOG_TYPE_NAME = "logInfo";
 
-    public XContentBuilder query(Json query, int from, int size) throws IOException {
+    public XContentBuilder query(Json query, int from, int size, SortBuilder[] sorts) throws IOException {
         SearchRequestBuilder searchRequestBuilder = context.getClient()
                 .prepareSearch(context.getIndex())
                 .setTypes(LOG_TYPE_NAME)
                 .setFrom(from)
-                .setSize(size)
-                //.addSort(sort, sord.equalsIgnoreCase("asc") ? SortOrder.ASC : SortOrder.DESC)
-                ;
+                .setSize(size);
+
+        if (sorts != null && sorts.length != 0) {
+            for (SortBuilder sortBuilder : sorts) {
+                searchRequestBuilder.addSort(sortBuilder);
+            }
+        }
+
         if (query != null && !query.isEmpty()) {
             searchRequestBuilder.setQuery(query);
         }
+
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
 
         XContentBuilder builder = XContentFactory.jsonBuilder();
@@ -73,7 +80,6 @@ public class LogService {
         builder.endArray();
         builder.endObject();
 
-        System.out.println(builder.string());
         return builder;
     }
 

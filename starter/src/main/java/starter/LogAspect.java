@@ -55,7 +55,7 @@ public class LogAspect {
     private final String EX_STATUSCODE = "ex_statusCode";
     private final String EX_STACKTRACE = "ex_stackTrace";
 
-    private final String EXECUTION = "execution(public * starter.rest..*.*(..)) " +
+    private final String EXECUTION = "execution(public * starter.rest.*.*(..)) " +
             "&& !execution(public * starter.rest.ErrorHandler.*(..)) " +  //ErrorHandler里处理异常，不记录日志
             "&& !execution(public * starter.rest.Logs.*(..))"; //Logs里查询日志方法，不记录日志
 
@@ -220,11 +220,10 @@ public class LogAspect {
                     .field("logDate", new DateTime().toLocalDateTime())
                     .endObject();
 
-            System.out.println("builder is :" + builder.string());
-
-            XContentBuilder builder_return = logService.createLog(builder);
-
-            System.out.println("builder_return is :" + builder_return.string());
+            //System.out.println("builder is :" + builder.string());
+            //XContentBuilder builder_return =
+            logService.createLog(builder);
+            //System.out.println("builder_return is :" + builder_return.string());
 
         } catch (IOException e) {
             //系统内部是否要记录异常log？
