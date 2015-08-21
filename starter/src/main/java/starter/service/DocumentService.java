@@ -1,7 +1,6 @@
 package starter.service;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -18,8 +17,6 @@ import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.TermFilterBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -265,94 +262,75 @@ public class DocumentService {
     public void processAcl(Json body, Object srcAcl){
         Object newAcl = body.get("_acl");
         if (newAcl != null) {
+            List<Map<String, Object>> _srcAcl = (List<Map<String, Object>>) srcAcl;
             Object addAcl = ((Map<String, Object>) newAcl).get("add");
             Object removeAcl = ((Map<String, Object>) newAcl).get("remove");
-            List<Map<String, Object>> _srcAcl = (List<Map<String, Object>>) srcAcl;
             if (addAcl != null) {
                 List<Map<String, Object>> _addAcl = (List<Map<String, Object>>) addAcl;
-                for(Map<String, Object> add_ace : _addAcl){
-                    Object add_user = add_ace.get("user");
-                    Object add_group = add_ace.get("group");
-                    if (add_user != null && add_ace.get("permission") != null) {
-                        List<String> add_permission = (List<String>)add_ace.get("permission");
-                        boolean flag = true;
-                        Iterator<Map<String, Object>> it = _srcAcl.iterator();
-                        while (it.hasNext()){
-                            Map<String, Object> src_ace = it.next();
-                            Object user = src_ace.get("user");
-                            if (user != null && user.toString().equals(add_user.toString())) {
-                                flag = false;
-                                List<String> oldPermission = (List<String>)src_ace.get("permission");
-                                for(String s : add_permission){
-                                    if (!oldPermission.contains(s)) {
-                                        oldPermission.add(s);
-                                    }
-                                }
-                            }
-                        }
-                        if (flag) {
-                            Map<String, Object> newAce = new HashMap<String, Object>();
-                            newAce.put("user", add_user.toString());
-                            newAce.put("permission", add_permission);
-                            _srcAcl.add(newAce);
-                        }
-                    } else if (add_group != null && add_ace.get("permission") != null) {
-                        List<String> add_permission = (List<String>)add_ace.get("permission");
-                        boolean flag = true;
-                        Iterator<Map<String, Object>> it = _srcAcl.iterator();
-                        while (it.hasNext()){
-                            Map<String, Object> src_ace = it.next();
-                            Object group = src_ace.get("group");
-                            if (group != null && group.toString().equals(add_group.toString())) {
-                                flag = false;
-                                List<String> oldPermission = (List<String>)src_ace.get("permission");
-                                for(String s : add_permission){
-                                    if (!oldPermission.contains(s)) {
-                                        oldPermission.add(s);
-                                    }
-                                }
-                            }
-                        }
-                        if (flag) {
-                            Map<String, Object> newAce = new HashMap<String, Object>();
-                            newAce.put("group", add_group.toString());
-                            newAce.put("permission", add_permission);
-                            _srcAcl.add(newAce);
-                        }
-                    }
-                }
+                handleAddAcl(_addAcl, _srcAcl);
             }
             if (removeAcl != null) {
                 List<Map<String, Object>> _removeAcl = (List<Map<String, Object>>) removeAcl;
-                for(Map<String, Object> remove_ace : _removeAcl){
-                    Object remove_user = remove_ace.get("user");
-                    Object remove_group = remove_ace.get("group");
-                    if (remove_user != null && remove_ace.get("permission") != null) {
-                        List<String> remove_permission = (List<String>)remove_ace.get("permission");
-                        Iterator<Map<String, Object>> it = _srcAcl.iterator();
-                        while (it.hasNext()){
-                            Map<String, Object> src_ace = it.next();
-                            Object user = src_ace.get("user");
-                            if (user != null) {
-                                List<String> oldPermission = (List<String>)src_ace.get("permission");
-                                oldPermission.removeAll(remove_permission);
-                            }
-                        }
-                    } else if (remove_group != null && remove_ace.get("permission") != null) {
-                        List<String> remove_permission = (List<String>)remove_ace.get("permission");
-                        Iterator<Map<String, Object>> it = _srcAcl.iterator();
-                        while (it.hasNext()){
-                            Map<String, Object> src_ace = it.next();
-                            Object group = src_ace.get("group");
-                            if (group != null) {
-                                List<String> oldPermission = (List<String>)src_ace.get("permission");
-                                oldPermission.removeAll(remove_permission);
-                            }
-                        }
-                    }
-                }
+                handleRemoveAcl(_removeAcl, _srcAcl);
             }
             body.put("_acl", _srcAcl);
+        }
+    }
+
+    private void handleRemoveAcl(List<Map<String, Object>> removeAcl, List<Map<String, Object>> _srcAcl) {
+        for(Map<String, Object> map : removeAcl){
+            Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
+            List<String> newPermission = new ArrayList<String>();
+            String who = null;
+            while (it.hasNext()){
+                Map.Entry<String, Object> entry = it.next();
+                String key = entry.getKey();
+                if (key.equals("permission")) {
+                    newPermission = (List<String>) map.get(key);
+                }else{
+                    who = key;
+                }
+            }
+            Iterator<Map<String, Object>> iterator = _srcAcl.iterator();
+            while (iterator.hasNext()){
+                Map<String, Object> src_ace = iterator.next();
+                Object o = src_ace.get(who);
+                if (o != null && o.toString().equals(map.get(who).toString())) {
+                    List<String> oldPermission = (List<String>) src_ace.get("permission");
+                    oldPermission.removeAll(newPermission);
+                }
+            }
+        }
+    }
+
+    private void handleAddAcl(List<Map<String, Object>> addAcl, List<Map<String, Object>> _srcAcl) {
+        for(Map<String, Object> map : addAcl){
+            Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
+            List<String> newPermission = new ArrayList<String>();
+            String who = null;
+            while (it.hasNext()){
+                Map.Entry<String, Object> entry = it.next();
+                String key = entry.getKey();
+                if (key.equals("permission")) {
+                    newPermission = (List<String>) map.get(key);
+                }else{
+                    who = key;
+                }
+            }
+            boolean found = false;
+            Iterator<Map<String, Object>> iterator = _srcAcl.iterator();
+            while (iterator.hasNext()){
+                Map<String, Object> src_ace = iterator.next();
+                Object o = src_ace.get(who);
+                if (o != null && o.toString().equals(map.get(who).toString())) {
+                    List<String> oldPermission = (List<String>) src_ace.get("permission");
+                    oldPermission.addAll(newPermission);
+                    found = true;
+                }
+            }
+            if (!found) {
+                _srcAcl.add(map);
+            }
         }
     }
 

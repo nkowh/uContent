@@ -54,7 +54,6 @@ public class AclService {
                 .field("_type", type)
                 .field("_id", id)
                 .field("_version", updateResponse.getVersion())
-                .field("_isCreated", updateResponse.isCreated())
                 .endObject();
         return xContentBuilder;
     }
