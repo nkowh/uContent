@@ -1,6 +1,9 @@
 package starter.service;
 
 
+import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -8,6 +11,9 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.Requests;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
+import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -69,7 +75,7 @@ public class UserService {
         if (limit>0){
             SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex())
                     .setTypes(userTypeName).setFrom(start).
-                            setSize(limit).addSort(sort, sord.equalsIgnoreCase("asc")?SortOrder.ASC:SortOrder.DESC);
+                            setSize(limit).addSort(sort, sord.equalsIgnoreCase("asc") ? SortOrder.ASC : SortOrder.DESC);
             if (query != null && !query.isEmpty()) {
                 searchRequestBuilder.setQuery(query);
             }
@@ -216,6 +222,34 @@ public class UserService {
         builder.endObject();
         System.out.println(builder.string());
         return builder;
+    }
+
+    public void initialUserMapping() throws IOException {
+        Client client = context.getClient();
+        GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).addTypes(userTypeName).get();
+        ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getMappingsResponse.getMappings();
+        if(mappings.size()==0){
+            //冇得，那就搞一个吧。。。
+            XContentBuilder builder= XContentFactory.jsonBuilder();
+            builder.startObject();
+            builder.startObject(userTypeName);
+            builder.startObject("properties")
+                    .startObject("userId").field("type", "string").field("store", "yes").endObject()
+                    .startObject("userName").field("type", "string").field("store", "yes").endObject()
+                    .startObject("email").field("type", "string").field("store", "yes").endObject()
+                    .startObject("password").field("type", "string").field("store", "yes").endObject()
+                    .startObject("createBy").field("type", "string").field("store", "yes").endObject()
+                    .startObject("creationDate").field("type", "date").field("store", "yes").endObject()
+                    .startObject("lastModifiedBy").field("type", "string").field("store", "yes").endObject()
+                    .startObject("lastModificationDate").field("type", "date").field("store", "yes").endObject();
+            builder.endObject();//end of typeName
+            builder.endObject();
+            //创建mapping
+            PutMappingRequest mapping = Requests.putMappingRequest(context.getIndex()).type(userTypeName).source(builder);
+            PutMappingResponse putMappingResponse = client.admin().indices().putMapping(mapping).actionGet();
+        }else{
+            //艹，居然有！！！！！
+        }
     }
 
 }

@@ -7,6 +7,9 @@ Ext.define('starter.store.Types', {
     proxy: {
         type: 'rest',
         url: '/svc/types',
+        startParam : '',
+        pageParam : '',
+        limitParam : '',
         reader: {
             type: 'json',
             root :'documentTypes'

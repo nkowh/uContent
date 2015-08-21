@@ -23,16 +23,25 @@ Ext.define('starter.view.main.system.user.Modify', {
     // The fields
     defaultType: 'textfield',
     items: [{
-        fieldLabel: 'Name',
-        name: 'Name',
-        allowBlank: false
-    },{
-        name: 'Id',
+        name: '_id',
         xtype: 'hiddenfield',
         allowBlank: false
     },{
+        fieldLabel: 'User Id',
+        name: 'userId',
+        allowBlank: false
+    },{
+        fieldLabel: 'User Name',
+        name: 'userName',
+        allowBlank: false
+    },{
+        fieldLabel: 'Email',
+        name: 'email',
+        vtype: 'email',
+        allowBlank: true
+    },{
         fieldLabel: 'Password',
-        name: 'Password',
+        name: 'password',
         allowBlank: false
     }],
     listeners: {

@@ -55,7 +55,7 @@ public class Systems {
         }
     }
 
-    @RequestMapping(value = "types/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = "types/{id}", method = RequestMethod.PATCH)
     public String updateType(@PathVariable String id,@RequestBody Json body) {
         try {
             XContentBuilder result = typeService.update(id, body);
@@ -82,7 +82,7 @@ public class Systems {
     public String allUsers(@RequestBody Json query,
                            @RequestParam(defaultValue = "0") int start,
                            @RequestParam(defaultValue = "10") int limit,
-                           @RequestParam String sort,
+                           @RequestParam(defaultValue = "") String sort,
                            @RequestParam(defaultValue = "asc") String sord) {
         try {
             XContentBuilder result = userService.all(query, start, limit, sort, sord);
@@ -179,7 +179,7 @@ public class Systems {
     public String allGroups(@RequestBody Json query,
                             @RequestParam(defaultValue = "0") int start,
                             @RequestParam(defaultValue = "10") int limit,
-                            @RequestParam String sort,
+                            @RequestParam(defaultValue = "") String sort,
                             @RequestParam(defaultValue = "asc") String sord) {
         try {
             XContentBuilder result = groupService.all(query, start, limit, sort, sord);
@@ -200,9 +200,10 @@ public class Systems {
     }
 
     @RequestMapping(value = "groups/{id}/users", method = RequestMethod.POST)
-    public String refGroupUsers(@RequestBody List<String> userIds) {
+    public String refGroupUsers(@PathVariable String id,
+                                 @RequestBody Json userIds) {
         try {
-            XContentBuilder result = groupService.refUsers(userIds);
+            XContentBuilder result = groupService.refUsers(id, userIds);
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -213,6 +214,16 @@ public class Systems {
     public String getGroup(@PathVariable String id) {
         try {
             XContentBuilder result = groupService.get(id);
+            return result.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(value = "groups/{groupName}/exist", method = RequestMethod.GET)
+    public String ifGroupNameExist(@PathVariable String groupName) {
+        try {
+            XContentBuilder result = groupService.ifGroupNameExist(groupName);
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -251,4 +262,15 @@ public class Systems {
     }
 
 
+    @RequestMapping(value = "system", method = RequestMethod.POST)
+    public String systemInitial() {
+        try {
+            //XContentBuilder result = groupService.create(body);
+            userService.initialUserMapping();
+            groupService.initialGroupMapping();
+            return "";
+        } catch (Exception e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

@@ -30,16 +30,21 @@ Ext.define('starter.view.main.system.user.Create', {
     // The fields
     defaultType: 'textfield',
     items: [{
-        fieldLabel: 'Name',
-        name: 'Name',
+        fieldLabel: 'User Id',
+        name: 'userId',
         allowBlank: false
     },{
-        name: 'Id',
-        xtype: 'hiddenfield',
+        fieldLabel: 'User Name',
+        name: 'userName',
         allowBlank: false
+    },{
+        fieldLabel: 'Email',
+        name: 'email',
+        vtype: 'email',
+        allowBlank: true
     },{
         fieldLabel: 'Password',
-        name: 'Password',
+        name: 'password',
         allowBlank: false
     }]
 });
