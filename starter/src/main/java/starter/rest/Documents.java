@@ -3,6 +3,7 @@ package starter.rest;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.elasticsearch.search.sort.SortBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,12 +29,12 @@ public class Documents {
     private DocumentService documentService;
 
 
-    @RequestMapping(value = "{type}", method = {RequestMethod.POST}, headers = {"_method=QUERY"})
+    @RequestMapping(value = "{type}", method = {RequestMethod.GET})
     public String query(@PathVariable String type,
-                        @RequestBody Json query,
+                        @RequestParam String query,
                         @RequestParam(defaultValue = "0") int start,
                         @RequestParam(defaultValue = "10") int limit,
-                        @RequestParam String sort,
+                        @RequestParam SortBuilder[] sort,
                         @RequestParam(defaultValue = "true") boolean allowableActions) {
         try {
             XContentBuilder xContentBuilder = documentService.query(type, query, start, limit, sort, allowableActions);
@@ -97,7 +98,7 @@ public class Documents {
     }
 
     @RequestMapping(value = "{type}/{id}", method = RequestMethod.PATCH, consumes = "application/json")
-    public String patchWithoutStream(@PathVariable String type, @PathVariable String id, @RequestParam Json body) {
+    public String patchWithoutStream(@PathVariable String type, @PathVariable String id, @RequestBody Json body) {
         try {
             XContentBuilder xContentBuilder = documentService.patch(type, id, body);
             return xContentBuilder.string();

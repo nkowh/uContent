@@ -42,33 +42,21 @@ public class DocumentService {
     private FileSystem fs;
 
 
-    public XContentBuilder query(String type, Json query, int start, int limit, String sort, boolean allowableActions) throws IOException {
+    public XContentBuilder query(String type, String query, int start, int limit, SortBuilder[] sort, boolean allowableActions) throws IOException {
         SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setTypes(type).setFrom(start).setSize(limit);
         //set query
-        if (query != null && !query.isEmpty()) {
+        if (StringUtils.isNotBlank(query)) {
             searchRequestBuilder.setQuery(query);
         }
-        //process sort
-        if (StringUtils.isNotBlank(sort)) {
-            ObjectMapper objectMapper = new ObjectMapper();
-            List list = objectMapper.readValue(sort, List.class);
-            for(Object obj : list){
-                Map<String, Object> map = (Map<String, Object>) obj;
-                Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
-                while (it.hasNext()){
-                    Map.Entry<String, Object> entry = it.next();
-                    SortBuilder sortBuilder = SortBuilders.fieldSort(entry.getKey());
-                    Map<String, Object> m = (Map<String, Object>)entry.getValue();
-                    String order = m.get("order").toString();
-                    sortBuilder.order(order.equalsIgnoreCase("asc") ? SortOrder.ASC : SortOrder.DESC);
-                    searchRequestBuilder.addSort(sortBuilder);
-                    break;
-                }
+        //set sort
+        if (sort != null && sort.length > 0) {
+            for(SortBuilder sortBuilder : sort){
+                searchRequestBuilder.addSort(sortBuilder);
             }
         }
-        //process acl filter
-        TermFilterBuilder termFilter1 = FilterBuilders.termFilter("_acl.user", context.getUserName());
-        TermFilterBuilder termFilter2 = FilterBuilders.termFilter("_acl.permission", Constant.Permission.READ);
+        //set acl filter
+        TermFilterBuilder termFilter1 = FilterBuilders.termFilter("user", context.getUserName());
+        TermFilterBuilder termFilter2 = FilterBuilders.termFilter("permission", Constant.Permission.READ.toString().toLowerCase());
         BoolFilterBuilder boolFilter = FilterBuilders.boolFilter().must(termFilter1, termFilter2);
         FilterBuilder filter = FilterBuilders.nestedFilter("_acl", boolFilter);
         searchRequestBuilder.setPostFilter(filter);
