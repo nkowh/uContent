@@ -223,7 +223,7 @@ public class LogAspect {
                     .field(EX_STATUSCODE, ex_statusCode)
                     .field(EX_STACKTRACE, ex_stackTrace)
                     .endObject()
-                    .field("logDate", new DateTime())
+                    .field("logDate", new DateTime().toLocalDateTime())
                     .endObject();
 
             System.out.println("builder is :" + builder.string());
