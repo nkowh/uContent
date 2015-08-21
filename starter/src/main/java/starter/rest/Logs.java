@@ -24,11 +24,10 @@ public class Logs {
 
     @RequestMapping(value = "logs", method = {RequestMethod.POST}, headers = {"_method=QUERY"})
     public String query(@RequestBody Json query,
-                        @RequestParam(defaultValue = "0") int start,
-                        @RequestParam(defaultValue = "10") int limit,
-                        @RequestParam String sort) {
+                        @RequestParam(defaultValue = "0") int from,
+                        @RequestParam(defaultValue = "10") int size) {
         try {
-            XContentBuilder result = logService.query(query, start, limit, sort);
+            XContentBuilder result = logService.query(query, from, size);
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);

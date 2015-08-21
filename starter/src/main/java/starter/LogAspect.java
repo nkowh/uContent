@@ -7,6 +7,7 @@ import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,6 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,8 +56,8 @@ public class LogAspect {
     private final String EX_STACKTRACE = "ex_stackTrace";
 
     private final String EXECUTION = "execution(public * starter.rest..*.*(..)) " +
-            "&& !execution(public * starter.rest.ErrorHandler.*(..)) " +
-            "&& !execution(public * starter.rest.Logs.*(..))";
+            "&& !execution(public * starter.rest.ErrorHandler.*(..)) " +  //ErrorHandler里处理异常，不记录日志
+            "&& !execution(public * starter.rest.Logs.*(..))"; //Logs里查询日志方法，不记录日志
 
     private final String SIMPLE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
     private final String DECIMAL_FORMAT = ",###.###";
@@ -166,7 +166,7 @@ public class LogAspect {
         String time_consuming_format = new DecimalFormat(DECIMAL_FORMAT).format(time_consuming) + "ms";//格式化,为了展示使用
 
         //从本地线程变量获取信息
-        String username = (String) getThreadLocal(USER_NAME);
+        String userName = (String) getThreadLocal(USER_NAME);
         String ipAddress = (String) getThreadLocal(IP_ADDRESS);
 
         String url = (String) getThreadLocal(URL);
@@ -201,7 +201,7 @@ public class LogAspect {
         try {
             builder = XContentFactory.jsonBuilder();
             builder.startObject()
-                    .field(USER_NAME, username)
+                    .field(USER_NAME, userName)
                     .field(IP_ADDRESS, ipAddress)
                     .startObject("timeInfo")
                     .field("start", startTimeMillis)
@@ -223,7 +223,7 @@ public class LogAspect {
                     .field(EX_STATUSCODE, ex_statusCode)
                     .field(EX_STACKTRACE, ex_stackTrace)
                     .endObject()
-                    .field("logDate", new Date())
+                    .field("logDate", new DateTime())
                     .endObject();
 
             System.out.println("builder is :" + builder.string());
