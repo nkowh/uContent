@@ -18,7 +18,8 @@ public class LogService {
 
     private final String LOG_TYPE_NAME = "logInfo";
 
-    public XContentBuilder query(String type, Json parse, int start, int limit, String sort) {
+    public XContentBuilder query(Json parse, int start, int limit, String sort) {
+        //LOG_TYPE_NAME
         return null;
     }
 

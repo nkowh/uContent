@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,7 +55,9 @@ public class LogAspect {
     private final String EX_STATUSCODE = "ex_statusCode";
     private final String EX_STACKTRACE = "ex_stackTrace";
 
-    private final String EXECUTION = "execution(public * starter.rest..*.*(..))";
+    private final String EXECUTION = "execution(public * starter.rest..*.*(..)) " +
+            "&& !execution(public * starter.rest.ErrorHandler.*(..)) " +
+            "&& !execution(public * starter.rest.Logs.*(..))";
 
     private final String SIMPLE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
     private final String DECIMAL_FORMAT = ",###.###";
@@ -76,8 +79,6 @@ public class LogAspect {
             doBefore(pjp);
 
             Object result = pjp.proceed();
-
-            //throw new RuntimeException("测试业务逻辑抛出异常的情况。。。");
 
             //记录返回信息
             if (result != null) {
@@ -222,6 +223,7 @@ public class LogAspect {
                     .field(EX_STATUSCODE, ex_statusCode)
                     .field(EX_STACKTRACE, ex_stackTrace)
                     .endObject()
+                    .field("logDate", new Date())
                     .endObject();
 
             System.out.println("builder is :" + builder.string());
@@ -235,11 +237,6 @@ public class LogAspect {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        //展示结果
-        //System.out.println("用户：" + username + "\nIP地址：" + ipAddress + "\n访问URL：" + url
-        //        + "\n开始时间：" + startTime + "\n结束时间：" + endTime + "\n耗时：" + time_consuming_string
-        //        + "\n目标类：" + className + "\n方法：" + methodName + "\n参数：" + paramNames
-        //        + "\n异常信息：" + ex_msg + "\n返回信息：" + result_msg);
     }
 
     //获取远程IP的真实地址
