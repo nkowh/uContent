@@ -36,10 +36,3 @@ public class Logs {
         }
     }
 }
-
-
-//[{"property":"logDate","direction":"DESC"}]
-//%5B%7B%22property%22%3A%22logDate%22,%22direction%22%3A%22DESC%22%7D%5D
-
-//[{"property":"logDate","direction":"ASC"}]
-//%5B%7B%22property%22%3A%22logDate%22,%22direction%22%3A%22ASC%22%7D%5D
