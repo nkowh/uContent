@@ -106,15 +106,14 @@ public class DocumentService {
             List<Map<String, Object>> streams = new ArrayList<Map<String, Object>>();
             for(MultipartFile file : files){
                 Map<String, Object> stream = new HashMap<String, Object>();
-                stream.put(Constant.FieldName.STREAMID, UUID.randomUUID().toString());
-                stream.put(Constant.FieldName.STREAMNAME, file.getName());
-                stream.put(Constant.FieldName.LENGTH, file.getSize());
-                stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
                 String fileId = fs.write(file.getBytes());
                 if (StringUtils.isBlank(fileId)) {
                     throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
-                stream.put(Constant.FieldName.ENCODING, fileId);
+                stream.put(Constant.FieldName.STREAMID, fileId);
+                stream.put(Constant.FieldName.STREAMNAME, file.getName());
+                stream.put(Constant.FieldName.LENGTH, file.getSize());
+                stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
                 streams.add(stream);
             }
             body.put(Constant.FieldName.STREAMS, streams);

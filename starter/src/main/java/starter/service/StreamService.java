@@ -79,7 +79,7 @@ public class StreamService {
             List<Map<String, Object>> _streams = (List<Map<String, Object>>) streams;
             for(Map<String, Object> map : _streams){
                 if (map.get(Constant.FieldName.STREAMID).toString().equals(streamId)) {
-                    byte[] bytes = fs.read(map.get(Constant.FieldName.ENCODING).toString());
+                    byte[] bytes = fs.read(map.get(Constant.FieldName.STREAMID).toString());
                     if (bytes == null) {
                         throw new uContentException("FS restore failed", HttpStatus.INTERNAL_SERVER_ERROR);
                     }
@@ -129,15 +129,14 @@ public class StreamService {
         List<Map<String, Object>> newStreams = new ArrayList<Map<String, Object>>();
         for(MultipartFile file : files){
             Map<String, Object> stream = new HashMap<String, Object>();
-            stream.put(Constant.FieldName.STREAMID, UUID.randomUUID().toString());
-            stream.put(Constant.FieldName.STREAMNAME, file.getName());
-            stream.put(Constant.FieldName.LENGTH, file.getSize());
-            stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
             String fileId = fs.write(file.getBytes());
             if (StringUtils.isBlank(fileId)) {
                 throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            stream.put(Constant.FieldName.ENCODING, fileId);
+            stream.put(Constant.FieldName.STREAMID, UUID.randomUUID().toString());
+            stream.put(Constant.FieldName.STREAMNAME, file.getName());
+            stream.put(Constant.FieldName.LENGTH, file.getSize());
+            stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
             newStreams.add(stream);
         }
         Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
