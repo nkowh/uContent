@@ -32,7 +32,7 @@ public class StreamService {
     public XContentBuilder get(String type, String id) throws IOException {
         GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.READ);
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startArray();
-        Object streams = getResponse.getSource().get("_streams");
+        Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
         if(streams != null){
             List<Map<String, Object>> _streams = (List<Map<String, Object>>) streams;
             for(Map<String, Object> map : _streams){
@@ -53,11 +53,11 @@ public class StreamService {
     public XContentBuilder get(String type, String id, String streamId) throws IOException {
         GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.READ);
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
-        Object streams = getResponse.getSource().get("_streams");
+        Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
         if(streams != null){
             List<Map<String, Object>> _streams = (List<Map<String, Object>>) streams;
             for(Map<String, Object> map : _streams){
-                if (map.get("streamId").toString().equals(streamId)) {
+                if (map.get(Constant.FieldName.STREAMID).toString().equals(streamId)) {
                     Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
                     while (it.hasNext()){
                         Map.Entry<String, Object> entry = it.next();
@@ -74,12 +74,12 @@ public class StreamService {
 
     public Map<String, Object> getStream(String type, String id, String streamId) throws IOException {
         GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.READ);
-        Object streams = getResponse.getSource().get("_streams");
+        Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
         if (streams != null) {
             List<Map<String, Object>> _streams = (List<Map<String, Object>>) streams;
             for(Map<String, Object> map : _streams){
-                if (map.get("streamId").toString().equals(streamId)) {
-                    byte[] bytes = fs.read(map.get("fileId").toString());
+                if (map.get(Constant.FieldName.STREAMID).toString().equals(streamId)) {
+                    byte[] bytes = fs.read(map.get(Constant.FieldName.STREAMID).toString());
                     if (bytes == null) {
                         throw new uContentException("FS restore failed", HttpStatus.INTERNAL_SERVER_ERROR);
                     }
@@ -99,7 +99,7 @@ public class StreamService {
                 .field("_index", context.getIndex())
                 .field("_type", type)
                 .field("_id", id);
-        Object streams = getResponse.getSource().get("_streams");
+        Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
         long version = getResponse.getVersion();
         if (streams != null) {
             List<Map<String, Object>> _streams = (List<Map<String, Object>>) streams;
@@ -107,14 +107,14 @@ public class StreamService {
             boolean flag = false;
             while (it.hasNext()){
                 Map<String, Object> entry = it.next();
-                if (streamIds.contains(entry.get("streamId").toString())) {
+                if (streamIds.contains(entry.get(Constant.FieldName.STREAMID).toString())) {
                     it.remove();
                     flag = true;
                 }
             }
             if (flag) {
                 Map<String, Object> map = new HashMap<String, Object>();
-                map.put("_streams", _streams);
+                map.put(Constant.FieldName.STREAMS, _streams);
                 UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(map).execute().actionGet();
                 version = updateResponse.getVersion();
             }
@@ -129,18 +129,17 @@ public class StreamService {
         List<Map<String, Object>> newStreams = new ArrayList<Map<String, Object>>();
         for(MultipartFile file : files){
             Map<String, Object> stream = new HashMap<String, Object>();
-            stream.put("streamId", UUID.randomUUID().toString());
-            stream.put("name", file.getName());
-            stream.put("size", file.getSize());
-            stream.put("contentType", file.getContentType());
             String fileId = fs.write(file.getBytes());
             if (StringUtils.isBlank(fileId)) {
                 throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            stream.put("fileId", fileId);
+            stream.put(Constant.FieldName.STREAMID, UUID.randomUUID().toString());
+            stream.put(Constant.FieldName.STREAMNAME, file.getName());
+            stream.put(Constant.FieldName.LENGTH, file.getSize());
+            stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
             newStreams.add(stream);
         }
-        Object streams = getResponse.getSource().get("_streams");
+        Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
         List<Map<String, Object>> _streams = null;
         if (streams != null) {
             _streams = (List<Map<String, Object>>) streams;
@@ -152,7 +151,7 @@ public class StreamService {
             _streams = newStreams;
         }
         Map<String, Object> streamsMap = new HashMap<String, Object>();
-        streamsMap.put("_streams", _streams);
+        streamsMap.put(Constant.FieldName.STREAMS, _streams);
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(streamsMap).execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
         xContentBuilder.field("_index", context.getIndex())
