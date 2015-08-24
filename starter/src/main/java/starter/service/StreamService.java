@@ -81,7 +81,7 @@ public class StreamService {
                 if (map.get("streamId").toString().equals(streamId)) {
                     byte[] bytes = fs.read(map.get("fileId").toString());
                     if (bytes == null) {
-                        throw new uContentException("FS store faild", HttpStatus.INTERNAL_SERVER_ERROR);
+                        throw new uContentException("FS restore failed", HttpStatus.INTERNAL_SERVER_ERROR);
                     }
                     map.put("bytes", bytes);
                     return map;
@@ -135,7 +135,7 @@ public class StreamService {
             stream.put("contentType", file.getContentType());
             String fileId = fs.write(file.getBytes());
             if (StringUtils.isBlank(fileId)) {
-                throw new uContentException("FS store faild", HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
             }
             stream.put("fileId", fileId);
             newStreams.add(stream);

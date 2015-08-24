@@ -107,6 +107,9 @@ public class DocumentService {
                 stream.put("size", file.getSize());
                 stream.put("contentType", file.getContentType());
                 String fileId = fs.write(file.getBytes());
+                if (StringUtils.isBlank(fileId)) {
+                    throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
                 stream.put("fileId", fileId);
                 streams.add(stream);
             }
