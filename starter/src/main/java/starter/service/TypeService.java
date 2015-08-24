@@ -242,11 +242,11 @@ public class TypeService {
 
         //填装基本属性
         pros.put(Constant.FieldName.NAME,makeProperty(Constant.FieldName.NAME, "string", true, "", "", "", ""));
-        pros.put(Constant.FieldName.DESCRIPTION,makeProperty(Constant.FieldName.DESCRIPTION, "string", true, "", "", "", ""));
+        pros.put(Constant.FieldName.DESCRIPTION,makeProperty(Constant.FieldName.DESCRIPTION, "string", false, "", "", "", ""));
         pros.put(Constant.FieldName.CREATEDBY,makeProperty(Constant.FieldName.CREATEDBY, "string", true, "", "", "", ""));
         pros.put(Constant.FieldName.CREATEDON,makeProperty(Constant.FieldName.CREATEDON, "date", true, "", "", "", ""));
-        pros.put(Constant.FieldName.LASTUPDATEDBY,makeProperty(Constant.FieldName.LASTUPDATEDBY, "string", true, "", "", "", ""));
-        pros.put(Constant.FieldName.LASTUPDATEDON,makeProperty(Constant.FieldName.LASTUPDATEDON,"date",true,"","","",""));
+        pros.put(Constant.FieldName.LASTUPDATEDBY,makeProperty(Constant.FieldName.LASTUPDATEDBY, "string", false, "", "", "", ""));
+        pros.put(Constant.FieldName.LASTUPDATEDON,makeProperty(Constant.FieldName.LASTUPDATEDON, "date", false, "", "", "", ""));
 
         MappingMetaData mappingMetaData = mappings.get(context.getIndex()).get(id);
         if (mappingMetaData!=null){
