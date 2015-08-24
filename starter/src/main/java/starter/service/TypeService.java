@@ -288,8 +288,6 @@ public class TypeService {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
 
-        Map<String, Map<String, Object>> properties = getProperties(id);
-
         return create(body);
     }
 
