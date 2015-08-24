@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import starter.service.Constant;
 import starter.service.StreamService;
 import starter.uContentException;
 
@@ -50,8 +51,8 @@ public class Streams {
         InputStream stream = null;
         try {
             Map<String, Object> result = streamService.getStream(type, id, streamId);
-            response.setContentType(result.get("contentType").toString());
-            response.setContentLength(Integer.valueOf(result.get("size").toString()));
+            response.setContentType(result.get(Constant.FieldName.CONTENTTYPE).toString());
+            response.setContentLength(Integer.valueOf(result.get(Constant.FieldName.LENGTH).toString()));
             stream = new ByteArrayInputStream((byte[]) result.get("bytes"));
             IOUtils.copy(stream, response.getOutputStream());
         } catch (IOException e) {

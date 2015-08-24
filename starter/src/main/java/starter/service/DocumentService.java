@@ -330,7 +330,11 @@ public class DocumentService {
                 Object o = src_ace.get(who);
                 if (o != null && o.toString().equals(map.get(who).toString())) {
                     List<String> oldPermission = (List<String>) src_ace.get(Constant.FieldName.PERMISSION);
-                    oldPermission.addAll(newPermission);
+                    for(String s : newPermission){
+                        if (!oldPermission.contains(s)) {
+                            oldPermission.add(s);
+                        }
+                    }
                     found = true;
                 }
             }
