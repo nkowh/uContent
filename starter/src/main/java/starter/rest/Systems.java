@@ -175,7 +175,7 @@ public class Systems {
 //        }
 //    }
 
-    @RequestMapping(value = "users", method = RequestMethod.POST)
+    @RequestMapping(value = "groups", method = {RequestMethod.GET})
     public String allGroups(@RequestParam String query,
                             @RequestParam(defaultValue = "0") int start,
                             @RequestParam(defaultValue = "10") int limit,
@@ -262,7 +262,7 @@ public class Systems {
 
 
     @RequestMapping(value = "system", method = RequestMethod.POST)
-    public String systemInitial() {
+    public String systemDataInitial() {
         try {
             //XContentBuilder result = groupService.create(body);
             userService.initialUserMapping();
