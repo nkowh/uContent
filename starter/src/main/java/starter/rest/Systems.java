@@ -1,6 +1,7 @@
 package starter.rest;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.search.sort.SortBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -78,14 +79,13 @@ public class Systems {
 
     /***************************** users ******************************/
 
-    @RequestMapping(value = "users", method = {RequestMethod.POST}, headers = {"_method=QUERY"})
-    public String allUsers(@RequestBody Json query,
+    @RequestMapping(value = "users", method = {RequestMethod.GET})
+    public String allUsers(@RequestParam String query,
                            @RequestParam(defaultValue = "0") int start,
                            @RequestParam(defaultValue = "10") int limit,
-                           @RequestParam(defaultValue = "") String sort,
-                           @RequestParam(defaultValue = "asc") String sord) {
+                           @RequestParam SortBuilder[] sort) {
         try {
-            XContentBuilder result = userService.all(query, start, limit, sort, sord);
+            XContentBuilder result = userService.all(query, start, limit, sort);
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -175,14 +175,13 @@ public class Systems {
 //        }
 //    }
 
-    @RequestMapping(value = "groups", method = {RequestMethod.POST}, headers = {"_method=QUERY"})
-    public String allGroups(@RequestBody Json query,
+    @RequestMapping(value = "groups", method = {RequestMethod.GET})
+    public String allGroups(@RequestParam String query,
                             @RequestParam(defaultValue = "0") int start,
                             @RequestParam(defaultValue = "10") int limit,
-                            @RequestParam(defaultValue = "") String sort,
-                            @RequestParam(defaultValue = "asc") String sord) {
+                            @RequestParam SortBuilder[] sort) {
         try {
-            XContentBuilder result = groupService.all(query, start, limit, sort, sord);
+            XContentBuilder result = groupService.all(query, start, limit, sort);
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -263,7 +262,7 @@ public class Systems {
 
 
     @RequestMapping(value = "system", method = RequestMethod.POST)
-    public String systemInitial() {
+    public String systemDataInitial() {
         try {
             //XContentBuilder result = groupService.create(body);
             userService.initialUserMapping();
