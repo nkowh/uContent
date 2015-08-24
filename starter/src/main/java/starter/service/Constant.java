@@ -83,6 +83,7 @@ public class Constant {
         public static final String USER = "user";
         public static final String GROUP = "group";
         public static final String PERMISSION = "permission";
+        public static final String ALLOWABLEACTIONS = "_allowableActions";
 
     }
 
