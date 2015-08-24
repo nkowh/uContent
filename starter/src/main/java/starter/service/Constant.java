@@ -53,4 +53,38 @@ public class Constant {
             }
         }
     }
+
+
+    /**
+     * ES中mapping定义相关字段名称
+     */
+    public class FieldName {
+
+        public static final String meta = "_meta";
+        public static final String ID = "id";
+        public static final String NAME = "name";
+        public static final String CREATEDBY = "createdBy";
+        public static final String CREATEDON = "createdOn";
+        public static final String LASTUPDATEDBY = "lastupdatedBy";
+        public static final String LASTUPDATEDON = "lastupdatedOn";
+        public static final String ACL = "_acl";
+        public static final String STREAMS = "_streams";
+        public static final String STREAMID = "streamId";
+        public static final String STREAMNAME = "streamName";
+        public static final String CONTENTTYPE = "contentType";
+        public static final String LENGTH = "length";
+        public static final String ENCODING = "encoding";
+        public static final String REQUIRED = "required";
+        public static final String TYPE = "type";
+        public static final String DEFAULTVALUE = "defaultValue";
+        public static final String ORDER = "order";
+        public static final String PATTERN = "pattern";
+        public static final String PROMPTMESSAGE = "promptMessage";
+        public static final String USER = "user";
+        public static final String GROUP = "group";
+        public static final String PERMISSION = "permission";
+
+    }
+
+
 }
