@@ -1,5 +1,7 @@
 package starter.service.fs.losf;
 
+import java.util.Base64;
+
 public class BlockFile {
 
     private String name;
@@ -18,13 +20,15 @@ public class BlockFile {
     }
 
     public static BlockFile valueOf(String s) {
-        String[] parts = s.split(",");
+        String fileId = new String(Base64.getDecoder().decode(s));
+        String[] parts = fileId.split(",");
         return new BlockFile(parts[0], Long.valueOf(parts[1]), Long.valueOf(parts[2]));
     }
 
     @Override
     public String toString() {
-        return String.format("%s,%d,%d", name, position, length);
+        String fileId = String.format("%s,%d,%d", name, position, length);
+        return new String(Base64.getEncoder().encode(fileId.getBytes()));
     }
 
     public String getName() {
