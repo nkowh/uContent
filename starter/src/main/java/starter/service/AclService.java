@@ -44,9 +44,9 @@ public class AclService {
 
     public XContentBuilder update(String type, String id, Json body) throws IOException {
         GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.UPDATE);
-        documentService.processAcl(body, getResponse.getSource().get("_acl"));
+        documentService.processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
         Map<String, Object> acl = new HashMap<String, Object>();
-        acl.put("_acl", getResponse.getSource().get("_acl"));
+        acl.put(Constant.FieldName.ACL, getResponse.getSource().get(Constant.FieldName.ACL));
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(acl).execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
         xContentBuilder.startObject()
