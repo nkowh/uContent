@@ -20,6 +20,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,32 +42,32 @@ public class GroupService {
     @Autowired
     private RequestContext context;
 
-    public XContentBuilder all() throws IOException {
-        Client client = context.getClient();
-        //QueryBuilder queryBuilder = QueryBuilders.termQuery()
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(groupTypeName).execute().actionGet();
-        SearchHits hits = searchResponse.getHits();
-        XContentBuilder builder= XContentFactory.jsonBuilder();
-        builder.startObject();
-        builder.startArray("groups");
-        for (SearchHit searchHitFields : searchResponse.getHits()) {
-            builder.startObject()
-                    .field("_id", searchHitFields.getId())
-                    .field("groupName", searchHitFields.getSource().get("groupName"))
-                    .field("users", searchHitFields.getSource().get("users"))
-                    .field("createBy", searchHitFields.getSource().get("createBy"))
-                    .field("creationDate", searchHitFields.getSource().get("creationDate"))
-                    .field("lastModifiedBy", searchHitFields.getSource().get("lastModifiedBy"))
-                    .field("lastModificationDate", searchHitFields.getSource().get("lastModificationDate"))
-                    .endObject();
-        }
-        builder.endArray();
-        builder.endObject();
-        //System.out.println(builder.string());
-        return builder;
-    }
+//    public XContentBuilder all() throws IOException {
+//        Client client = context.getClient();
+//        //QueryBuilder queryBuilder = QueryBuilders.termQuery()
+//        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(groupTypeName).execute().actionGet();
+//        SearchHits hits = searchResponse.getHits();
+//        XContentBuilder builder= XContentFactory.jsonBuilder();
+//        builder.startObject();
+//        builder.startArray("groups");
+//        for (SearchHit searchHitFields : searchResponse.getHits()) {
+//            builder.startObject()
+//                    .field("_id", searchHitFields.getId())
+//                    .field("groupName", searchHitFields.getSource().get("groupName"))
+//                    .field("users", searchHitFields.getSource().get("users"))
+//                    .field("createBy", searchHitFields.getSource().get("createBy"))
+//                    .field("creationDate", searchHitFields.getSource().get("creationDate"))
+//                    .field("lastModifiedBy", searchHitFields.getSource().get("lastModifiedBy"))
+//                    .field("lastModificationDate", searchHitFields.getSource().get("lastModificationDate"))
+//                    .endObject();
+//        }
+//        builder.endArray();
+//        builder.endObject();
+//        //System.out.println(builder.string());
+//        return builder;
+//    }
 
-    public XContentBuilder all(Json query, int start, int limit, String sort, String sord) throws IOException {
+    public XContentBuilder all(String query, int start, int limit, SortBuilder[] sort) throws IOException {
         Client client = context.getClient();
         //QueryBuilder queryBuilder = QueryBuilders.termQuery()
         //SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(groupTypeName).execute().actionGet();
@@ -74,14 +75,18 @@ public class GroupService {
         SearchResponse searchResponse = null;
         if (limit>0){
             SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex())
-                    .setTypes(groupTypeName).setFrom(start).
-                            setSize(limit).addSort(sort, sord.equalsIgnoreCase("asc")? SortOrder.ASC:SortOrder.DESC);
+                    .setTypes(groupTypeName).setFrom(start).setSize(limit);
             if (query != null && !query.isEmpty()) {
                 searchRequestBuilder.setQuery(query);
             }
+            if (sort != null && sort.length > 0) {
+                for(SortBuilder sortBuilder : sort){
+                    searchRequestBuilder.addSort(sortBuilder);
+                }
+            }
             searchResponse = searchRequestBuilder.execute().actionGet();
         }else{
-            searchResponse = client.prepareSearch(context.getIndex()).setTypes(groupTypeName).execute().actionGet();
+            searchResponse = client.prepareSearch(context.getIndex()).setTypes(groupTypeName).setQuery(query).execute().actionGet();
         }
 
         SearchHits hits = searchResponse.getHits();
