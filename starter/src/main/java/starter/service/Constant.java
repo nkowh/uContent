@@ -85,6 +85,12 @@ public class Constant {
         public static final String PERMISSION = "permission";
         public static final String ALLOWABLEACTIONS = "_allowableActions";
 
+
+        public static final String ISDOCTYPE = "isDocType";
+        public static final String DISPLAYNAME = "displayName";
+        public static final String DESCRIPTION = "description";
+        public static final String PROPERTIES = "properties";
+
     }
 
 

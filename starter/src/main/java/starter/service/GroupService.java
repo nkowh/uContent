@@ -55,10 +55,10 @@ public class GroupService {
 //                    .field("_id", searchHitFields.getId())
 //                    .field("groupName", searchHitFields.getSource().get("groupName"))
 //                    .field("users", searchHitFields.getSource().get("users"))
-//                    .field("createBy", searchHitFields.getSource().get("createBy"))
-//                    .field("creationDate", searchHitFields.getSource().get("creationDate"))
-//                    .field("lastModifiedBy", searchHitFields.getSource().get("lastModifiedBy"))
-//                    .field("lastModificationDate", searchHitFields.getSource().get("lastModificationDate"))
+//                    .field(Constant.FieldName.CREATEDBY, searchHitFields.getSource().get(Constant.FieldName.CREATEDBY))
+//                    .field(Constant.FieldName.CREATEDON, searchHitFields.getSource().get(Constant.FieldName.CREATEDON))
+//                    .field(Constant.FieldName.LASTUPDATEDBY, searchHitFields.getSource().get(Constant.FieldName.LASTUPDATEDBY))
+//                    .field(Constant.FieldName.LASTUPDATEDON, searchHitFields.getSource().get(Constant.FieldName.LASTUPDATEDON))
 //                    .endObject();
 //        }
 //        builder.endArray();
@@ -98,10 +98,10 @@ public class GroupService {
                     .field("_id", searchHitFields.getId())
                     .field("groupName", searchHitFields.getSource().get("groupName"))
                     .field("users", searchHitFields.getSource().get("users"))
-                    .field("createBy", searchHitFields.getSource().get("createBy"))
-                    .field("creationDate", searchHitFields.getSource().get("creationDate"))
-                    .field("lastModifiedBy", searchHitFields.getSource().get("lastModifiedBy"))
-                    .field("lastModificationDate", searchHitFields.getSource().get("lastModificationDate"))
+                    .field(Constant.FieldName.CREATEDBY, searchHitFields.getSource().get(Constant.FieldName.CREATEDBY))
+                    .field(Constant.FieldName.CREATEDON, searchHitFields.getSource().get(Constant.FieldName.CREATEDON))
+                    .field(Constant.FieldName.LASTUPDATEDBY, searchHitFields.getSource().get(Constant.FieldName.LASTUPDATEDBY))
+                    .field(Constant.FieldName.LASTUPDATEDON, searchHitFields.getSource().get(Constant.FieldName.LASTUPDATEDON))
                     .endObject();
         }
         builder.endArray();
@@ -113,8 +113,8 @@ public class GroupService {
     public XContentBuilder create(Json body) throws IOException {
         Client client = context.getClient();
         XContentBuilder builder= XContentFactory.jsonBuilder();
-        body.put("createBy", context.getUserName());
-        body.put("creationDate", new Date());
+        body.put(Constant.FieldName.CREATEDBY, context.getUserName());
+        body.put(Constant.FieldName.CREATEDON, new Date());
         IndexResponse indexResponse = client.prepareIndex(context.getIndex(), groupTypeName).setSource(body).execute().actionGet();
         builder.startObject()
                 .field("_index", indexResponse.getIndex())
@@ -136,10 +136,10 @@ public class GroupService {
                 .field("_id", id)
                 .field("groupName", source.get("groupName"))
                 .field("users", source.get("users"))
-                .field("createBy", source.get("createBy"))
-                .field("creationDate", source.get("creationDate"))
-                .field("lastModifiedBy", source.get("lastModifiedBy"))
-                .field("lastModificationDate", source.get("lastModificationDate"))
+                .field(Constant.FieldName.CREATEDBY, source.get(Constant.FieldName.CREATEDBY))
+                .field(Constant.FieldName.CREATEDON, source.get(Constant.FieldName.CREATEDON))
+                .field(Constant.FieldName.LASTUPDATEDBY, source.get(Constant.FieldName.LASTUPDATEDBY))
+                .field(Constant.FieldName.LASTUPDATEDON, source.get(Constant.FieldName.LASTUPDATEDON))
                 .endObject();
         System.out.println(builder.string());
         return builder;
@@ -177,10 +177,10 @@ public class GroupService {
                         .field("userName", userSource.get("userName"))
                         .field("email", userSource.get("email"))
                         .field("password", userSource.get("password"))
-                        .field("createBy", userSource.get("createBy"))
-                        .field("creationDate", userSource.get("creationDate"))
-                        .field("lastModifiedBy", userSource.get("lastModifiedBy"))
-                        .field("lastModificationDate", userSource.get("lastModificationDate"))
+                        .field(Constant.FieldName.CREATEDBY, userSource.get(Constant.FieldName.CREATEDBY))
+                        .field(Constant.FieldName.CREATEDON, userSource.get(Constant.FieldName.CREATEDON))
+                        .field(Constant.FieldName.LASTUPDATEDBY, userSource.get(Constant.FieldName.LASTUPDATEDBY))
+                        .field(Constant.FieldName.LASTUPDATEDON, userSource.get(Constant.FieldName.LASTUPDATEDON))
                         .endObject();
             }
         }
@@ -196,8 +196,8 @@ public class GroupService {
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
-        body.put("lastModifiedBy", context.getUserName());
-        body.put("lastModificationDate", new Date());
+        body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
+        body.put(Constant.FieldName.LASTUPDATEDON, new Date());
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), groupTypeName, id).setDoc(body).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject()
@@ -252,8 +252,8 @@ public class GroupService {
 //            source.put("users", userIds.get("users"));
 //        }
         source.put("users", userIds.get("users"));
-        source.put("lastModifiedBy", context.getUserName());
-        source.put("lastModificationDate", new Date());
+        source.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
+        source.put(Constant.FieldName.LASTUPDATEDON, new Date());
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), groupTypeName, id).setDoc(source).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject()
@@ -282,10 +282,10 @@ public class GroupService {
                             .startObject("userId").field("type", "string").field("store", "yes").endObject()
                         .endObject()
                     .endObject()
-                    .startObject("createBy").field("type", "string").field("store", "yes").endObject()
-                    .startObject("creationDate").field("type", "date").field("store", "yes").endObject()
-                    .startObject("lastModifiedBy").field("type", "string").field("store", "yes").endObject()
-                    .startObject("lastModificationDate").field("type", "date").field("store", "yes").endObject();
+                    .startObject(Constant.FieldName.CREATEDBY).field("type", "string").field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.CREATEDON).field("type", "date").field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.LASTUPDATEDBY).field("type", "string").field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.LASTUPDATEDON).field("type", "date").field("store", "yes").endObject();
             builder.endObject();//end of typeName
             builder.endObject();
             //创建mapping
