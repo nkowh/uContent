@@ -170,7 +170,7 @@ public class PersistenceDataService {
         GetResponse getResponse = client.prepareGet(reqctx.getRepositoryId(), condition.getType().getFullQualifiedName().getFullQualifiedNameAsString(), condition.getKeyObj().toBase64())
                 .execute().actionGet();
         if (!getResponse.isExists()) {
-            throw new ODataApplicationException("Entity Not Found", HttpStatusCode.BAD_REQUEST.getStatusCode(), Locale.getDefault());
+            throw new ODataApplicationException(String.format("Entity: %s Not Found", condition.getKeyObj()), HttpStatusCode.BAD_REQUEST.getStatusCode(), Locale.getDefault());
         }
 
         EdmEntityType entityType = seekType(getResponse.getType(), condition.getType());
@@ -183,8 +183,9 @@ public class PersistenceDataService {
     private JsonObj retrieveEntity(ExpandOption expandOption, JsonObj entityObj) throws ODataApplicationException {
 
         for (ExpandItem expandItem : expandOption.getExpandItems()) {
-            UriResourceNavigation uriResourceNavigation = (UriResourceNavigation) expandItem.getResourcePath().getUriResourceParts().get(0);
-            EdmNavigationProperty edmNavigationProperty = uriResourceNavigation.getProperty();
+//            entityObj.getType().getNavigationProperty(expandItem.getResourcePath().getUriResourceParts().get(0).toString());
+//            UriResourceNavigation uriResourceNavigation = (UriResourceNavigation) expandItem.getResourcePath().getUriResourceParts().get(0);
+            EdmNavigationProperty edmNavigationProperty = entityObj.getType().getNavigationProperty(expandItem.getResourcePath().getUriResourceParts().get(0).toString());
             UriInfoContext ctx = new UriInfoContext();
             ctx.entity = entityObj;
             ctx.edmNavigationProperty = edmNavigationProperty;

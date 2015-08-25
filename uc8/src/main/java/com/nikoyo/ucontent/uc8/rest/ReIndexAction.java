@@ -52,8 +52,19 @@ public class ReIndexAction extends BaseRestHandler {
     @Inject
     protected ReIndexAction(Settings settings, RestController controller, Client client) {
         super(settings, controller, client);
-        controller.registerHandler(RestRequest.Method.PUT, "/_reindex/{index}", this);
-        controller.registerHandler(RestRequest.Method.POST, "/_reindex/{index}", this);
+//        controller.registerHandler(RestRequest.Method.PUT, "/_reindex/{index}", this);
+//        controller.registerHandler(RestRequest.Method.POST, "/_reindex/{index}", this);
+        controller.registerHandler(RestRequest.Method.GET, "/_reindex/{index}", this);
+    }
+
+
+
+    @Override
+    protected void handleRequest(RestRequest request, RestChannel channel, Client client) throws Exception{
+        String token = UUID.randomUUID().toString();
+        threadPool.scheduler().execute(new ReindexService(request, channel, client, token));
+        XContentBuilder builder = channel.newBuilder().startObject().field("token", token).endObject();
+        channel.sendResponse(new BytesRestResponse(RestStatus.OK, builder));
     }
 
 
@@ -78,6 +89,8 @@ public class ReIndexAction extends BaseRestHandler {
             for(ObjectObjectCursor<String, MappingMetaData> typeEntry : entry.value){
                 xContentBuilder.field(typeEntry.key);
                 xContentBuilder.map(typeEntry.value.sourceAsMap());
+                CreateIndexRequest createIndexRequest = new CreateIndexRequest("");
+                createIndexRequest.settings().
             }
         }
         xContentBuilder.endObject().endObject();
@@ -159,12 +172,10 @@ public class ReIndexAction extends BaseRestHandler {
                             .upsert(XContentFactory.jsonBuilder()
                                     .startObject()
                                     .field("token", token)
-                                    .field("index", request.param("index"))
-                                    .field("reIndex_from", request.param("reIndex_from"))
-                                    .field("reIndex_to", request.param("reIndex_to"))
                                     .field("total", total)
                                     .field("finished", bulkRequest.numberOfActions())
                                     .field("startAt", new Date())
+                                    .field("condition", "")
                                     .endObject());
                     client.update(updateRequest);
                 } catch (IOException e) {
@@ -214,8 +225,7 @@ public class ReIndexAction extends BaseRestHandler {
     private static String[] originalName(Client client, String alias){
         if(!client.admin().indices().prepareExists(alias).execute().actionGet().isExists()){
             //TODO 日志
-            System.out.println("The index: " + alias + " which to be reIndexed is not exist");
-            return null;
+            throw new RuntimeException("The index: " + alias + " which to be reIndexed is not exist");
         }
         GetIndexRequest getIndexRequest = new GetIndexRequest();
         getIndexRequest.indices(alias);
@@ -228,22 +238,15 @@ public class ReIndexAction extends BaseRestHandler {
         }
     }
 
-    @Override
-    protected void handleRequest(RestRequest request, RestChannel channel, Client client) throws Exception{
-        String token = UUID.randomUUID().toString();
-        threadPool.scheduler().execute(new Reindex(request, channel, client, token));
-        XContentBuilder builder = channel.newBuilder().startObject()
-                .field("token", token).endObject();
-        channel.sendResponse(new BytesRestResponse(RestStatus.OK, builder));
-    }
 
-    class Reindex implements Runnable{
+
+    class ReindexService implements Runnable{
         private RestRequest request;
         private RestChannel channel;
         private Client client;
         private String token;
 
-        public Reindex(RestRequest request, RestChannel channel, Client client, String token) {
+        public ReindexService(RestRequest request, RestChannel channel, Client client, String token) {
             this.request = request;
             this.channel = channel;
             this.client = client;
@@ -300,13 +303,15 @@ public class ReIndexAction extends BaseRestHandler {
                     //TODO 删除原索引
                     //client.admin().indices().prepareDelete(request.param("index")).execute();
                 }
-
                 public void onFailure(Throwable e) {
                     //TODO
                 }
             });
-
         }
+    }
+
+    public void aa(Client client){
+        SearchRequest searchRequest = new SearchRequest();
     }
 
 

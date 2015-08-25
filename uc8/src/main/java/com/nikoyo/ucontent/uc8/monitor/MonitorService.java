@@ -48,7 +48,7 @@ public class MonitorService extends AbstractLifecycleComponent<MonitorService> {
 
     @Override
     protected void doStart() throws ElasticsearchException {
-        threadPool.scheduleWithFixedDelay(new Monitor(), TimeValue.timeValueSeconds(3));
+//        threadPool.scheduleWithFixedDelay(new Monitor(), TimeValue.timeValueSeconds(3));
     }
 
     @Override

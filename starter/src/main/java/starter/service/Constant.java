@@ -16,7 +16,7 @@ public class Constant {
         UPDATE(4),
         DELETE(8);
 
-        private int value = 0;
+        private int value = -1;
 
         Permission(int value){
             this.value = value;
@@ -32,9 +32,9 @@ public class Constant {
                     return READ;
                 case 2:
                     return WRITE;
-                case 3:
-                    return UPDATE;
                 case 4:
+                    return UPDATE;
+                case 8:
                     return DELETE;
                 default:
                     throw new RuntimeException("No type match for [" + value + "]");
@@ -48,9 +48,84 @@ public class Constant {
                     return Permission.READ;
                 case "write":
                     return Permission.WRITE;
+                case "update":
+                    return Permission.UPDATE;
+                case "delete":
+                    return Permission.DELETE;
                 default:
                     throw new RuntimeException("permission [" + permission + "] not allowed, either [read] or [write] are allowed");
             }
         }
     }
+
+
+    /**
+     * ES中mapping定义相关字段名称
+     */
+    public class FieldName {
+
+        public static final String meta = "_meta";
+        public static final String ID = "id";
+        public static final String NAME = "name";
+        public static final String CREATEDBY = "createdBy";
+        public static final String CREATEDON = "createdOn";
+        public static final String LASTUPDATEDBY = "lastupdatedBy";
+        public static final String LASTUPDATEDON = "lastupdatedOn";
+        public static final String ACL = "_acl";
+        public static final String STREAMS = "_streams";
+        public static final String STREAMID = "streamId";
+        public static final String STREAMNAME = "streamName";
+        public static final String CONTENTTYPE = "contentType";
+        public static final String LENGTH = "length";
+        public static final String REQUIRED = "required";
+        public static final String TYPE = "type";
+        public static final String DEFAULTVALUE = "defaultValue";
+        public static final String ORDER = "order";
+        public static final String PATTERN = "pattern";
+        public static final String PROMPTMESSAGE = "promptMessage";
+        public static final String USER = "user";
+        public static final String GROUP = "group";
+        public static final String PERMISSION = "permission";
+        public static final String ALLOWABLEACTIONS = "_allowableActions";
+
+
+        public static final String ISDOCTYPE = "isDocType";
+        public static final String DISPLAYNAME = "displayName";
+        public static final String DESCRIPTION = "description";
+        public static final String PROPERTIES = "properties";
+
+
+        public static final String INDEX = "index";
+        public static final String ANALYZED = "analyzed";
+        public static final String NOT_ANALYZED = "not_analyzed";
+
+        public static final String _ID = "_id";
+
+        //fields of user
+        public static final String USERTYPENAME = "user";
+        public static final String USERID = "userId";
+        public static final String USERNAME = "userName";
+        public static final String EMAIL = "email";
+        public static final String PASSWORD = "password";
+
+        //fields of group
+        public static final String GROUPTYPENAME = "group";
+        public static final String GROUPNAME = "groupName";
+        public static final String USERS = "users";
+
+    }
+
+
+    /**
+     * 属性值的类型
+     */
+    public class Type{
+        public static final String STRING = "String";
+        public static final String INT = "int";
+        public static final String FLOAT = "float";
+        public static final String DATE = "date";
+        public static final String BOOLEAN = "boolean";
+    }
+
+
 }

@@ -1,7 +1,6 @@
 package starter.service;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -18,8 +17,6 @@ import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.TermFilterBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -30,6 +27,7 @@ import starter.service.fs.FileSystem;
 import starter.uContentException;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 
 @Service
@@ -41,41 +39,33 @@ public class DocumentService {
     @Autowired
     private FileSystem fs;
 
+    @Autowired
+    private TypeService typeService;
 
-    public XContentBuilder query(String type, Json query, int start, int limit, String sort, boolean allowableActions) throws IOException {
+
+    public XContentBuilder query(String type, String query, int start, int limit, SortBuilder[] sort, boolean allowableActions) throws IOException {
         SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setTypes(type).setFrom(start).setSize(limit);
         //set query
-        if (query != null && !query.isEmpty()) {
+        if (StringUtils.isNotBlank(query)) {
             searchRequestBuilder.setQuery(query);
         }
-        //process sort
-        if (StringUtils.isNotBlank(sort)) {
-            ObjectMapper objectMapper = new ObjectMapper();
-            List list = objectMapper.readValue(sort, List.class);
-            for(Object obj : list){
-                Map<String, Object> map = (Map<String, Object>) obj;
-                Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
-                while (it.hasNext()){
-                    Map.Entry<String, Object> entry = it.next();
-                    SortBuilder sortBuilder = SortBuilders.fieldSort(entry.getKey());
-                    Map<String, Object> m = (Map<String, Object>)entry.getValue();
-                    String order = m.get("order").toString();
-                    sortBuilder.order(order.equalsIgnoreCase("asc") ? SortOrder.ASC : SortOrder.DESC);
-                    searchRequestBuilder.addSort(sortBuilder);
-                    break;
-                }
+        //set sort
+        if (sort != null && sort.length > 0) {
+            for(SortBuilder sortBuilder : sort){
+                searchRequestBuilder.addSort(sortBuilder);
             }
         }
-        //process acl filter
-        TermFilterBuilder termFilter1 = FilterBuilders.termFilter("_acl.user", context.getUserName());
-        TermFilterBuilder termFilter2 = FilterBuilders.termFilter("_acl.permission", Constant.Permission.READ);
+        //set acl filter
+        TermFilterBuilder termFilter1 = FilterBuilders.termFilter(Constant.FieldName.USER, context.getUserName());
+        TermFilterBuilder termFilter2 = FilterBuilders.termFilter(Constant.FieldName.PERMISSION, Constant.Permission.READ.toString().toLowerCase());
         BoolFilterBuilder boolFilter = FilterBuilders.boolFilter().must(termFilter1, termFilter2);
-        FilterBuilder filter = FilterBuilders.nestedFilter("_acl", boolFilter);
+        FilterBuilder filter = FilterBuilders.nestedFilter(Constant.FieldName.ACL, boolFilter);
         searchRequestBuilder.setPostFilter(filter);
         //process result
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
-        XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
-        xContentBuilder.startArray();
+        XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
+        xContentBuilder.field("total", searchResponse.getHits().getTotalHits());
+        xContentBuilder.startArray("documents");
         for(SearchHit hit : searchResponse.getHits().getHits()){
             xContentBuilder.startObject();
             xContentBuilder.field("_index", hit.getIndex())
@@ -90,15 +80,16 @@ public class DocumentService {
                 xContentBuilder.field(entry.getKey(), entry.getValue());
             }
             if (allowableActions) {
-                xContentBuilder.field("_allowableActions", getUserPermission(context.getUserName(), source.get("_acl")));
+                xContentBuilder.field(Constant.FieldName.ALLOWABLEACTIONS, getUserPermission(context.getUserName(), source.get("_acl")));
             }
             xContentBuilder.endObject();
         }
-        xContentBuilder.endArray();
+        xContentBuilder.endArray().endObject();
         return xContentBuilder;
     }
 
     public XContentBuilder create(String type, Json body) throws IOException {
+        validate(body, type);
         beforeCreate(body);
         IndexResponse indexResponse = context.getClient().prepareIndex(context.getIndex(), type).setSource(body).execute().actionGet();
         XContentBuilder builder = JsonXContent.contentBuilder();
@@ -117,15 +108,17 @@ public class DocumentService {
             List<Map<String, Object>> streams = new ArrayList<Map<String, Object>>();
             for(MultipartFile file : files){
                 Map<String, Object> stream = new HashMap<String, Object>();
-                stream.put("streamId", UUID.randomUUID().toString());
-                stream.put("name", file.getName());
-                stream.put("size", file.getSize());
-                stream.put("contentType", file.getContentType());
                 String fileId = fs.write(file.getBytes());
-                stream.put("fileId", fileId);
+                if (StringUtils.isBlank(fileId)) {
+                    throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+                stream.put(Constant.FieldName.STREAMID, fileId);
+                stream.put(Constant.FieldName.STREAMNAME, file.getName());
+                stream.put(Constant.FieldName.LENGTH, file.getSize());
+                stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
                 streams.add(stream);
             }
-            body.put("_streams", streams);
+            body.put(Constant.FieldName.STREAMS, streams);
         }
         return create(type, body);
     }
@@ -141,19 +134,15 @@ public class DocumentService {
 
     public XContentBuilder update(String type, String id, Json body) throws IOException {
         GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.UPDATE);
-        processAcl(body, getResponse.getSource().get("_acl"));
+        processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
         beforeUpdate(body);
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
         xContentBuilder.startObject()
                 .field("_index", context.getIndex())
                 .field("_type", type)
-                .field("_id", id);
-        if (updateResponse.getVersion() != getResponse.getVersion()) {
-            xContentBuilder.field("_update", true);
-        }else{
-            xContentBuilder.field("_update", false);
-        }
+                .field("_id", id)
+                .field("_version", updateResponse.getVersion());
         xContentBuilder.endObject();
         return xContentBuilder;
     }
@@ -171,26 +160,28 @@ public class DocumentService {
                 .field("_id", id);
         DeleteResponse deleteResponse = context.getClient().prepareDelete(context.getIndex(), type, id).execute().actionGet();
         xContentBuilder.field("_version", deleteResponse.getVersion());
-        xContentBuilder.field("_delete", deleteResponse.isFound());
+        xContentBuilder.field("_found", deleteResponse.isFound());
         xContentBuilder.endObject();
         return xContentBuilder;
     }
 
 
     private void beforeCreate(Json body){
-        body.put("createdBy", context.getUserName());
-        body.put("created", new DateTime());
+        body.put(Constant.FieldName.CREATEDBY, context.getUserName());
+        body.put(Constant.FieldName.CREATEDON, new DateTime());
+        body.put(Constant.FieldName.LASTUPDATEDBY, "");
+        body.put(Constant.FieldName.LASTUPDATEDON, null);
         List<Object> permission = new ArrayList<Object>();
         permission.add(Constant.Permission.READ);
         permission.add(Constant.Permission.WRITE);
         permission.add(Constant.Permission.UPDATE);
         permission.add(Constant.Permission.DELETE);
         Map<String, Object> ace = new HashMap<String, Object>();
-        ace.put("user", context.getUserName());
-        ace.put("permission", permission);
+        ace.put(Constant.FieldName.USER, context.getUserName());
+        ace.put(Constant.FieldName.PERMISSION, permission);
         List<Map<String, Object>> acl = new ArrayList<Map<String, Object>>();
         acl.add(ace);
-        body.put("_acl", acl);
+        body.put(Constant.FieldName.ACL, acl);
     }
 
     private Json processGet(GetResponse getResponse, boolean head, boolean allowableActions) throws IOException {
@@ -198,6 +189,7 @@ public class DocumentService {
         json.put("_index", getResponse.getIndex());
         json.put("_type", getResponse.getType());
         json.put("_id", getResponse.getId());
+        json.put("_found", getResponse.isExists());
         if (getResponse.isExists()) {
             json.put("_version", getResponse.getVersion());
             if (!head){
@@ -211,7 +203,7 @@ public class DocumentService {
                 }
             }
             if (allowableActions) {
-                json.put("_allowableActions", getUserPermission(context.getUserName(), getResponse.getSource().get("_acl")));
+                json.put(Constant.FieldName.ALLOWABLEACTIONS, getUserPermission(context.getUserName(), getResponse.getSource().get(Constant.FieldName.ACL)));
             }
         }
         return json;
@@ -235,9 +227,9 @@ public class DocumentService {
         Set permission = new HashSet();
         if (_acl != null && !_acl.isEmpty()) {
             for(Map<String, Object> map : _acl){
-                Object u = map.get("user");
+                Object u = map.get(Constant.FieldName.USER);
                 if(u != null && u.toString().equals(user)){
-                    permission.addAll((List)map.get("permission"));
+                    permission.addAll((List)map.get(Constant.FieldName.PERMISSION));
                 }
             }
         }
@@ -249,9 +241,9 @@ public class DocumentService {
         Set permission = new HashSet();
         if (_acl != null && !_acl.isEmpty()) {
             for(Map<String, Object> map : _acl){
-                Object u = map.get("group");
+                Object u = map.get(Constant.FieldName.GROUP);
                 if(u != null && groups.contains(u.toString())){
-                    permission.addAll((List)map.get("permission"));
+                    permission.addAll((List)map.get(Constant.FieldName.PERMISSION));
                 }
             }
         }
@@ -272,102 +264,87 @@ public class DocumentService {
 
     private void beforeUpdate(Json body){
         if(body != null){
-            body.put("lastUpdatedBy", context.getUserName());
-            body.put("lastUpdated", new DateTime());
+            body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
+            body.put(Constant.FieldName.LASTUPDATEDON, new DateTime());
         }
     }
 
     public void processAcl(Json body, Object srcAcl){
-        Object newAcl = body.get("_acl");
+        Object newAcl = body.get(Constant.FieldName.ACL);
         if (newAcl != null) {
+            List<Map<String, Object>> _srcAcl = (List<Map<String, Object>>) srcAcl;
             Object addAcl = ((Map<String, Object>) newAcl).get("add");
             Object removeAcl = ((Map<String, Object>) newAcl).get("remove");
-            List<Map<String, Object>> _srcAcl = (List<Map<String, Object>>) srcAcl;
             if (addAcl != null) {
                 List<Map<String, Object>> _addAcl = (List<Map<String, Object>>) addAcl;
-                for(Map<String, Object> add_ace : _addAcl){
-                    Object add_user = add_ace.get("user");
-                    Object add_group = add_ace.get("group");
-                    if (add_user != null && add_ace.get("permission") != null) {
-                        List<String> add_permission = (List<String>)add_ace.get("permission");
-                        boolean flag = true;
-                        Iterator<Map<String, Object>> it = _srcAcl.iterator();
-                        while (it.hasNext()){
-                            Map<String, Object> src_ace = it.next();
-                            Object user = src_ace.get("user");
-                            if (user != null && user.toString().equals(add_user.toString())) {
-                                flag = false;
-                                List<String> oldPermission = (List<String>)src_ace.get("permission");
-                                for(String s : add_permission){
-                                    if (!oldPermission.contains(s)) {
-                                        oldPermission.add(s);
-                                    }
-                                }
-                            }
-                        }
-                        if (flag) {
-                            Map<String, Object> newAce = new HashMap<String, Object>();
-                            newAce.put("user", add_user.toString());
-                            newAce.put("permission", add_permission);
-                            _srcAcl.add(newAce);
-                        }
-                    } else if (add_group != null && add_ace.get("permission") != null) {
-                        List<String> add_permission = (List<String>)add_ace.get("permission");
-                        boolean flag = true;
-                        Iterator<Map<String, Object>> it = _srcAcl.iterator();
-                        while (it.hasNext()){
-                            Map<String, Object> src_ace = it.next();
-                            Object group = src_ace.get("group");
-                            if (group != null && group.toString().equals(add_group.toString())) {
-                                flag = false;
-                                List<String> oldPermission = (List<String>)src_ace.get("permission");
-                                for(String s : add_permission){
-                                    if (!oldPermission.contains(s)) {
-                                        oldPermission.add(s);
-                                    }
-                                }
-                            }
-                        }
-                        if (flag) {
-                            Map<String, Object> newAce = new HashMap<String, Object>();
-                            newAce.put("group", add_group.toString());
-                            newAce.put("permission", add_permission);
-                            _srcAcl.add(newAce);
-                        }
-                    }
-                }
+                handleAddAcl(_addAcl, _srcAcl);
             }
             if (removeAcl != null) {
                 List<Map<String, Object>> _removeAcl = (List<Map<String, Object>>) removeAcl;
-                for(Map<String, Object> remove_ace : _removeAcl){
-                    Object remove_user = remove_ace.get("user");
-                    Object remove_group = remove_ace.get("group");
-                    if (remove_user != null && remove_ace.get("permission") != null) {
-                        List<String> remove_permission = (List<String>)remove_ace.get("permission");
-                        Iterator<Map<String, Object>> it = _srcAcl.iterator();
-                        while (it.hasNext()){
-                            Map<String, Object> src_ace = it.next();
-                            Object user = src_ace.get("user");
-                            if (user != null) {
-                                List<String> oldPermission = (List<String>)src_ace.get("permission");
-                                oldPermission.removeAll(remove_permission);
-                            }
-                        }
-                    } else if (remove_group != null && remove_ace.get("permission") != null) {
-                        List<String> remove_permission = (List<String>)remove_ace.get("permission");
-                        Iterator<Map<String, Object>> it = _srcAcl.iterator();
-                        while (it.hasNext()){
-                            Map<String, Object> src_ace = it.next();
-                            Object group = src_ace.get("group");
-                            if (group != null) {
-                                List<String> oldPermission = (List<String>)src_ace.get("permission");
-                                oldPermission.removeAll(remove_permission);
-                            }
-                        }
-                    }
+                handleRemoveAcl(_removeAcl, _srcAcl);
+            }
+            body.put(Constant.FieldName.ACL, _srcAcl);
+        }
+    }
+
+    private void handleRemoveAcl(List<Map<String, Object>> removeAcl, List<Map<String, Object>> _srcAcl) {
+        for(Map<String, Object> map : removeAcl){
+            Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
+            List<String> newPermission = new ArrayList<String>();
+            String who = null;
+            while (it.hasNext()){
+                Map.Entry<String, Object> entry = it.next();
+                String key = entry.getKey();
+                if (key.equals(Constant.FieldName.PERMISSION)) {
+                    newPermission = (List<String>) map.get(key);
+                }else{
+                    who = key;
                 }
             }
-            body.put("_acl", _srcAcl);
+            Iterator<Map<String, Object>> iterator = _srcAcl.iterator();
+            while (iterator.hasNext()){
+                Map<String, Object> src_ace = iterator.next();
+                Object o = src_ace.get(who);
+                if (o != null && o.toString().equals(map.get(who).toString())) {
+                    List<String> oldPermission = (List<String>) src_ace.get(Constant.FieldName.PERMISSION);
+                    oldPermission.removeAll(newPermission);
+                }
+            }
+        }
+    }
+
+    private void handleAddAcl(List<Map<String, Object>> addAcl, List<Map<String, Object>> _srcAcl) {
+        for(Map<String, Object> map : addAcl){
+            Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
+            List<String> newPermission = new ArrayList<String>();
+            String who = null;
+            while (it.hasNext()){
+                Map.Entry<String, Object> entry = it.next();
+                String key = entry.getKey();
+                if (key.equals(Constant.FieldName.PERMISSION)) {
+                    newPermission = (List<String>) map.get(key);
+                }else{
+                    who = key;
+                }
+            }
+            boolean found = false;
+            Iterator<Map<String, Object>> iterator = _srcAcl.iterator();
+            while (iterator.hasNext()){
+                Map<String, Object> src_ace = iterator.next();
+                Object o = src_ace.get(who);
+                if (o != null && o.toString().equals(map.get(who).toString())) {
+                    List<String> oldPermission = (List<String>) src_ace.get(Constant.FieldName.PERMISSION);
+                    for(String s : newPermission){
+                        if (!oldPermission.contains(s)) {
+                            oldPermission.add(s);
+                        }
+                    }
+                    found = true;
+                }
+            }
+            if (!found) {
+                _srcAcl.add(map);
+            }
         }
     }
 
@@ -377,10 +354,48 @@ public class DocumentService {
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
-        if (!hasPermission(user, getResponse.getSource().get("_acl"), permission)) {
+        if (!hasPermission(user, getResponse.getSource().get(Constant.FieldName.ACL), permission)) {
             throw new uContentException("Forbidden", HttpStatus.FORBIDDEN);
         }
         return getResponse;
+    }
+
+
+    private void validate(Json body, String type) throws IOException {
+        Map<String, Map<String, Object>> definition = typeService.getProperties(type);
+        Set<String> keySet = definition.keySet();
+        Iterator<Map.Entry<String, Object>> iterator = body.entrySet().iterator();
+        while (iterator.hasNext()){
+            Map.Entry<String, Object> entry = iterator.next();
+            String key = entry.getKey();
+            if (!keySet.contains(key)) {
+                iterator.remove();
+                continue;
+            }
+            Map<String, Object> property = definition.get(key);
+            String propType = property.get(Constant.FieldName.TYPE).toString();
+
+        }
+        throw new RuntimeException();
+
+
+    }
+
+
+    private Object formatValue(String type, String StringValue){
+        switch (type){
+            case Constant.Type.INT :
+                return Integer.valueOf(StringValue);
+            case Constant.Type.FLOAT :
+                return Float.valueOf(StringValue);
+            case Constant.Type.DATE :
+                return Date.parse(StringValue);
+            case Constant.Type.BOOLEAN :
+                return Boolean.valueOf(StringValue);
+            default:
+                return null;
+        }
+
     }
 
 }

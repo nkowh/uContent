@@ -60,6 +60,7 @@ public class ODataServlet extends HttpServlet {
         List<EdmxReference> references = new ArrayList<>();
         ServiceMetadata serviceMetadata = odata.createServiceMetadata(context.getProvider(), references);
         ODataHttpHandler handler = odata.createHandler(serviceMetadata);
+        context.setServiceMetadata(serviceMetadata);
         handler.setSplit(1);
         handler.register(defaultProcessor);
         handler.register(entityCollectionProcessor);

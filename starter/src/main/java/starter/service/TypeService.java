@@ -17,15 +17,14 @@ import org.elasticsearch.common.hppc.cursors.ObjectObjectCursor;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import starter.RequestContext;
 import starter.rest.Json;
+import starter.uContentException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class TypeService {
@@ -52,13 +51,13 @@ public class TypeService {
                     if (typeObject!=null){
                         LinkedHashMap<String, Object> typeInfo = (LinkedHashMap<String, Object>)typeObject.get("_meta");
                         if (typeInfo!=null){
-                            boolean isDocType = (boolean)typeInfo.get("isDocType");
-                            String displayName = String.valueOf(typeInfo.get("displayName"));
-                            String description = String.valueOf(typeInfo.get("description"));
+                            boolean isDocType = (boolean)typeInfo.get(Constant.FieldName.ISDOCTYPE);
+                            String displayName = String.valueOf(typeInfo.get(Constant.FieldName.DISPLAYNAME));
+                            String description = String.valueOf(typeInfo.get(Constant.FieldName.DESCRIPTION));
                             if (isDocType){
-                                builder.startObject().field("name", typeName)
-                                        .field("displayName", displayName)
-                                        .field("description", description)
+                                builder.startObject().field(Constant.FieldName.NAME, typeName)
+                                        .field(Constant.FieldName.DISPLAYNAME, displayName)
+                                        .field(Constant.FieldName.DESCRIPTION, description)
                                         .endObject();
                             }
                         }
@@ -74,73 +73,26 @@ public class TypeService {
         return builder;
     }
 
-//    public XContentBuilder create(Json body) throws IOException {
-//        return null;
-//    }
-
     public XContentBuilder create(Json body) throws IOException {
         Client client = context.getClient();
 
         boolean acknowledged = false;
-//
-//        String jsonStr="{\n" +
-//                "\t\"name\": \"testtype2\",\n" +
-//                "\t\"displayName\": \"测试文档类型2\",\n" +
-//                "\t\"description\": \"测试文档类型2\",\n" +
-//                "\t\"properties\": [\n" +
-//                "\t\t{\n" +
-//                "\t\t\t\"name\":\"aaa\",\n" +
-//                "\t\t\t\"type\":\"string\",\n" +
-//                "\t\t\t\"isRequire\":true,\n" +
-//                "\t\t\t\"defaultValue\":\"xx1\",\n" +
-//                "\t\t\t\"partten\":\"\",\n" +
-//                "\t\t\t\"promptMssage\":\"\",\n" +
-//                "\t\t\t\"order\" : \"\"\n" +
-//                "\t\t},{\n" +
-//                "\t\t\t\"name\":\"bbb\",\n" +
-//                "\t\t\t\"type\":\"float\",\n" +
-//                "\t\t\t\"isRequire\":true,\n" +
-//                "\t\t\t\"defaultValue\":\"1.45\",\n" +
-//                "\t\t\t\"partten\":\"\",\n" +
-//                "\t\t\t\"promptMssage\":\"\",\n" +
-//                "\t\t\t\"order\" : \"\"\n" +
-//                "\t\t},{\n" +
-//                "\t\t\t\"name\":\"ccc\",\n" +
-//                "\t\t\t\"type\":\"date\",\n" +
-//                "\t\t\t\"isRequire\":true,\n" +
-//                "\t\t\t\"defaultValue\":\"2015-05-20\",\n" +
-//                "\t\t\t\"partten\":\"\",\n" +
-//                "\t\t\t\"promptMssage\":\"\",\n" +
-//                "\t\t\t\"order\" : \"\"\n" +
-//                "\t\t},{\n" +
-//                "\t\t\t\"name\":\"ddd\",\n" +
-//                "\t\t\t\"type\":\"boolean\",\n" +
-//                "\t\t\t\"isRequire\":true,\n" +
-//                "\t\t\t\"defaultValue\":\"false\",\n" +
-//                "\t\t\t\"partten\":\"\",\n" +
-//                "\t\t\t\"promptMssage\":\"必须填ture或false\",\n" +
-//                "\t\t\t\"order\" : \"\"\n" +
-//                "\t\t}\n" +
-//                "\t]\n" +
-//                "}\n";
-//
-//        Json body = Json.parse(jsonStr);
 
         try {
             XContentBuilder builder= XContentFactory.jsonBuilder();
             String typeName="";
             if(body!=null){
                 //获取typeName
-                Object type = body.get("name");
+                Object type = body.get(Constant.FieldName.NAME);
                 if ((type==null)||(((String)type).equals(""))){
                     //Exception
                 }
                 typeName = type.toString();
 
-                Object description = body.get("description");
+                Object description = body.get(Constant.FieldName.DESCRIPTION);
 
                 //获取properties
-                ArrayList<Object> properties = (ArrayList<Object>)body.get("properties");
+                ArrayList<Object> properties = (ArrayList<Object>)body.get(Constant.FieldName.PROPERTIES);
                 if ((properties==null)||properties.size()==0){
                     //Exception
                 }
@@ -150,21 +102,22 @@ public class TypeService {
 
                 //组装_meta
                 builder.startObject("_meta")
-                        .field("displayName", body.get("displayName").toString())
-                        .field("description", body.get("description").toString())
-                        .field("isDocType", true);
-                //builder.startObject("properties");
-                builder.startArray("properties");
+                        .field(Constant.FieldName.DISPLAYNAME, body.get(Constant.FieldName.DISPLAYNAME).toString())
+                        .field(Constant.FieldName.DESCRIPTION, body.get(Constant.FieldName.DESCRIPTION).toString())
+                        .field(Constant.FieldName.ISDOCTYPE, true);
+                //builder.startObject(Constant.FieldName.PROPERTIES);
+                builder.startArray(Constant.FieldName.PROPERTIES);
                 for(Object property:properties){
                     if (property!=null){
                         LinkedHashMap<String, Object> pro = (LinkedHashMap<String, Object>)property;
-                        builder.startObject().field("name", pro.get("name").toString())
-                                .field("type", pro.get("type").toString())
-                                .field("isRequire", Boolean.valueOf(pro.get("isRequire").toString()))
-                                .field("defaultValue", pro.get("defaultValue").toString())
-                                .field("partten", pro.get("partten").toString())
-                                .field("promptMssage", pro.get("promptMssage").toString())
-                                .field("order", pro.get("order").toString())
+                        builder.startObject().field(Constant.FieldName.NAME, pro.get(Constant.FieldName.NAME).toString())
+                                .field(Constant.FieldName.TYPE, pro.get(Constant.FieldName.TYPE).toString())
+                                .field(Constant.FieldName.INDEX, pro.get(Constant.FieldName.INDEX).toString())
+                                .field(Constant.FieldName.REQUIRED, Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()))
+                                .field(Constant.FieldName.DEFAULTVALUE, pro.get(Constant.FieldName.DEFAULTVALUE).toString())
+                                .field(Constant.FieldName.PATTERN, pro.get(Constant.FieldName.PATTERN).toString())
+                                .field(Constant.FieldName.PROMPTMESSAGE, pro.get(Constant.FieldName.PROMPTMESSAGE).toString())
+                                .field(Constant.FieldName.ORDER, pro.get(Constant.FieldName.ORDER).toString())
                                 .endObject();
                     }
                 }
@@ -174,40 +127,40 @@ public class TypeService {
 
 
                 //组装properties
-                builder.startObject("properties")
-                        .startObject("name").field("type", "string").field("store", "yes").endObject()
-                        .startObject("description").field("type", "string").field("store", "yes").endObject();
+                builder.startObject(Constant.FieldName.PROPERTIES)
+                        .startObject(Constant.FieldName.NAME).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.DESCRIPTION).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject();
 
                 //组装stream属性
-                builder.startObject("streams").startObject("properties")
-                        .startObject("streamId").field("type", "string").field("store", "yes").endObject()
-                        .startObject("streamName").field("type", "string").field("store", "yes").endObject()
-                        .startObject("size").field("type", "long").field("store", "yes").endObject()
-                        .startObject("format").field("type", "string").field("store", "yes").endObject()
-                        .startObject("encoding").field("type", "string").field("store", "yes").endObject()
+                builder.startObject(Constant.FieldName.STREAMS).startObject(Constant.FieldName.PROPERTIES)
+                        .startObject(Constant.FieldName.STREAMID).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.STREAMNAME).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.LENGTH).field(Constant.FieldName.TYPE, "long").field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.CONTENTTYPE).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
                         .endObject()
                         .endObject();
 
                 //组装_acl属性
-                builder.startObject("_acl").field("type", "nested").endObject();
+                builder.startObject("_acl").field(Constant.FieldName.TYPE, "nested").endObject();
 
                 //组装创建信息属性
-                builder.startObject("createBy").field("type", "string").field("store", "yes").endObject()
-                        .startObject("creationDate").field("type", "date").field("store", "yes").endObject()
-                        .startObject("lastModifiedBy").field("type", "string").field("store", "yes").endObject()
-                        .startObject("lastModificationDate").field("type", "date").field("store", "yes").endObject();
+                builder.startObject(Constant.FieldName.CREATEDBY).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.CREATEDON).field(Constant.FieldName.TYPE, "date").field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.LASTUPDATEDBY).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.LASTUPDATEDON).field(Constant.FieldName.TYPE, "date").field("store", "yes").endObject();
 
                 //组装自定义属性
                 for(Object property:properties){
                     if (property!=null){
                         LinkedHashMap<String, Object> pro = (LinkedHashMap<String, Object>)property;
-                        builder.startObject(pro.get("name").toString())
-                                .field("type", pro.get("type").toString())
-                                .field("isRequire", Boolean.valueOf(pro.get("isRequire").toString()))
-                                .field("defaultValue", pro.get("defaultValue").toString())
-                                .field("partten", pro.get("partten").toString())
-                                .field("promptMssage", pro.get("promptMssage").toString())
-                                .field("order", pro.get("order").toString())
+                        builder.startObject(pro.get(Constant.FieldName.NAME).toString())
+                                .field(Constant.FieldName.TYPE, pro.get(Constant.FieldName.TYPE).toString())
+                                .field(Constant.FieldName.INDEX, pro.get(Constant.FieldName.INDEX).toString())
+                                .field(Constant.FieldName.REQUIRED, Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()))
+                                .field(Constant.FieldName.DEFAULTVALUE, pro.get(Constant.FieldName.DEFAULTVALUE).toString())
+                                .field(Constant.FieldName.PATTERN, pro.get(Constant.FieldName.PATTERN).toString())
+                                .field(Constant.FieldName.PROMPTMESSAGE, pro.get(Constant.FieldName.PROMPTMESSAGE).toString())
+                                .field(Constant.FieldName.ORDER, pro.get(Constant.FieldName.ORDER).toString())
                                 .endObject();
                     }
                 }
@@ -242,6 +195,9 @@ public class TypeService {
         GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).
                 addTypes(id).get();
         ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getMappingsResponse.getMappings();
+        if (mappings==null||mappings.size()==0){
+            throw new uContentException("Not found", HttpStatus.NOT_FOUND);
+        }
         MappingMetaData mappingMetaData = mappings.get(context.getIndex()).get(id);
         if (mappingMetaData!=null){
             String source = mappingMetaData.source().string();
@@ -251,21 +207,22 @@ public class TypeService {
 
             builder.startObject();
             //builder.field("","").
-            ArrayList<Object> properties = (ArrayList<Object>)meta.get("properties");
+            ArrayList<Object> properties = (ArrayList<Object>)meta.get(Constant.FieldName.PROPERTIES);
             if ((properties==null)||properties.size()==0){
                 //Exception
             }else{
-                builder.startArray("properties");
+                builder.startArray(Constant.FieldName.PROPERTIES);
                 for(Object property:properties){
                     if (property!=null){
                         LinkedHashMap<String, Object> pro = (LinkedHashMap<String, Object>)property;
-                        builder.startObject().field("name", pro.get("name").toString())
-                                .field("type", pro.get("type").toString())
-                                .field("isRequire", Boolean.valueOf(pro.get("isRequire").toString()))
-                                .field("defaultValue", pro.get("defaultValue").toString())
-                                .field("partten", pro.get("partten").toString())
-                                .field("promptMssage", pro.get("promptMssage").toString())
-                                .field("order", pro.get("order").toString())
+                        builder.startObject().field(Constant.FieldName.NAME, pro.get(Constant.FieldName.NAME).toString())
+                                .field(Constant.FieldName.TYPE, pro.get(Constant.FieldName.TYPE).toString())
+                                .field(Constant.FieldName.INDEX, pro.get(Constant.FieldName.INDEX).toString())
+                                .field(Constant.FieldName.REQUIRED, Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()))
+                                .field(Constant.FieldName.DEFAULTVALUE, pro.get(Constant.FieldName.DEFAULTVALUE).toString())
+                                .field(Constant.FieldName.PATTERN, pro.get(Constant.FieldName.PATTERN).toString())
+                                .field(Constant.FieldName.PROMPTMESSAGE, pro.get(Constant.FieldName.PROMPTMESSAGE).toString())
+                                .field(Constant.FieldName.ORDER, pro.get(Constant.FieldName.ORDER).toString())
                                 .endObject();
                     }
                 }
@@ -278,7 +235,66 @@ public class TypeService {
         return builder;
     }
 
+
+    public Map<String, Map<String, Object>> getProperties(String id) throws IOException {
+        Client client = context.getClient();
+        Map<String, Map<String, Object>> pros = new HashMap<String, Map<String, Object>>();
+        GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).
+                addTypes(id).get();
+        ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getMappingsResponse.getMappings();
+        if (mappings==null||mappings.size()==0){
+            throw new uContentException("Not found", HttpStatus.NOT_FOUND);
+        }
+
+        //填装基本属性
+        pros.put(Constant.FieldName.NAME,makeProperty(Constant.FieldName.NAME, "string", Constant.FieldName.NOT_ANALYZED,true, "", "", "", ""));
+        pros.put(Constant.FieldName.DESCRIPTION,makeProperty(Constant.FieldName.DESCRIPTION, "string", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
+        pros.put(Constant.FieldName.CREATEDBY,makeProperty(Constant.FieldName.CREATEDBY, "string", Constant.FieldName.NOT_ANALYZED, true, "", "", "", ""));
+        pros.put(Constant.FieldName.CREATEDON,makeProperty(Constant.FieldName.CREATEDON, "date", Constant.FieldName.NOT_ANALYZED, true, "", "", "", ""));
+        pros.put(Constant.FieldName.LASTUPDATEDBY,makeProperty(Constant.FieldName.LASTUPDATEDBY, "string", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
+        pros.put(Constant.FieldName.LASTUPDATEDON,makeProperty(Constant.FieldName.LASTUPDATEDON, "date", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
+
+        MappingMetaData mappingMetaData = mappings.get(context.getIndex()).get(id);
+        if (mappingMetaData!=null){
+            String source = mappingMetaData.source().string();
+            Json parse = Json.parse(source);
+            LinkedHashMap<String, Object> type = (LinkedHashMap<String, Object>)parse.get(id);
+            LinkedHashMap<String, Object> meta = (LinkedHashMap<String, Object>)type.get("_meta");
+
+
+            ArrayList<Object> properties = (ArrayList<Object>)meta.get(Constant.FieldName.PROPERTIES);
+            if ((properties==null)||properties.size()==0){
+                //Exception
+            }else{
+                for(Object property:properties){
+                    if (property!=null){
+                        LinkedHashMap<String, Object> pro = (LinkedHashMap<String, Object>)property;
+                        pros.put(pro.get(Constant.FieldName.NAME).toString(),makeProperty(
+                                pro.get(Constant.FieldName.NAME).toString(),
+                                pro.get(Constant.FieldName.TYPE).toString(),
+                                pro.get(Constant.FieldName.INDEX).toString(),
+                                Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()),
+                                pro.get(Constant.FieldName.DEFAULTVALUE).toString(),
+                                pro.get(Constant.FieldName.PATTERN).toString(),
+                                pro.get(Constant.FieldName.PROMPTMESSAGE).toString(),
+                                pro.get(Constant.FieldName.ORDER).toString()));
+                    }
+                }
+            }
+        }
+        return pros;
+    }
+
     public XContentBuilder update(String id, Json body) throws IOException {
+        Client client = context.getClient();
+        XContentBuilder builder= XContentFactory.jsonBuilder();
+        GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).
+                addTypes(id).get();
+        ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getMappingsResponse.getMappings();
+        if (mappings==null||mappings.size()==0){
+            throw new uContentException("Not found", HttpStatus.NOT_FOUND);
+        }
+
         return create(body);
     }
 
@@ -290,4 +306,24 @@ public class TypeService {
         acknowledged = deleteMappingResponse.isAcknowledged();
         return XContentFactory.jsonBuilder().startObject().field("acknowledged",acknowledged).endObject();
     }
+
+    private Map<String, Object> makeProperty(String name, String type,
+                                                String index, boolean required,
+                                                String defaultValue, String pattern,
+                                                String promptMessage, String order){
+        Map<String, Object> property = new HashMap<String, Object>();
+        property.put(Constant.FieldName.NAME, name);
+        property.put(Constant.FieldName.TYPE, type);
+        property.put(Constant.FieldName.INDEX, index);
+        property.put(Constant.FieldName.REQUIRED, required);
+        property.put(Constant.FieldName.DEFAULTVALUE, defaultValue);
+        property.put(Constant.FieldName.PATTERN, pattern);
+        property.put(Constant.FieldName.PROMPTMESSAGE, promptMessage);
+        property.put(Constant.FieldName.ORDER, order);
+        return property;
+    }
+
+//    public static void main(String args[]) throws IOException {
+//        System.out.println(XContentFactory.jsonBuilder().startObject().field("aaa","AAA").field("aaa","BBB").endObject().string());
+//    }
 }
