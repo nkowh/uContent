@@ -80,7 +80,7 @@ public class Systems {
     /***************************** users ******************************/
 
     @RequestMapping(value = "users", method = {RequestMethod.GET})
-    public String allUsers(@RequestParam String query,
+    public String allUsers(@RequestParam(defaultValue = "") String query,
                            @RequestParam(defaultValue = "0") int start,
                            @RequestParam(defaultValue = "10") int limit,
                            @RequestParam(defaultValue = "[]") SortBuilder[] sort) {
@@ -176,7 +176,7 @@ public class Systems {
 //    }
 
     @RequestMapping(value = "groups", method = {RequestMethod.GET})
-    public String allGroups(@RequestParam String query,
+    public String allGroups(@RequestParam(defaultValue = "") String query,
                             @RequestParam(defaultValue = "0") int start,
                             @RequestParam(defaultValue = "10") int limit,
                             @RequestParam(defaultValue = "[]") SortBuilder[] sort) {
