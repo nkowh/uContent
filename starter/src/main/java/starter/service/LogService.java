@@ -53,7 +53,7 @@ public class LogService {
             builder.startObject()
                     .field("_id", searchHitFields.getId())
                     .field("userName", source.get("userName"))
-                    .field("ipAddress", source.get("ipAddress"))
+
                     .startObject("timeInfo")
                     .field("start", source.get("timeInfo.start"))
                     .field("start_format", source.get("timeInfo.start_format"))
@@ -62,20 +62,32 @@ public class LogService {
                     .field("consume", source.get("timeInfo.consume"))
                     .field("consume_format", source.get("timeInfo.consume_format"))
                     .endObject()
-                    .startObject("actionInfo")
-                    .field("url", source.get("actionInfo.url"))
-                    .field("httpMethod", source.get("actionInfo.httpMethod"))
-                    .field("className", source.get("actionInfo.className"))
-                    .field("methodName", source.get("actionInfo.methodName"))
-                    .field("paramNames", source.get("actionInfo.paramNames"))
+
+                    //.startObject("actionInfo")
+                    //.field("className", source.get("actionInfo.className"))
+                    //.field("methodName", source.get("actionInfo.methodName"))
+                    //.endObject()
+
+                    .startObject("requestInfo")
+                    .field("ipAddress", source.get("requestInfo.ipAddress"))
+                    .field("url", source.get("requestInfo.url"))
+                    .field("method", source.get("requestInfo.method"))
+                    .field("params", source.get("requestInfo.params"))
+                    .field("header", source.get("requestInfo.header"))
                     .endObject()
-                    .field("headerInfo", source.get("headerInfo"))
-                    .field("resultInfo", source.get("resultInfo"))
+
+                    .startObject("responseInfo")
+                    .field("statusCode", source.get("responseInfo.statusCode"))
+                    .field("header", source.get("responseInfo.header"))
+                    .field("result", source.get("responseInfo.result"))
+                    .endObject()
+
                     .startObject("exceptionInfo")
                     .field("msg", source.get("exceptionInfo.msg"))
                     .field("statusCode", source.get("exceptionInfo.statusCode"))
                     .field("stackTrace", source.get("exceptionInfo.stackTrace"))
                     .endObject()
+
                     .field("logDate", source.get("logDate"))
                     .endObject();
         }

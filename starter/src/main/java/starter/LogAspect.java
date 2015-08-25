@@ -17,11 +17,13 @@ import org.springframework.stereotype.Component;
 import starter.service.LogService;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -44,22 +46,27 @@ public class LogAspect {
         return getThreadLocal().get(key);
     }
 
-    private final String USER_NAME = "userName";
-    private final String IP_ADDRESS = "ipAddress";
+    private final String USER_NAME = "USER_NAME";
 
-    private final String URL = "url";
-    private final String HTTP_METHOD = "httpMethod";
-    private final String CLASS_NAME = "className";
-    private final String METHOD_NAME = "methodName";
-    private final String PARAM_NAMES = "paramNames";
+    private final String REQUEST_IPADDRESS = "REQUEST_IPADDRESS";
+    private final String REQUEST_URL = "REQUEST_URL";
+    private final String REQUEST_METHOD = "REQUEST_METHOD";
+    private final String REQUEST_PARAMS = "REQUEST_PARAMS";
+    private final String REQUEST_HEADER = "REQUEST_HEADER";
 
-    private final String START_TIME_MILLIS = "startTimeMillis";
+    //private final String CLASS_NAME = "CLASS_NAME";
+    //private final String METHOD_NAME = "METHOD_NAME";
 
-    private final String HEADERINFO = "headerInfo";
-    private final String RESULTINFO = "resultInfo";
-    private final String EX_MSG = "ex_msg";
-    private final String EX_STATUSCODE = "ex_statusCode";
-    private final String EX_STACKTRACE = "ex_stackTrace";
+    //private final String RESPONSE_STATUSCODE = "RESPONSE_STATUSCODE";
+    //private final String RESPONSE_HEADER = "RESPONSE_HEADER";
+    private final String RESPONSE_RESULT = "RESPONSE_RESULT";
+
+    private final String EXCEPTION_MSG = "EXCEPTION_MSG";
+    private final String EXCEPTION_STATUSCODE = "EXCEPTION_STATUSCODE";
+    private final String EXCEPTION_STACKTRACE = "EXCEPTION_STACKTRACE";
+
+    private final String START_TIME = "START_TIME";
+    private final String MSG_NONE = "";
 
     private final String EXECUTION = "execution(public * starter.rest.*.*(..)) " +
             "&& !execution(public * starter.rest.ErrorHandler.*(..)) " + //ErrorHandler里处理异常，不记录日志
@@ -67,7 +74,6 @@ public class LogAspect {
 
     private final String SIMPLE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
     private final String DECIMAL_FORMAT = ",###.###";
-    private final String MSG_NONE = "";
 
     @Autowired
     private RequestContext context;
@@ -89,7 +95,7 @@ public class LogAspect {
             //记录返回信息,存入本地线程变量
             if (result != null) {
                 Map<String, Object> threadLocalMap = getThreadLocal();
-                threadLocalMap.put(RESULTINFO, result);
+                threadLocalMap.put(RESPONSE_RESULT, result);
                 setThreadLocal(threadLocalMap);
             }
 
@@ -101,11 +107,11 @@ public class LogAspect {
             Map<String, Object> threadLocalMap = getThreadLocal();
 
             //记录异常信息
-            threadLocalMap.put(EX_MSG, ex + "");
+            threadLocalMap.put(EXCEPTION_MSG, ex + "");
 
             //记录异常信息中http状态码
             if (ex instanceof uContentException) {
-                threadLocalMap.put(EX_STATUSCODE, ((uContentException) ex).getStatusCode() + "");
+                threadLocalMap.put(EXCEPTION_STATUSCODE, ((uContentException) ex).getStatusCode() + "");
             }
 
             //记录异常栈信息
@@ -113,7 +119,7 @@ public class LogAspect {
             for (StackTraceElement stackTraceElement : ex.getStackTrace()) {
                 ex_sb.append(stackTraceElement.toString() + "\r\n");
             }
-            threadLocalMap.put(EX_STACKTRACE, ex_sb.toString());
+            threadLocalMap.put(EXCEPTION_STACKTRACE, ex_sb.toString());
 
             //存入本地线程变量
             setThreadLocal(threadLocalMap);
@@ -127,12 +133,13 @@ public class LogAspect {
         Map<String, Object> threadLocalMap = new HashMap<>();
 
         //从joinpoint获取相关信息
-        String className = joinpoint.getSignature().getDeclaringTypeName();
-        threadLocalMap.put(CLASS_NAME, className);
+        //String className = joinpoint.getSignature().getDeclaringTypeName();
+        //threadLocalMap.put(CLASS_NAME, className);
+        //
+        //String methodName = joinpoint.getSignature().getName();
+        //threadLocalMap.put(METHOD_NAME, methodName);
 
-        String methodName = joinpoint.getSignature().getName();
-        threadLocalMap.put(METHOD_NAME, methodName);
-
+        //获取请求参数信息
         Object[] args = joinpoint.getArgs();
         if (args != null && args.length > 0) {
             //解析SortBuilder参数信息，还原为字符串类型的参数
@@ -150,13 +157,24 @@ public class LogAspect {
                     }
                 }
             }
-
-            String paramNames = Arrays.toString(args);
-            threadLocalMap.put(PARAM_NAMES, paramNames);
+            String requestParams = Arrays.toString(args);
+            threadLocalMap.put(REQUEST_PARAMS, requestParams);
         }
 
         //从request获取相关信息
         HttpServletRequest request = context.getRequest();
+
+        String userName = request.getUserPrincipal().getName();
+        threadLocalMap.put(USER_NAME, userName);
+
+        String ipAddress = LogAspect.getIpAddress(request);
+        threadLocalMap.put(REQUEST_IPADDRESS, ipAddress);
+
+        String url = request.getRequestURL().toString();
+        threadLocalMap.put(REQUEST_URL, url);
+
+        String httpMethod = request.getMethod();
+        threadLocalMap.put(REQUEST_METHOD, httpMethod);
 
         //获取header信息
         Enumeration<String> headerNames = request.getHeaderNames();
@@ -168,35 +186,12 @@ public class LogAspect {
         }
         Object[] headerObjects = headerList.toArray();
         String headerInfo = Arrays.toString(headerObjects);
-        threadLocalMap.put(HEADERINFO, headerInfo);
+        threadLocalMap.put(REQUEST_HEADER, headerInfo);
 
-        //只能获取url的信息，不能获取body的内容,故注释
-        //Map<String, String[]> parameterMap = request.getParameterMap();
-        //Iterator<Map.Entry<String, String[]>> iterator = parameterMap.entrySet().iterator();
-        //while (iterator.hasNext()) {
-        //    Map.Entry<String, String[]> entry = iterator.next();
-        //
-        //    System.out.println("KEY:" + entry.getKey());
-        //    for (String i : entry.getValue()) {
-        //        System.out.println(i);
-        //    }
-        //}
-
-        String url = request.getRequestURL().toString();
-        threadLocalMap.put(URL, url);
-
-        String httpMethod = request.getMethod();
-        threadLocalMap.put(HTTP_METHOD, httpMethod);
-
-        String username = request.getUserPrincipal().getName();
-        threadLocalMap.put(USER_NAME, username);
-
-        String ipAddress = LogAspect.getIpAddress(request);
-        threadLocalMap.put(IP_ADDRESS, ipAddress);
 
         //记录开始时间
         long startTimeMillis = System.currentTimeMillis();
-        threadLocalMap.put(START_TIME_MILLIS, startTimeMillis);
+        threadLocalMap.put(START_TIME, startTimeMillis);
 
         //存入本地线程变量
         setThreadLocal(threadLocalMap);
@@ -206,47 +201,54 @@ public class LogAspect {
     @After("recordLog()")
     public void doAfter() throws uContentException {
         //记录结束时间
-        long endTimeMillis = System.currentTimeMillis();
-        String endTime_format = new SimpleDateFormat(SIMPLE_DATE_FORMAT).format(endTimeMillis);//格式化,为了展示使用
+        long endTime = System.currentTimeMillis();
+        String endTime_format = new SimpleDateFormat(SIMPLE_DATE_FORMAT).format(endTime);//格式化,为了展示使用
 
         //计算耗时
-        long startTimeMillis = (long) getThreadLocal(START_TIME_MILLIS);
-        String startTime_format = new SimpleDateFormat(SIMPLE_DATE_FORMAT).format(startTimeMillis);//格式化,为了展示使用
-        long time_consuming = endTimeMillis - startTimeMillis;
+        long startTime = (long) getThreadLocal(START_TIME);
+        String startTime_format = new SimpleDateFormat(SIMPLE_DATE_FORMAT).format(startTime);//格式化,为了展示使用
+        long time_consuming = endTime - startTime;
         String time_consuming_format = new DecimalFormat(DECIMAL_FORMAT).format(time_consuming) + "ms";//格式化,为了展示使用
 
         //从本地线程变量获取信息
+        //String className = (String) getThreadLocal(CLASS_NAME);
+        //String methodName = (String) getThreadLocal(METHOD_NAME);
+
         String userName = (String) getThreadLocal(USER_NAME);
-        String ipAddress = (String) getThreadLocal(IP_ADDRESS);
 
-        String url = (String) getThreadLocal(URL);
-        String httpMethod = (String) getThreadLocal(HTTP_METHOD);
-        String className = (String) getThreadLocal(CLASS_NAME);
-        String methodName = (String) getThreadLocal(METHOD_NAME);
-        String paramNames = MSG_NONE;
-        if (getThreadLocal().containsKey(PARAM_NAMES)) {
-            paramNames = (String) getThreadLocal(PARAM_NAMES);
+        String request_ipAddress = (String) getThreadLocal(REQUEST_IPADDRESS);
+        String request_url = (String) getThreadLocal(REQUEST_URL);
+        String request_method = (String) getThreadLocal(REQUEST_METHOD);
+        String request_params = MSG_NONE;
+        if (getThreadLocal().containsKey(REQUEST_PARAMS)) {
+            request_params = (String) getThreadLocal(REQUEST_PARAMS);
         }
+        String request_header = (String) getThreadLocal(REQUEST_HEADER);
 
-        String headerInfo = (String) getThreadLocal(HEADERINFO);
-
-        Object result = getThreadLocal(RESULTINFO);
-        String result_msg = MSG_NONE;
+        //从response获取相关信息
+        HttpServletResponse response = context.getResponse();
+        int response_statusCode = response.getStatus();
+        Collection<String> headerNames = response.getHeaderNames();
+        Object[] headerObjects = headerNames.toArray();
+        String response_header = Arrays.toString(headerObjects);
+        System.out.println("response_header: " + response_header);//todo  待删除
+        Object result = getThreadLocal(RESPONSE_RESULT);
+        String response_result = MSG_NONE;
         if (result != null) {
-            result_msg = result + "";
+            response_result = result + "";
         }
 
         String ex_msg = MSG_NONE;
-        if (getThreadLocal().containsKey(EX_MSG)) {
-            ex_msg = (String) getThreadLocal(EX_MSG);
+        if (getThreadLocal().containsKey(EXCEPTION_MSG)) {
+            ex_msg = (String) getThreadLocal(EXCEPTION_MSG);
         }
         String ex_statusCode = MSG_NONE;
-        if (getThreadLocal().containsKey(EX_STATUSCODE)) {
-            ex_statusCode = (String) getThreadLocal(EX_STATUSCODE);
+        if (getThreadLocal().containsKey(EXCEPTION_STATUSCODE)) {
+            ex_statusCode = (String) getThreadLocal(EXCEPTION_STATUSCODE);
         }
         String ex_stackTrace = MSG_NONE;
-        if (getThreadLocal().containsKey(EX_STACKTRACE)) {
-            ex_stackTrace = (String) getThreadLocal(EX_STACKTRACE);
+        if (getThreadLocal().containsKey(EXCEPTION_STACKTRACE)) {
+            ex_stackTrace = (String) getThreadLocal(EXCEPTION_STACKTRACE);
         }
 
         //构建JSON格式对象
@@ -255,30 +257,35 @@ public class LogAspect {
             builder = XContentFactory.jsonBuilder();
             builder.startObject()
                     .field("userName", userName)
-                    .field("ipAddress", ipAddress)
-                    .field("timeInfo.start", startTimeMillis)
+
+                    .field("timeInfo.start", startTime)
                     .field("timeInfo.start_format", startTime_format)
-                    .field("timeInfo.end", endTimeMillis)
+                    .field("timeInfo.end", endTime)
                     .field("timeInfo.end_format", endTime_format)
                     .field("timeInfo.consume", time_consuming)
                     .field("timeInfo.consume_format", time_consuming_format)
-                    .field("actionInfo.url", url)
-                    .field("actionInfo.httpMethod", httpMethod)
-                    .field("actionInfo.className", className)
-                    .field("actionInfo.methodName", methodName)
-                    .field("actionInfo.paramNames", paramNames)
-                    .field("headerInfo", headerInfo)
-                    .field("resultInfo", result_msg)
+
+                            //.field("actionInfo.className", className)
+                            //.field("actionInfo.methodName", methodName)
+
+                    .field("requestInfo.ipAddress", request_ipAddress)
+                    .field("requestInfo.url", request_url)
+                    .field("requestInfo.method", request_method)
+                    .field("requestInfo.params", request_params)
+                    .field("requestInfo.header", request_header)
+
+                    .field("responseInfo.statusCode", response_statusCode)
+                    .field("responseInfo.header", response_header)
+                    .field("responseInfo.result", response_result)
+
                     .field("exceptionInfo.msg", ex_msg)
                     .field("exceptionInfo.statusCode", ex_statusCode)
                     .field("exceptionInfo.stackTrace", ex_stackTrace)
+
                     .field("logDate", new DateTime().toLocalDateTime())
                     .endObject();
 
-            //System.out.println("builder is :" + builder.string());
-            //XContentBuilder builder_return =
             logService.createLog(builder);
-            //System.out.println("builder_return is :" + builder_return.string());
 
         } catch (IOException e) {
             //系统内部是否要记录异常log？
