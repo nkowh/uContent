@@ -61,8 +61,8 @@ public class LogAspect {
     private final String EX_STACKTRACE = "ex_stackTrace";
 
     private final String EXECUTION = "execution(public * starter.rest.*.*(..)) " +
-            "&& !execution(public * starter.rest.ErrorHandler.*(..)) "; //ErrorHandler里处理异常，不记录日志
-    //"&& !execution(public * starter.rest.Logs.*(..))"; //Logs里查询日志方法，不记录日志 //todo 测试完毕后放开此注释
+            "&& !execution(public * starter.rest.ErrorHandler.*(..)) " + //ErrorHandler里处理异常，不记录日志
+            "&& !execution(public * starter.rest.Logs.*(..))"; //Logs里查询日志方法，不记录日志
 
     private final String SIMPLE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
     private final String DECIMAL_FORMAT = ",###.###";
@@ -157,8 +157,8 @@ public class LogAspect {
         //获取header信息
         Enumeration<String> headerNames = request.getHeaderNames();
         List<String> headerList = new ArrayList<>();
-        for (Enumeration e = headerNames; e.hasMoreElements(); ) {
-            String thisName = e.nextElement().toString();
+        for (; headerNames.hasMoreElements(); ) {
+            String thisName = headerNames.nextElement().toString();
             String thisValue = request.getHeader(thisName);
             headerList.add(thisName + ":" + thisValue);
         }
@@ -266,7 +266,7 @@ public class LogAspect {
                     .field("logDate", new DateTime().toLocalDateTime())
                     .endObject();
 
-            System.out.println("builder is :" + builder.string());
+            //System.out.println("builder is :" + builder.string());
             //XContentBuilder builder_return =
             logService.createLog(builder);
             //System.out.println("builder_return is :" + builder_return.string());
