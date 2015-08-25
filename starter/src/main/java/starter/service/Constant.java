@@ -94,6 +94,25 @@ public class Constant {
         public static final String DESCRIPTION = "description";
         public static final String PROPERTIES = "properties";
 
+
+        public static final String INDEX = "index";
+        public static final String ANALYZED = "analyzed";
+        public static final String NOT_ANALYZED = "not_analyzed";
+
+        public static final String _ID = "_id";
+
+        //fields of user
+        public static final String USERTYPENAME = "user";
+        public static final String USERID = "userId";
+        public static final String USERNAME = "userName";
+        public static final String EMAIL = "email";
+        public static final String PASSWORD = "password";
+
+        //fields of group
+        public static final String GROUPTYPENAME = "group";
+        public static final String GROUPNAME = "groupName";
+        public static final String USERS = "users";
+
     }
 
 

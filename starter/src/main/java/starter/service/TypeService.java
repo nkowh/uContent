@@ -154,6 +154,7 @@ public class TypeService {
                         LinkedHashMap<String, Object> pro = (LinkedHashMap<String, Object>)property;
                         builder.startObject(pro.get(Constant.FieldName.NAME).toString())
                                 .field(Constant.FieldName.TYPE, pro.get(Constant.FieldName.TYPE).toString())
+                                .field(Constant.FieldName.INDEX, pro.get(Constant.FieldName.INDEX).toString())
                                 .field(Constant.FieldName.REQUIRED, Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()))
                                 .field(Constant.FieldName.DEFAULTVALUE, pro.get(Constant.FieldName.DEFAULTVALUE).toString())
                                 .field(Constant.FieldName.PATTERN, pro.get(Constant.FieldName.PATTERN).toString())
@@ -241,12 +242,12 @@ public class TypeService {
         }
 
         //填装基本属性
-        pros.put(Constant.FieldName.NAME,transforProperty(Constant.FieldName.NAME,"string",true,"","","",""));
-        pros.put(Constant.FieldName.DESCRIPTION,transforProperty(Constant.FieldName.DESCRIPTION,"string",true,"","","",""));
-        pros.put(Constant.FieldName.CREATEDBY,transforProperty(Constant.FieldName.CREATEDBY,"string",true,"","","",""));
-        pros.put(Constant.FieldName.CREATEDON,transforProperty(Constant.FieldName.CREATEDON,"date",true,"","","",""));
-        pros.put(Constant.FieldName.LASTUPDATEDBY,transforProperty(Constant.FieldName.LASTUPDATEDBY,"string",true,"","","",""));
-        pros.put(Constant.FieldName.LASTUPDATEDON,transforProperty(Constant.FieldName.LASTUPDATEDON,"date",true,"","","",""));
+        pros.put(Constant.FieldName.NAME,makeProperty(Constant.FieldName.NAME, "string", true, "", "", "", ""));
+        pros.put(Constant.FieldName.DESCRIPTION,makeProperty(Constant.FieldName.DESCRIPTION, "string", false, "", "", "", ""));
+        pros.put(Constant.FieldName.CREATEDBY,makeProperty(Constant.FieldName.CREATEDBY, "string", true, "", "", "", ""));
+        pros.put(Constant.FieldName.CREATEDON,makeProperty(Constant.FieldName.CREATEDON, "date", true, "", "", "", ""));
+        pros.put(Constant.FieldName.LASTUPDATEDBY,makeProperty(Constant.FieldName.LASTUPDATEDBY, "string", false, "", "", "", ""));
+        pros.put(Constant.FieldName.LASTUPDATEDON,makeProperty(Constant.FieldName.LASTUPDATEDON, "date", false, "", "", "", ""));
 
         MappingMetaData mappingMetaData = mappings.get(context.getIndex()).get(id);
         if (mappingMetaData!=null){
@@ -263,7 +264,7 @@ public class TypeService {
                 for(Object property:properties){
                     if (property!=null){
                         LinkedHashMap<String, Object> pro = (LinkedHashMap<String, Object>)property;
-                        pros.put(pro.get(Constant.FieldName.NAME).toString(),transforProperty(
+                        pros.put(pro.get(Constant.FieldName.NAME).toString(),makeProperty(
                                 pro.get(Constant.FieldName.NAME).toString(),
                                 pro.get(Constant.FieldName.TYPE).toString(),
                                 Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()),
@@ -288,8 +289,6 @@ public class TypeService {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
 
-        Map<String, Map<String, Object>> properties = getProperties(id);
-
         return create(body);
     }
 
@@ -302,7 +301,7 @@ public class TypeService {
         return XContentFactory.jsonBuilder().startObject().field("acknowledged",acknowledged).endObject();
     }
 
-    private Map<String, Object> transforProperty(String name, String type, boolean required,
+    private Map<String, Object> makeProperty(String name, String type, boolean required,
                                                 String defaultValue, String pattern,
                                                 String promptMessage, String order){
         Map<String, Object> property = new HashMap<String, Object>();

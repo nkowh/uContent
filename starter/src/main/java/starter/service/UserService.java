@@ -36,17 +36,13 @@ import java.util.Map;
 @Service
 public class UserService {
 
-    private static final String userTypeName = "user";
-
-    private static final String groupTypeName = "group";
-
     @Autowired
     private RequestContext context;
 
 //    public XContentBuilder all() throws IOException {
 //        Client client = context.getClient();
 //        //QueryBuilder queryBuilder = QueryBuilders.termQuery()
-//        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(userTypeName).execute().actionGet();
+//        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).execute().actionGet();
 //        SearchHits hits = searchResponse.getHits();
 //        XContentBuilder builder= XContentFactory.jsonBuilder();
 //        builder.startObject().field("total", searchResponse.getHits().totalHits());
@@ -54,10 +50,10 @@ public class UserService {
 //        for (SearchHit searchHitFields : searchResponse.getHits()) {
 //            builder.startObject()
 //                    .field("_id", searchHitFields.getId())
-//                    .field("userId", searchHitFields.getSource().get("userId"))
-//                    .field("userName", searchHitFields.getSource().get("userName"))
-//                    .field("email", searchHitFields.getSource().get("email"))
-//                    .field("password", searchHitFields.getSource().get("password"))
+//                    .field(Constant.FieldName.USERID, searchHitFields.getSource().get(Constant.FieldName.USERID))
+//                    .field(Constant.FieldName.USERNAME, searchHitFields.getSource().get(Constant.FieldName.USERNAME))
+//                    .field(Constant.FieldName.EMAIL, searchHitFields.getSource().get(Constant.FieldName.EMAIL))
+//                    .field(Constant.FieldName.PASSWORD, searchHitFields.getSource().get(Constant.FieldName.PASSWORD))
 //                    .field(Constant.FieldName.CREATEDBY, searchHitFields.getSource().get(Constant.FieldName.CREATEDBY))
 //                    .field(Constant.FieldName.CREATEDON, searchHitFields.getSource().get(Constant.FieldName.CREATEDON))
 //                    .field(Constant.FieldName.LASTUPDATEDBY, searchHitFields.getSource().get(Constant.FieldName.LASTUPDATEDBY))
@@ -75,7 +71,7 @@ public class UserService {
         SearchResponse searchResponse = null;
         if (limit>0){
             SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex())
-                    .setTypes(userTypeName).setFrom(start).setSize(limit);
+                    .setTypes(Constant.FieldName.USERTYPENAME).setFrom(start).setSize(limit);
             if (query != null && !query.isEmpty()) {
                 searchRequestBuilder.setQuery(query);
             }
@@ -86,7 +82,7 @@ public class UserService {
             }
             searchResponse = searchRequestBuilder.execute().actionGet();
         }else{
-            searchResponse = client.prepareSearch(context.getIndex()).setTypes(userTypeName).setQuery(query).execute().actionGet();
+            searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(query).execute().actionGet();
         }
 
         SearchHits hits = searchResponse.getHits();
@@ -96,10 +92,10 @@ public class UserService {
         for (SearchHit searchHitFields : searchResponse.getHits()) {
             builder.startObject()
                     .field("_id", searchHitFields.getId())
-                    .field("userId", searchHitFields.getSource().get("userId"))
-                    .field("userName", searchHitFields.getSource().get("userName"))
-                    .field("email", searchHitFields.getSource().get("email"))
-                    .field("password", searchHitFields.getSource().get("password"))
+                    .field(Constant.FieldName.USERID, searchHitFields.getSource().get(Constant.FieldName.USERID))
+                    .field(Constant.FieldName.USERNAME, searchHitFields.getSource().get(Constant.FieldName.USERNAME))
+                    .field(Constant.FieldName.EMAIL, searchHitFields.getSource().get(Constant.FieldName.EMAIL))
+                    .field(Constant.FieldName.PASSWORD, searchHitFields.getSource().get(Constant.FieldName.PASSWORD))
                     .field(Constant.FieldName.CREATEDBY, searchHitFields.getSource().get(Constant.FieldName.CREATEDBY))
                     .field(Constant.FieldName.CREATEDON, searchHitFields.getSource().get(Constant.FieldName.CREATEDON))
                     .field(Constant.FieldName.LASTUPDATEDBY, searchHitFields.getSource().get(Constant.FieldName.LASTUPDATEDBY))
@@ -117,7 +113,7 @@ public class UserService {
         XContentBuilder builder= XContentFactory.jsonBuilder();
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
         body.put(Constant.FieldName.CREATEDON, new Date());
-        IndexResponse indexResponse = client.prepareIndex(context.getIndex(), userTypeName).setSource(body).execute().actionGet();
+        IndexResponse indexResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.USERTYPENAME).setSource(body).execute().actionGet();
         builder.startObject()
                 .field("_index", indexResponse.getIndex())
                 .field("_type", indexResponse.getType())
@@ -132,14 +128,14 @@ public class UserService {
     public XContentBuilder get(String id) throws IOException {
         Client client = context.getClient();
         XContentBuilder builder= XContentFactory.jsonBuilder();
-        GetResponse getResponse = client.prepareGet(context.getIndex(), userTypeName, id).execute().actionGet();
+        GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
         Map<String, Object> source = getResponse.getSource();
         builder.startObject()
                 .field("_id", id)
-                .field("userId", source.get("userId"))
-                .field("userName", source.get("userName"))
-                .field("email", source.get("email"))
-                .field("password", source.get("password"))
+                .field(Constant.FieldName.USERID, source.get(Constant.FieldName.USERID))
+                .field(Constant.FieldName.USERNAME, source.get(Constant.FieldName.USERNAME))
+                .field(Constant.FieldName.EMAIL, source.get(Constant.FieldName.EMAIL))
+                .field(Constant.FieldName.PASSWORD, source.get(Constant.FieldName.PASSWORD))
                 .field(Constant.FieldName.CREATEDBY, source.get(Constant.FieldName.CREATEDBY))
                 .field(Constant.FieldName.CREATEDON, source.get(Constant.FieldName.CREATEDON))
                 .field(Constant.FieldName.LASTUPDATEDBY, source.get(Constant.FieldName.LASTUPDATEDBY))
@@ -151,8 +147,8 @@ public class UserService {
 
     public XContentBuilder ifUserExist(String userId) throws IOException {
         Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery("userId", userId);
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(userTypeName).setQuery(queryBuilder).execute().actionGet();
+        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERID, userId);
+        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(queryBuilder).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         if(searchResponse.getHits().totalHits()>0){
             builder.startObject().field("exist", true).endObject();
@@ -165,17 +161,17 @@ public class UserService {
 
     public XContentBuilder update(String id, Json body) throws IOException {
         Client client = context.getClient();
-        GetResponse getResponse = client.prepareGet(context.getIndex(), userTypeName, id).execute().actionGet();
+        GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
         body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
         body.put(Constant.FieldName.LASTUPDATEDON, new Date());
-        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), userTypeName, id).setDoc(body).execute().actionGet();
+        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), Constant.FieldName.USERTYPENAME, id).setDoc(body).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject()
                 .field("_index", context.getIndex())
-                .field("_type", userTypeName)
+                .field("_type", Constant.FieldName.USERTYPENAME)
                 .field("_id", id)
                 .field("_version", updateResponse.getVersion())
                 .field("_isCreated", updateResponse.isCreated())
@@ -185,15 +181,15 @@ public class UserService {
 
     public XContentBuilder delete(String id) throws IOException {
         Client client = context.getClient();
-        GetResponse getResponse = client.prepareGet(context.getIndex(), userTypeName, id).execute().actionGet();
+        GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
-        DeleteResponse deleteResponse = client.prepareDelete(context.getIndex(), userTypeName, id).execute().actionGet();
+        DeleteResponse deleteResponse = client.prepareDelete(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject()
                 .field("_index", context.getIndex())
-                .field("_type", userTypeName)
+                .field("_type", Constant.FieldName.USERTYPENAME)
                 .field("_id", id)
                 .field("_version", deleteResponse.getVersion())
                 .field("found", deleteResponse.isFound())
@@ -203,8 +199,8 @@ public class UserService {
 
     public XContentBuilder getGroups(String id) throws IOException {
         Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery("userId", id);
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(groupTypeName).setQuery(queryBuilder).execute().actionGet();
+        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERID, id);
+        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject().field("total", searchResponse.getHits().totalHits());
         builder.startObject("groups");
@@ -226,23 +222,24 @@ public class UserService {
         }
         builder.endObject();
         System.out.println(builder.string());
+
         return builder;
     }
 
     public void initialUserMapping() throws IOException {
         Client client = context.getClient();
-        GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).addTypes(userTypeName).get();
+        GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).addTypes(Constant.FieldName.USERTYPENAME).get();
         ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getMappingsResponse.getMappings();
         if(mappings.size()==0){
             //冇得，那就搞一个吧。。。
             XContentBuilder builder= XContentFactory.jsonBuilder();
             builder.startObject();
-            builder.startObject(userTypeName);
+            builder.startObject(Constant.FieldName.USERTYPENAME);
             builder.startObject("properties")
-                    .startObject("userId").field("type", "string").field("store", "yes").endObject()
-                    .startObject("userName").field("type", "string").field("store", "yes").endObject()
-                    .startObject("email").field("type", "string").field("store", "yes").endObject()
-                    .startObject("password").field("type", "string").field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.USERID).field("type", "string").field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.USERNAME).field("type", "string").field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.EMAIL).field("type", "string").field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.PASSWORD).field("type", "string").field("store", "yes").endObject()
                     .startObject(Constant.FieldName.CREATEDBY).field("type", "string").field("store", "yes").endObject()
                     .startObject(Constant.FieldName.CREATEDON).field("type", "date").field("store", "yes").endObject()
                     .startObject(Constant.FieldName.LASTUPDATEDBY).field("type", "string").field("store", "yes").endObject()
@@ -250,7 +247,7 @@ public class UserService {
             builder.endObject();//end of typeName
             builder.endObject();
             //创建mapping
-            PutMappingRequest mapping = Requests.putMappingRequest(context.getIndex()).type(userTypeName).source(builder);
+            PutMappingRequest mapping = Requests.putMappingRequest(context.getIndex()).type(Constant.FieldName.USERTYPENAME).source(builder);
             PutMappingResponse putMappingResponse = client.admin().indices().putMapping(mapping).actionGet();
         }else{
             //艹，居然有！！！！！
