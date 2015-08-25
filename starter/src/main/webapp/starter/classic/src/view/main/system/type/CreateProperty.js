@@ -42,15 +42,15 @@ Ext.define('starter.view.main.system.type.CreateProperty', {
             allowBlank: true
         }
     }, {
-        header: 'Choices',
-        dataIndex: 'partten',
+        header: 'Pattern',
+        dataIndex: 'pattern',
         width: 200,
         editor: {
             allowBlank: true
         }
     }, {
-        header: 'PromptMssage',
-        dataIndex: 'promptMssage',
+        header: 'PromptMessage',
+        dataIndex: 'promptMessage',
         width: 220,
         editor: {
             allowBlank: true

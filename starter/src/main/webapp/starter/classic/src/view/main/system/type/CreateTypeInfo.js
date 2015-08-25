@@ -5,11 +5,6 @@ Ext.define('starter.view.main.system.user.CreateTypeInfo', {
     viewModel: 'type',
     bodyPadding: 5,
     layout: 'anchor',
-    defaults: {
-        anchor: '100%'
-    },
-    // The fields
-    defaultType: 'textfield',
     items: [{
         xtype: 'fieldset',
         title: 'Type Info',

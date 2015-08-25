@@ -97,11 +97,11 @@ Ext.define('starter.system.TypeController', {
         var r = Ext.create('starter.model.Property', {
             name: '',
             type: 'string',
-            partten: '',
-            promptMssage: '',
+            pattern: '',
+            promptMessage: '',
             isFullTextIndex: false,
             defaultValue: '',
-            isRequire: false,
+            required: false,
             order :order
         });
 
@@ -133,19 +133,19 @@ Ext.define('starter.system.TypeController', {
     validateProperty : function(editor, e){
         var type = e.record.get('type');
         var defaultValue = e.record.get('defaultValue');
-        var partten = e.record.get('partten');
-        var promptMssage = e.record.get('promptMssage');
+        var pattern = e.record.get('pattern');
+        var promptMessage = e.record.get('promptMessage');
 
 
         if(e.field=='defaultValue') {
             if (type != '') {
                 this.validateByType(type, e.column.field);
             }
-            if (partten != '') {
-                e.column.field.regex = partten;
+            if (pattern != '') {
+                e.column.field.regex = pattern;
             }
-            if (promptMssage != '') {
-                e.column.field.regexText = promptMssage;
+            if (promptMessage != '') {
+                e.column.field.regexText = promptMessage;
             }
         }
 

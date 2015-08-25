@@ -3,31 +3,6 @@ Ext.define('starter.view.document.IndexDocumentController', {
 
     alias: 'controller.indexdocument',
 
-    loadEntityTypes: function (cmp, eOpts) {
-        var me = this;
-        Ext.Ajax.request({
-            url: '/dm/$metadata',
-            callback: function (options, success, response) {
-                var $metadata = $(response.responseText);
-                me.namespace = $metadata.find('Schema').attr('Namespace');
-                me.entityTypes = $metadata.find('Schema EntityType');
-                var matches = [];
-                _.each($metadata.find('Schema EntityContainer EntitySet'), function (entitySet) {
-                    var fullname = $(entitySet).attr('EntityType');
-                    var entityType = me.isDocument(fullname);
-                    if (entityType)matches.push({name: $(entitySet).attr('Name'), entityType: entityType});
-                });
-
-                cmp.down('combo').bindStore(
-                    Ext.create('Ext.data.Store', {
-                        fields: ['name', 'entityType'],
-                        data: matches
-                    })
-                );
-            }
-        })
-    },
-
     isDocument: function (fullname) {
         var me = this;
         var match = _.find(me.entityTypes, function (entityType) {
@@ -49,21 +24,30 @@ Ext.define('starter.view.document.IndexDocumentController', {
 
     changeType: function (combo, newValue, oldValue, eOpts) {
         var me = this;
-        var form = combo.up('form');
-        var fieldset = form.down('fieldset[itemId=documenttype]');
-        fieldset.removeAll(true);
-        var type = newValue;
-        do {
-            var baseType = $(type).attr('BaseType');
-            _.each($(type).find('Property'), function (property) {
-                var $property = $(property);
-                fieldset.add({
-                    fieldLabel: $property.attr('Name'),
-                    name: $property.attr('Name')
-                });
+        if(newValue&&newValue!=oldValue){
+            var form = this.getView();
+            var fieldset = form.down('fieldset[itemId="documenttype"]');
+            fieldset.removeAll(true);
+            var type = newValue;
+            Ext.Ajax.request({
+                url: '/svc/types/'+type,
+                callback: function (options, success, response) {
+                    if(!success){
+                        return ;
+                    }
+                    if(response.responseText!=''){
+                        var properties = Ext.decode(response.responseText);
+                        Ext.Array.each(properties, function(property, index, countriesItSelf) {
+                            fieldset.add({
+                                fieldLabel: property.name,
+                                name: property.name
+                            });
+                        });
+
+                    }
+                }
             });
-            type = me.findType(baseType);
-        } while (type !== null);
+        }
 
     },
 
