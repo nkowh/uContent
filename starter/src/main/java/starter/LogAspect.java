@@ -45,9 +45,10 @@ public class LogAspect {
     }
 
     private final String USER_NAME = "userName";
-    private final String URL = "url";
     private final String IP_ADDRESS = "ipAddress";
 
+    private final String URL = "url";
+    private final String HTTP_METHOD = "httpMethod";
     private final String CLASS_NAME = "className";
     private final String METHOD_NAME = "methodName";
     private final String PARAM_NAMES = "paramNames";
@@ -161,7 +162,7 @@ public class LogAspect {
         Enumeration<String> headerNames = request.getHeaderNames();
         List<String> headerList = new ArrayList<>();
         for (; headerNames.hasMoreElements(); ) {
-            String thisName = headerNames.nextElement().toString();
+            String thisName = headerNames.nextElement();
             String thisValue = request.getHeader(thisName);
             headerList.add(thisName + ":" + thisValue);
         }
@@ -181,8 +182,11 @@ public class LogAspect {
         //    }
         //}
 
-        String url = request.getRequestURI();
+        String url = request.getRequestURL().toString();
         threadLocalMap.put(URL, url);
+
+        String httpMethod = request.getMethod();
+        threadLocalMap.put(HTTP_METHOD, httpMethod);
 
         String username = request.getUserPrincipal().getName();
         threadLocalMap.put(USER_NAME, username);
@@ -216,6 +220,7 @@ public class LogAspect {
         String ipAddress = (String) getThreadLocal(IP_ADDRESS);
 
         String url = (String) getThreadLocal(URL);
+        String httpMethod = (String) getThreadLocal(HTTP_METHOD);
         String className = (String) getThreadLocal(CLASS_NAME);
         String methodName = (String) getThreadLocal(METHOD_NAME);
         String paramNames = MSG_NONE;
@@ -258,6 +263,7 @@ public class LogAspect {
                     .field("timeInfo.consume", time_consuming)
                     .field("timeInfo.consume_format", time_consuming_format)
                     .field("actionInfo.url", url)
+                    .field("actionInfo.httpMethod", httpMethod)
                     .field("actionInfo.className", className)
                     .field("actionInfo.methodName", methodName)
                     .field("actionInfo.paramNames", paramNames)
