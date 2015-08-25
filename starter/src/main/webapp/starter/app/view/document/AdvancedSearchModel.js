@@ -2,11 +2,44 @@ Ext.define('starter.view.document.AdvancedSearchModel', {
     extend: 'Ext.app.ViewModel',
 
     alias: 'viewmodel.advancedsearch',
+    stores: {
+        types: {type: 'types'}
+        //,
+        //properties: {
+        //    model : Ext.create('starter.model.Property'),
+        //    data : pData
+        //}
+    },
+    //formulas: {
+    //    tValue: {
+    //        get: function (get) {
+    //            return get(this.getStore('types').getAt(0).get('name'));
+    //        },
+    //
+    //        set: function (tValue) {
+    //            var me = this;
+    //
+    //            //Ext.Ajax.request({
+    //            //    url: '/svc/types/'+tValue,
+    //            //    callback: function (options, success, response) {
+    //            //        if(!success){
+    //            //            return ;
+    //            //        }
+    //            //        if(response.responseText!=''){
+    //            //            var properties = Ext.decode(response.responseText);
+    //            //            me.set('pData', date);
+    //            //        }
+    //            //    }
+    //            //})
+    //
+    //        }
+    //    }
+    //},
 
     data: {
-        name: 'dm',
+        name: 'dm'
+        //pData : []
 
-        loremIpsum: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
     }
 
 });

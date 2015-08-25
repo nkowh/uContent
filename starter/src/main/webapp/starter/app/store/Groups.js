@@ -4,6 +4,10 @@ Ext.define('starter.store.Groups', {
     model: 'starter.model.Group',
     pageSize: 10,
     autoSync : true,
+     sorters  : [{
+            property : "groupName",
+            direction: "DESC"
+        }],
     proxy: {
         type: 'rest',
         url: '/svc/groups',
