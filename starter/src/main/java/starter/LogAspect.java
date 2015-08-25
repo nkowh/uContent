@@ -85,10 +85,11 @@ public class LogAspect {
 
             Object result = pjp.proceed();
 
-            //记录返回信息
+            //记录返回信息,存入本地线程变量
             if (result != null) {
                 Map<String, Object> threadLocalMap = getThreadLocal();
                 threadLocalMap.put(RESULTINFO, result);
+                setThreadLocal(threadLocalMap);
             }
 
             //返回结果给业务逻辑处理
