@@ -54,8 +54,8 @@ public class SecurityService extends AbstractLifecycleComponent<SecurityService>
 
     @Override
     protected void doStart() throws ElasticsearchException {
-        restController.registerFilter(new BasicFilter(client));
-        threadPool.scheduleWithFixedDelay(new UserInGroup(), TimeValue.timeValueSeconds(30));
+//        restController.registerFilter(new BasicFilter(client));
+//        threadPool.scheduleWithFixedDelay(new UserInGroup(), TimeValue.timeValueSeconds(30));
     }
 
     @Override

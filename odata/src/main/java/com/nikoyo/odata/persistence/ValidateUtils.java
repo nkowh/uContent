@@ -18,9 +18,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.*;
 
-/**
- * Created by Administrator on 2015/7/31.
- */
+
 @Service
 public class ValidateUtils {
 
@@ -100,9 +98,7 @@ public class ValidateUtils {
                         this.checkEdmComplexType(prop, map.get(prop.getName()));
                     }
                 }
-
             }
-
         }else{
             if (!property.isNullable() && property.getDefaultValue() == null) {
                 throw new ODataApplicationException(String.format("%s value can not be null", property.getName()), HttpStatusCode.BAD_REQUEST.getStatusCode(), Locale.getDefault());
@@ -141,7 +137,6 @@ public class ValidateUtils {
                 }
             }
         }
-
         if(property.getPrecision() != null){
             if (typeName.equals("DateTimeOffset")) {
                 DateTime dataTime = DateTime.parse(value.toString());
