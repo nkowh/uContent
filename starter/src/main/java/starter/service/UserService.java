@@ -205,11 +205,6 @@ public class UserService {
         builder.startObject().field("total", searchResponse.getHits().totalHits());
         builder.startObject("groups");
         for (SearchHit searchHitFields : searchResponse.getHits()) {
-            System.out.println(searchHitFields.getId()+"=="+
-                    searchHitFields.getSource().get("groupName")+"=="+
-                    searchHitFields.getSource().get(Constant.FieldName.CREATEDBY)+"=="+
-                    searchHitFields.getSource().get(Constant.FieldName.CREATEDON));
-
             builder.startObject()
                     .field("_id", searchHitFields.getId())
                     .field("groupName", searchHitFields.getSource().get("groupName"))

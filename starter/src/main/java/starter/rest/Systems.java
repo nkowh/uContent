@@ -83,7 +83,7 @@ public class Systems {
     public String allUsers(@RequestParam String query,
                            @RequestParam(defaultValue = "0") int start,
                            @RequestParam(defaultValue = "10") int limit,
-                           @RequestParam SortBuilder[] sort) {
+                           @RequestParam(defaultValue = "[]") SortBuilder[] sort) {
         try {
             XContentBuilder result = userService.all(query, start, limit, sort);
             return result.string();
@@ -179,7 +179,7 @@ public class Systems {
     public String allGroups(@RequestParam String query,
                             @RequestParam(defaultValue = "0") int start,
                             @RequestParam(defaultValue = "10") int limit,
-                            @RequestParam SortBuilder[] sort) {
+                            @RequestParam(defaultValue = "[]") SortBuilder[] sort) {
         try {
             XContentBuilder result = groupService.all(query, start, limit, sort);
             return result.string();
