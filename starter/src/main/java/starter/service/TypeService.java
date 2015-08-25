@@ -154,6 +154,7 @@ public class TypeService {
                         LinkedHashMap<String, Object> pro = (LinkedHashMap<String, Object>)property;
                         builder.startObject(pro.get(Constant.FieldName.NAME).toString())
                                 .field(Constant.FieldName.TYPE, pro.get(Constant.FieldName.TYPE).toString())
+                                .field(Constant.FieldName.INDEX, pro.get(Constant.FieldName.INDEX).toString())
                                 .field(Constant.FieldName.REQUIRED, Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()))
                                 .field(Constant.FieldName.DEFAULTVALUE, pro.get(Constant.FieldName.DEFAULTVALUE).toString())
                                 .field(Constant.FieldName.PATTERN, pro.get(Constant.FieldName.PATTERN).toString())
