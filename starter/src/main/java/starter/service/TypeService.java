@@ -112,6 +112,7 @@ public class TypeService {
                         LinkedHashMap<String, Object> pro = (LinkedHashMap<String, Object>)property;
                         builder.startObject().field(Constant.FieldName.NAME, pro.get(Constant.FieldName.NAME).toString())
                                 .field(Constant.FieldName.TYPE, pro.get(Constant.FieldName.TYPE).toString())
+                                .field(Constant.FieldName.INDEX, pro.get(Constant.FieldName.INDEX).toString())
                                 .field(Constant.FieldName.REQUIRED, Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()))
                                 .field(Constant.FieldName.DEFAULTVALUE, pro.get(Constant.FieldName.DEFAULTVALUE).toString())
                                 .field(Constant.FieldName.PATTERN, pro.get(Constant.FieldName.PATTERN).toString())
@@ -194,6 +195,9 @@ public class TypeService {
         GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).
                 addTypes(id).get();
         ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getMappingsResponse.getMappings();
+        if (mappings==null||mappings.size()==0){
+            throw new uContentException("Not found", HttpStatus.NOT_FOUND);
+        }
         MappingMetaData mappingMetaData = mappings.get(context.getIndex()).get(id);
         if (mappingMetaData!=null){
             String source = mappingMetaData.source().string();
@@ -213,6 +217,7 @@ public class TypeService {
                         LinkedHashMap<String, Object> pro = (LinkedHashMap<String, Object>)property;
                         builder.startObject().field(Constant.FieldName.NAME, pro.get(Constant.FieldName.NAME).toString())
                                 .field(Constant.FieldName.TYPE, pro.get(Constant.FieldName.TYPE).toString())
+                                .field(Constant.FieldName.INDEX, pro.get(Constant.FieldName.INDEX).toString())
                                 .field(Constant.FieldName.REQUIRED, Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()))
                                 .field(Constant.FieldName.DEFAULTVALUE, pro.get(Constant.FieldName.DEFAULTVALUE).toString())
                                 .field(Constant.FieldName.PATTERN, pro.get(Constant.FieldName.PATTERN).toString())
@@ -242,12 +247,12 @@ public class TypeService {
         }
 
         //填装基本属性
-        pros.put(Constant.FieldName.NAME,makeProperty(Constant.FieldName.NAME, "string", true, "", "", "", ""));
-        pros.put(Constant.FieldName.DESCRIPTION,makeProperty(Constant.FieldName.DESCRIPTION, "string", false, "", "", "", ""));
-        pros.put(Constant.FieldName.CREATEDBY,makeProperty(Constant.FieldName.CREATEDBY, "string", true, "", "", "", ""));
-        pros.put(Constant.FieldName.CREATEDON,makeProperty(Constant.FieldName.CREATEDON, "date", true, "", "", "", ""));
-        pros.put(Constant.FieldName.LASTUPDATEDBY,makeProperty(Constant.FieldName.LASTUPDATEDBY, "string", false, "", "", "", ""));
-        pros.put(Constant.FieldName.LASTUPDATEDON,makeProperty(Constant.FieldName.LASTUPDATEDON, "date", false, "", "", "", ""));
+        pros.put(Constant.FieldName.NAME,makeProperty(Constant.FieldName.NAME, "string", Constant.FieldName.NOT_ANALYZED,true, "", "", "", ""));
+        pros.put(Constant.FieldName.DESCRIPTION,makeProperty(Constant.FieldName.DESCRIPTION, "string", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
+        pros.put(Constant.FieldName.CREATEDBY,makeProperty(Constant.FieldName.CREATEDBY, "string", Constant.FieldName.NOT_ANALYZED, true, "", "", "", ""));
+        pros.put(Constant.FieldName.CREATEDON,makeProperty(Constant.FieldName.CREATEDON, "date", Constant.FieldName.NOT_ANALYZED, true, "", "", "", ""));
+        pros.put(Constant.FieldName.LASTUPDATEDBY,makeProperty(Constant.FieldName.LASTUPDATEDBY, "string", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
+        pros.put(Constant.FieldName.LASTUPDATEDON,makeProperty(Constant.FieldName.LASTUPDATEDON, "date", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
 
         MappingMetaData mappingMetaData = mappings.get(context.getIndex()).get(id);
         if (mappingMetaData!=null){
@@ -267,6 +272,7 @@ public class TypeService {
                         pros.put(pro.get(Constant.FieldName.NAME).toString(),makeProperty(
                                 pro.get(Constant.FieldName.NAME).toString(),
                                 pro.get(Constant.FieldName.TYPE).toString(),
+                                pro.get(Constant.FieldName.INDEX).toString(),
                                 Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()),
                                 pro.get(Constant.FieldName.DEFAULTVALUE).toString(),
                                 pro.get(Constant.FieldName.PATTERN).toString(),
@@ -301,12 +307,14 @@ public class TypeService {
         return XContentFactory.jsonBuilder().startObject().field("acknowledged",acknowledged).endObject();
     }
 
-    private Map<String, Object> makeProperty(String name, String type, boolean required,
+    private Map<String, Object> makeProperty(String name, String type,
+                                                String index, boolean required,
                                                 String defaultValue, String pattern,
                                                 String promptMessage, String order){
         Map<String, Object> property = new HashMap<String, Object>();
         property.put(Constant.FieldName.NAME, name);
         property.put(Constant.FieldName.TYPE, type);
+        property.put(Constant.FieldName.INDEX, index);
         property.put(Constant.FieldName.REQUIRED, required);
         property.put(Constant.FieldName.DEFAULTVALUE, defaultValue);
         property.put(Constant.FieldName.PATTERN, pattern);
@@ -314,4 +322,8 @@ public class TypeService {
         property.put(Constant.FieldName.ORDER, order);
         return property;
     }
+
+//    public static void main(String args[]) throws IOException {
+//        System.out.println(XContentFactory.jsonBuilder().startObject().field("aaa","AAA").field("aaa","BBB").endObject().string());
+//    }
 }
