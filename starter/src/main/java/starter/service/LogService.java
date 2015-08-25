@@ -68,6 +68,7 @@ public class LogService {
                     .field("methodName", source.get("actionInfo.methodName"))
                     .field("paramNames", source.get("actionInfo.paramNames"))
                     .endObject()
+                    .field("headerInfo", source.get("headerInfo"))
                     .field("resultInfo", source.get("resultInfo"))
                     .startObject("exceptionInfo")
                     .field("msg", source.get("exceptionInfo.msg"))

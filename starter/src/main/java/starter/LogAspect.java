@@ -19,8 +19,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Aspect
@@ -50,14 +53,15 @@ public class LogAspect {
 
     private final String START_TIME_MILLIS = "startTimeMillis";
 
-    private final String RESULT = "resultInfo";
+    private final String HEADERINFO = "headerInfo";
+    private final String RESULTINFO = "resultInfo";
     private final String EX_MSG = "ex_msg";
     private final String EX_STATUSCODE = "ex_statusCode";
     private final String EX_STACKTRACE = "ex_stackTrace";
 
     private final String EXECUTION = "execution(public * starter.rest.*.*(..)) " +
-            "&& !execution(public * starter.rest.ErrorHandler.*(..)) " +  //ErrorHandler里处理异常，不记录日志
-            "&& !execution(public * starter.rest.Logs.*(..))"; //Logs里查询日志方法，不记录日志
+            "&& !execution(public * starter.rest.ErrorHandler.*(..)) "; //ErrorHandler里处理异常，不记录日志
+    //"&& !execution(public * starter.rest.Logs.*(..))"; //Logs里查询日志方法，不记录日志 //todo 测试完毕后放开此注释
 
     private final String SIMPLE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
     private final String DECIMAL_FORMAT = ",###.###";
@@ -83,7 +87,7 @@ public class LogAspect {
             //记录返回信息
             if (result != null) {
                 Map<String, Object> threadLocalMap = getThreadLocal();
-                threadLocalMap.put(RESULT, result);
+                threadLocalMap.put(RESULTINFO, result);
             }
 
             //返回结果给业务逻辑处理
@@ -116,7 +120,7 @@ public class LogAspect {
         }
     }
 
-    public void doBefore(JoinPoint joinpoint) {
+    public void doBefore(JoinPoint joinpoint) throws IOException {
         Map<String, Object> threadLocalMap = new HashMap<>();
 
         //从joinpoint获取相关信息
@@ -129,11 +133,39 @@ public class LogAspect {
         Object[] args = joinpoint.getArgs();
         if (args != null && args.length > 0) {
             String paramNames = Arrays.toString(args);
+
+            //解析SortBuilder参数信息 todo
+
+
+
             threadLocalMap.put(PARAM_NAMES, paramNames);
         }
 
         //从request获取相关信息
         HttpServletRequest request = context.getRequest();
+
+        //获取header信息
+        Enumeration<String> headerNames = request.getHeaderNames();
+        List<String> headerList = new ArrayList<>();
+        for (Enumeration e = headerNames; e.hasMoreElements(); ) {
+            String thisName = e.nextElement().toString();
+            String thisValue = request.getHeader(thisName);
+            headerList.add(thisName + ":" + thisValue);
+        }
+        Object[] headerObjects = headerList.toArray();
+        String headerInfo = Arrays.toString(headerObjects);
+        threadLocalMap.put(HEADERINFO, headerInfo);
+
+        //Map<String, String[]> parameterMap = request.getParameterMap();
+        //Iterator<Map.Entry<String, String[]>> iterator = parameterMap.entrySet().iterator();
+        //while (iterator.hasNext()) {
+        //    Map.Entry<String, String[]> entry = iterator.next();
+        //
+        //    System.out.println("KEY:" + entry.getKey());
+        //    for (String i : entry.getValue()) {
+        //        System.out.println(i);
+        //    }
+        //}
 
         String url = request.getRequestURI();
         threadLocalMap.put(URL, url);
@@ -177,7 +209,9 @@ public class LogAspect {
             paramNames = (String) getThreadLocal(PARAM_NAMES);
         }
 
-        Object result = getThreadLocal(RESULT);
+        String headerInfo = (String) getThreadLocal(HEADERINFO);
+
+        Object result = getThreadLocal(RESULTINFO);
         String result_msg = MSG_NONE;
         if (result != null) {
             result_msg = result + "";
@@ -213,6 +247,7 @@ public class LogAspect {
                     .field("actionInfo.className", className)
                     .field("actionInfo.methodName", methodName)
                     .field("actionInfo.paramNames", paramNames)
+                    .field("headerInfo", headerInfo)
                     .field("resultInfo", result_msg)
                     .field("exceptionInfo.msg", ex_msg)
                     .field("exceptionInfo.statusCode", ex_statusCode)
@@ -220,7 +255,7 @@ public class LogAspect {
                     .field("logDate", new DateTime().toLocalDateTime())
                     .endObject();
 
-            //System.out.println("builder is :" + builder.string());
+            System.out.println("builder is :" + builder.string());
             //XContentBuilder builder_return =
             logService.createLog(builder);
             //System.out.println("builder_return is :" + builder_return.string());
