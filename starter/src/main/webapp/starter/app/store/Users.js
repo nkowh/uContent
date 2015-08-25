@@ -17,6 +17,7 @@ Ext.define('starter.store.Users', {
             //'Content-Type' : 'application/json;charset=UTF-8'
         },
         //paramsAsJson :true,
+
         actionMethods : {
             update: 'PATCH'
             //read : 'POST'

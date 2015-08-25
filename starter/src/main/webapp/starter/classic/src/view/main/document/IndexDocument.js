@@ -16,9 +16,6 @@ Ext.define('starter.view.main.document.IndexDocument', {
         labelWidth: 115,
         msgTarget: 'side'
     },
-    listeners:{
-        afterrender:'loadEntityTypes'
-    },
 
     initComponent: function () {
         var me = this;
@@ -30,15 +27,21 @@ Ext.define('starter.view.main.document.IndexDocument', {
                 anchor: '100%'
             },
             items: [
-                Ext.create('Ext.form.ComboBox', {
-                    fieldLabel: '文档类型',
-                    queryMode: 'local',
-                    displayField: 'name',
-                    valueField: 'entityType',
+                {
+                    xtype: 'combo',
+                    fieldLabel: 'Type',
+                    name: 'type',
+                    displayField: 'displayName',
+                    allowBlank: false,
+                    valueField: 'name',
+                    bind: {
+                        store :  '{types}'
+                        //value : '{tValue}'
+                    },
                     listeners: {
                         change:"changeType"
                     }
-                })
+                }
             ]
         }, {
             xtype: 'fieldset',

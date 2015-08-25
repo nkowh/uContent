@@ -85,10 +85,11 @@ public class LogAspect {
 
             Object result = pjp.proceed();
 
-            //记录返回信息
+            //记录返回信息,存入本地线程变量
             if (result != null) {
                 Map<String, Object> threadLocalMap = getThreadLocal();
                 threadLocalMap.put(RESULTINFO, result);
+                setThreadLocal(threadLocalMap);
             }
 
             //返回结果给业务逻辑处理
@@ -137,13 +138,15 @@ public class LogAspect {
             for (int i = 0; i < args.length; i++) {
                 if (args[i] instanceof SortBuilder[]) {
                     SortBuilder[] sorts = (SortBuilder[]) args[i];
-                    String sortString = "[";
-                    for (SortBuilder sort : sorts) {
-                        sortString += sort.toString() + ",";
+                    if (sorts != null && sorts.length != 0) {//默认值的时候不处理
+                        String sortString = "[";
+                        for (SortBuilder sort : sorts) {
+                            sortString += sort.toString() + ",";
+                        }
+                        sortString = sortString.substring(0, sortString.length() - 1) + "]";
+                        sortString = sortString.replaceAll("[\\t\\n\\r]", "");//去掉回车换行
+                        args[i] = sortString;
                     }
-                    sortString = sortString.substring(0, sortString.length() - 1) + "]";
-                    sortString = sortString.replaceAll("[\\t\\n\\r]", "");//去掉回车换行
-                    args[i] = sortString;
                 }
             }
 

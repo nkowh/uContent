@@ -4,7 +4,7 @@ Ext.define('starter.store.Documents', {
     autoLoad: true,
     proxy: {
         type: 'rest',
-        url: '/dm/Users',
+        url: '/svc',
         reader: {
             type: 'json',
             rootProperty: 'value'
