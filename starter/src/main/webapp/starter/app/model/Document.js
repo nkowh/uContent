@@ -2,12 +2,12 @@ Ext.define('starter.model.Document', {
     extend: 'Ext.data.Model',
 
     fields: [
-        {name: 'Id', type: 'string'},
-        {name: 'Name', type: 'string'},
-        {name: 'CreateBy', type: 'string'},
-        {name: 'LastUpdatedBy', type: 'string'},
-        {name: 'CreatedOn', type: 'date'},
-        {name: 'LastUpdatedOn', type: 'date'}
+        {name: 'id', type: 'string'},
+        {name: 'name', type: 'string'},
+        {name: 'createdBy', type: 'string'},
+        {name: 'lastupdatedBy', type: 'string'},
+        {name: 'createdOn', type: 'date'},
+        {name: 'lastupdatedOn', type: 'date'}
     ],
-    idProperty: 'Id'
+    idProperty: 'id'
 });

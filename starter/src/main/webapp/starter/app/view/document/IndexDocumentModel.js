@@ -5,7 +5,10 @@ Ext.define('starter.view.document.IndexDocumentModel', {
 
     data: {
         title: '导入文档'
-
+    },
+    stores: {
+        types: {type: 'types'},
+        documents : {type : 'documents'}
     }
 
 });
