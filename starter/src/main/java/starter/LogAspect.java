@@ -10,6 +10,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.search.sort.SortBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -132,12 +133,21 @@ public class LogAspect {
 
         Object[] args = joinpoint.getArgs();
         if (args != null && args.length > 0) {
+            //解析SortBuilder参数信息，还原为字符串类型的参数
+            for (int i = 0; i < args.length; i++) {
+                if (args[i] instanceof SortBuilder[]) {
+                    SortBuilder[] sorts = (SortBuilder[]) args[i];
+                    String sortString = "[";
+                    for (SortBuilder sort : sorts) {
+                        sortString += sort.toString() + ",";
+                    }
+                    sortString = sortString.substring(0, sortString.length() - 1) + "]";
+                    sortString = sortString.replaceAll("[\\t\\n\\r]", "");//去掉回车换行
+                    args[i] = sortString;
+                }
+            }
+
             String paramNames = Arrays.toString(args);
-
-            //解析SortBuilder参数信息 todo
-
-
-
             threadLocalMap.put(PARAM_NAMES, paramNames);
         }
 
@@ -156,6 +166,7 @@ public class LogAspect {
         String headerInfo = Arrays.toString(headerObjects);
         threadLocalMap.put(HEADERINFO, headerInfo);
 
+        //只能获取url的信息，不能获取body的内容,故注释
         //Map<String, String[]> parameterMap = request.getParameterMap();
         //Iterator<Map.Entry<String, String[]>> iterator = parameterMap.entrySet().iterator();
         //while (iterator.hasNext()) {
