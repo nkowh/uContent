@@ -16,7 +16,7 @@ public class Constant {
         UPDATE(4),
         DELETE(8);
 
-        private int value = 0;
+        private int value = -1;
 
         Permission(int value){
             this.value = value;
@@ -32,9 +32,9 @@ public class Constant {
                     return READ;
                 case 2:
                     return WRITE;
-                case 3:
-                    return UPDATE;
                 case 4:
+                    return UPDATE;
+                case 8:
                     return DELETE;
                 default:
                     throw new RuntimeException("No type match for [" + value + "]");
@@ -48,6 +48,10 @@ public class Constant {
                     return Permission.READ;
                 case "write":
                     return Permission.WRITE;
+                case "update":
+                    return Permission.UPDATE;
+                case "delete":
+                    return Permission.DELETE;
                 default:
                     throw new RuntimeException("permission [" + permission + "] not allowed, either [read] or [write] are allowed");
             }
@@ -90,6 +94,18 @@ public class Constant {
         public static final String DESCRIPTION = "description";
         public static final String PROPERTIES = "properties";
 
+    }
+
+
+    /**
+     * 属性值的类型
+     */
+    public class Type{
+        public static final String STRING = "String";
+        public static final String INT = "int";
+        public static final String FLOAT = "float";
+        public static final String DATE = "date";
+        public static final String BOOLEAN = "boolean";
     }
 
 

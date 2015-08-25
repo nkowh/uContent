@@ -27,6 +27,7 @@ import starter.service.fs.FileSystem;
 import starter.uContentException;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 
 @Service
@@ -39,7 +40,7 @@ public class DocumentService {
     private FileSystem fs;
 
     @Autowired
-    private ValidateUtils validateUtils;
+    private TypeService typeService;
 
 
     public XContentBuilder query(String type, String query, int start, int limit, SortBuilder[] sort, boolean allowableActions) throws IOException {
@@ -62,8 +63,9 @@ public class DocumentService {
         searchRequestBuilder.setPostFilter(filter);
         //process result
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
-        XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
-        xContentBuilder.startArray();
+        XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
+        xContentBuilder.field("total", searchResponse.getHits().getTotalHits());
+        xContentBuilder.startArray("documents");
         for(SearchHit hit : searchResponse.getHits().getHits()){
             xContentBuilder.startObject();
             xContentBuilder.field("_index", hit.getIndex())
@@ -82,12 +84,12 @@ public class DocumentService {
             }
             xContentBuilder.endObject();
         }
-        xContentBuilder.endArray();
+        xContentBuilder.endArray().endObject();
         return xContentBuilder;
     }
 
     public XContentBuilder create(String type, Json body) throws IOException {
-        validateUtils.validateDoc(context, type, body);
+        validate(body, type);
         beforeCreate(body);
         IndexResponse indexResponse = context.getClient().prepareIndex(context.getIndex(), type).setSource(body).execute().actionGet();
         XContentBuilder builder = JsonXContent.contentBuilder();
@@ -167,6 +169,8 @@ public class DocumentService {
     private void beforeCreate(Json body){
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
         body.put(Constant.FieldName.CREATEDON, new DateTime());
+        body.put(Constant.FieldName.LASTUPDATEDBY, "");
+        body.put(Constant.FieldName.LASTUPDATEDON, null);
         List<Object> permission = new ArrayList<Object>();
         permission.add(Constant.Permission.READ);
         permission.add(Constant.Permission.WRITE);
@@ -354,6 +358,44 @@ public class DocumentService {
             throw new uContentException("Forbidden", HttpStatus.FORBIDDEN);
         }
         return getResponse;
+    }
+
+
+    private void validate(Json body, String type) throws IOException {
+        Map<String, Map<String, Object>> definition = typeService.getProperties(type);
+        Set<String> keySet = definition.keySet();
+        Iterator<Map.Entry<String, Object>> iterator = body.entrySet().iterator();
+        while (iterator.hasNext()){
+            Map.Entry<String, Object> entry = iterator.next();
+            String key = entry.getKey();
+            if (!keySet.contains(key)) {
+                iterator.remove();
+                continue;
+            }
+            Map<String, Object> property = definition.get(key);
+            String propType = property.get(Constant.FieldName.TYPE).toString();
+
+        }
+        throw new RuntimeException();
+
+
+    }
+
+
+    private Object formatValue(String type, String StringValue){
+        switch (type){
+            case Constant.Type.INT :
+                return Integer.valueOf(StringValue);
+            case Constant.Type.FLOAT :
+                return Float.valueOf(StringValue);
+            case Constant.Type.DATE :
+                return Date.parse(StringValue);
+            case Constant.Type.BOOLEAN :
+                return Boolean.valueOf(StringValue);
+            default:
+                return null;
+        }
+
     }
 
 }
