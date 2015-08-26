@@ -144,7 +144,7 @@ public class LogAspect {
             for (int i = 0; i < args.length; i++) {
                 if (args[i] instanceof SortBuilder[]) {
                     SortBuilder[] sorts = (SortBuilder[]) args[i];
-                    if (sorts != null && sorts.length != 0) {//默认值的时候不处理
+                    if (sorts != null && sorts.length != 0) {//非默认值时进行处理
                         String sortString = "[";
                         for (SortBuilder sort : sorts) {
                             sortString += sort.toString() + ",";
@@ -152,6 +152,8 @@ public class LogAspect {
                         sortString = sortString.substring(0, sortString.length() - 1) + "]";
                         sortString = sortString.replaceAll("[\\t\\n\\r]", "");//去掉回车换行
                         args[i] = sortString;
+                    } else {//默认值的时候不处理
+                        args[i] = "[]";
                     }
                 }
             }
