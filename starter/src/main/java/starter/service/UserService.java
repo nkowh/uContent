@@ -14,6 +14,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -67,25 +68,20 @@ public class UserService {
 //    }
 
     public XContentBuilder all(String query, int start, int limit, SortBuilder[] sort) throws IOException {
-        Client client = context.getClient();
-        SearchResponse searchResponse = null;
+        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME);
         if (limit>0){
-            SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex())
-                    .setTypes(Constant.FieldName.USERTYPENAME).setFrom(start).setSize(limit);
-            if (query != null && !query.isEmpty()) {
+            searchRequestBuilder.setFrom(start).setSize(limit);
+            if (StringUtils.isNotBlank(query)) {
                 searchRequestBuilder.setQuery(query);
             }
-            if (sort != null && sort.length > 0) {
-                for(SortBuilder sortBuilder : sort){
-                    searchRequestBuilder.addSort(sortBuilder);
-                }
-            }
-            searchResponse = searchRequestBuilder.execute().actionGet();
-        }else{
-            searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(query).execute().actionGet();
         }
-
-        SearchHits hits = searchResponse.getHits();
+        //set sort
+        if (sort != null && sort.length > 0) {
+            for(SortBuilder sortBuilder : sort){
+                searchRequestBuilder.addSort(sortBuilder);
+            }
+        }
+        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject().field("total", searchResponse.getHits().totalHits());
         builder.startArray("users");

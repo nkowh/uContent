@@ -27,7 +27,8 @@ import starter.service.fs.FileSystem;
 import starter.uContentException;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -41,6 +42,8 @@ public class DocumentService {
 
     @Autowired
     private TypeService typeService;
+
+    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
 
     public XContentBuilder query(String type, String query, int start, int limit, SortBuilder[] sort, boolean allowableActions) throws IOException {
@@ -88,7 +91,7 @@ public class DocumentService {
         return xContentBuilder;
     }
 
-    public XContentBuilder create(String type, Json body) throws IOException {
+    public XContentBuilder create(String type, Json body) throws IOException, ParseException {
         validate(body, type);
         beforeCreate(body);
         IndexResponse indexResponse = context.getClient().prepareIndex(context.getIndex(), type).setSource(body).execute().actionGet();
@@ -103,7 +106,7 @@ public class DocumentService {
         return builder;
     }
 
-    public XContentBuilder create(String type, Json body, List<MultipartFile> files) throws IOException {
+    public XContentBuilder create(String type, Json body, List<MultipartFile> files) throws IOException, ParseException {
         if (!files.isEmpty()) {
             List<Map<String, Object>> streams = new ArrayList<Map<String, Object>>();
             for(MultipartFile file : files){
@@ -361,39 +364,58 @@ public class DocumentService {
     }
 
 
-    private void validate(Json body, String type) throws IOException {
+    private void validate(Json body, String type) throws IOException, ParseException {
         Map<String, Map<String, Object>> definition = typeService.getProperties(type);
         Set<String> keySet = definition.keySet();
         Iterator<Map.Entry<String, Object>> iterator = body.entrySet().iterator();
         while (iterator.hasNext()){
             Map.Entry<String, Object> entry = iterator.next();
             String key = entry.getKey();
-            if (!keySet.contains(key)) {
+            if (key.equals(Constant.FieldName.STREAMS)) {
+                continue;
+            }
+            if (!keySet.contains(key)) {//ignore undefined property
                 iterator.remove();
                 continue;
             }
             Map<String, Object> property = definition.get(key);
             String propType = property.get(Constant.FieldName.TYPE).toString();
-
+            entry.setValue(formatValue(propType, entry.getValue()));
         }
-        throw new RuntimeException();
-
-
+        Iterator<Map<String, Object>> it = definition.values().iterator();
+        while (it.hasNext()){
+            Map<String, Object> entry = it.next();
+            if ((Boolean)entry.get(Constant.FieldName.REQUIRED) == true) {
+                String propName = entry.get(Constant.FieldName.NAME).toString();
+                Object v = body.get(propName);
+                if(v == null){
+                    Object defaultValue = entry.get(Constant.FieldName.DEFAULTVALUE);
+                    if (defaultValue == null || defaultValue.toString().equals("")) {
+                        throw new uContentException(String.format("Property : %s is required", propName), HttpStatus.BAD_REQUEST);
+                    }
+                    body.put(propName, formatValue(entry.get(Constant.FieldName.TYPE).toString(), defaultValue));
+                }
+            }
+        }
     }
 
 
-    private Object formatValue(String type, String StringValue){
+    private Object formatValue(String type, Object value) throws ParseException {
+        if (value == null) {
+            return null;
+        }
+        String StringValue = value.toString();
         switch (type){
             case Constant.Type.INT :
                 return Integer.valueOf(StringValue);
             case Constant.Type.FLOAT :
                 return Float.valueOf(StringValue);
             case Constant.Type.DATE :
-                return Date.parse(StringValue);
+                return sdf.parse(StringValue);
             case Constant.Type.BOOLEAN :
                 return Boolean.valueOf(StringValue);
             default:
-                return null;
+                return StringValue;
         }
 
     }
