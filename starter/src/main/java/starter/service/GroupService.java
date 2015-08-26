@@ -25,6 +25,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import starter.RequestContext;
 import starter.rest.Json;
 import starter.uContentException;
@@ -109,6 +110,9 @@ public class GroupService {
     public XContentBuilder create(Json body) throws IOException {
         Client client = context.getClient();
         XContentBuilder builder= XContentFactory.jsonBuilder();
+
+        validateGroup(body, "create", "");
+
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
         body.put(Constant.FieldName.CREATEDON, new Date());
         IndexResponse indexResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.GROUPTYPENAME).setSource(body).execute().actionGet();
@@ -155,6 +159,13 @@ public class GroupService {
         return builder;
     }
 
+    public SearchHits checkGroupName(String groupName) {
+        Client client = context.getClient();
+        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.GROUPNAME, groupName);
+        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
+        return searchResponse.getHits();
+    }
+
     public XContentBuilder getUsers(String id) throws IOException {
         Client client = context.getClient();
         XContentBuilder builder= XContentFactory.jsonBuilder();
@@ -192,6 +203,9 @@ public class GroupService {
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
+
+        validateGroup(body, "update", id);
+
         body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
         body.put(Constant.FieldName.LASTUPDATEDON, new Date());
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).setDoc(body).execute().actionGet();
@@ -289,6 +303,40 @@ public class GroupService {
             PutMappingResponse putMappingResponse = client.admin().indices().putMapping(mapping).actionGet();
         }else{
             //艹，居然有！！！！！
+        }
+    }
+
+    private void validateGroup(Json body, String action, String id) {
+        Object groupName = body.get(Constant.FieldName.GROUPNAME);
+        if (StringUtils.isEmpty(groupName)){
+            throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        //校验是否有多余的属性
+        Iterator<Map.Entry<String, Object>> iterator = body.entrySet().iterator();
+        while (iterator.hasNext()){
+            Map.Entry<String, Object> entry = iterator.next();
+            String key = entry.getKey();
+            if(!(key.equals(Constant.FieldName.GROUPNAME))){
+                throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        //校验groupName存在
+        SearchHits searchHits = checkGroupName(groupName.toString());
+        if (action.equals("create")){
+            if (searchHits.totalHits()>0){
+                throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }else if(action.equals("update")){
+            if (searchHits.totalHits()>0){
+                //修改时发现与其他group的groupname相同
+                for (SearchHit searchHitFields : searchHits) {
+                    if(!id.equals(searchHitFields.getId())){
+                        throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
+                    }
+                }
+            }
         }
     }
 }
