@@ -81,7 +81,7 @@ public class StreamService {
                 if (map.get(Constant.FieldName.STREAMID).toString().equals(streamId)) {
                     byte[] bytes = fs.read(map.get(Constant.FieldName.STREAMID).toString());
                     if (bytes == null) {
-                        throw new uContentException("FS restore failed", HttpStatus.INTERNAL_SERVER_ERROR);
+                        throw new uContentException("FS achieve failed", HttpStatus.INTERNAL_SERVER_ERROR);
                     }
                     map.put("bytes", bytes);
                     return map;
@@ -104,15 +104,15 @@ public class StreamService {
         if (streams != null) {
             List<Map<String, Object>> _streams = (List<Map<String, Object>>) streams;
             Iterator<Map<String, Object>> it = _streams.iterator();
-            boolean flag = false;
+            boolean found = false;
             while (it.hasNext()){
                 Map<String, Object> entry = it.next();
                 if (streamIds.contains(entry.get(Constant.FieldName.STREAMID).toString())) {
                     it.remove();
-                    flag = true;
+                    found = true;
                 }
             }
-            if (flag) {
+            if (found) {
                 Map<String, Object> map = new HashMap<String, Object>();
                 map.put(Constant.FieldName.STREAMS, _streams);
                 UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(map).execute().actionGet();
@@ -133,7 +133,7 @@ public class StreamService {
             if (StringUtils.isBlank(fileId)) {
                 throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            stream.put(Constant.FieldName.STREAMID, UUID.randomUUID().toString());
+            stream.put(Constant.FieldName.STREAMID, fileId);
             stream.put(Constant.FieldName.STREAMNAME, file.getName());
             stream.put(Constant.FieldName.LENGTH, file.getSize());
             stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());

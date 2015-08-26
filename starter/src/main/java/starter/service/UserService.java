@@ -14,7 +14,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
-import org.elasticsearch.common.netty.util.internal.StringUtil;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -26,13 +26,13 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import starter.RequestContext;
 import starter.rest.Json;
 import starter.uContentException;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Date;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -68,25 +68,20 @@ public class UserService {
 //    }
 
     public XContentBuilder all(String query, int start, int limit, SortBuilder[] sort) throws IOException {
-        Client client = context.getClient();
-        SearchResponse searchResponse = null;
+        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME);
         if (limit>0){
-            SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex())
-                    .setTypes(Constant.FieldName.USERTYPENAME).setFrom(start).setSize(limit);
-            if (query != null && !query.isEmpty()) {
+            searchRequestBuilder.setFrom(start).setSize(limit);
+            if (StringUtils.isNotBlank(query)) {
                 searchRequestBuilder.setQuery(query);
             }
-            if (sort != null && sort.length > 0) {
-                for(SortBuilder sortBuilder : sort){
-                    searchRequestBuilder.addSort(sortBuilder);
-                }
-            }
-            searchResponse = searchRequestBuilder.execute().actionGet();
-        }else{
-            searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(query).execute().actionGet();
         }
-
-        SearchHits hits = searchResponse.getHits();
+        //set sort
+        if (sort != null && sort.length > 0) {
+            for(SortBuilder sortBuilder : sort){
+                searchRequestBuilder.addSort(sortBuilder);
+            }
+        }
+        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject().field("total", searchResponse.getHits().totalHits());
         builder.startArray("users");
@@ -111,9 +106,6 @@ public class UserService {
 
     public XContentBuilder create(Json body) throws IOException {
         Client client = context.getClient();
-
-        validateUser(body, "create", "");
-
         XContentBuilder builder= XContentFactory.jsonBuilder();
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
         body.put(Constant.FieldName.CREATEDON, new Date());
@@ -163,22 +155,12 @@ public class UserService {
         return builder;
     }
 
-    public boolean checkUserId(String userId) {
-        Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERID, userId);
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(queryBuilder).execute().actionGet();
-        return searchResponse.getHits().totalHits()>0;
-    }
-
     public XContentBuilder update(String id, Json body) throws IOException {
         Client client = context.getClient();
         GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
-
-        validateUser(body, "update", id);
-
         body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
         body.put(Constant.FieldName.LASTUPDATEDON, new Date());
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), Constant.FieldName.USERTYPENAME, id).setDoc(body).execute().actionGet();
@@ -235,17 +217,6 @@ public class UserService {
         return builder;
     }
 
-    public List<String> getGroupsOfUser(String id) throws IOException {
-        Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERID, id);
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
-        List<String> groups = new ArrayList<String>();
-        for (SearchHit searchHitFields : searchResponse.getHits()) {
-            groups.add(searchHitFields.getId());
-        }
-        return groups;
-    }
-
     public void initialUserMapping() throws IOException {
         Client client = context.getClient();
         GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).addTypes(Constant.FieldName.USERTYPENAME).get();
@@ -272,40 +243,6 @@ public class UserService {
         }else{
             //艹，居然有！！！！！
         }
-    }
-
-    private void validateUser(Json body, String action, String id) {
-        Object userId = body.get(Constant.FieldName.USERID);
-        if (StringUtils.isEmpty(userId)){
-            throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        //校验是否有多余的属性
-        Iterator<Map.Entry<String, Object>> iterator = body.entrySet().iterator();
-        while (iterator.hasNext()){
-            Map.Entry<String, Object> entry = iterator.next();
-            String key = entry.getKey();
-            if(!(key.equals(Constant.FieldName.USERID)||key.equals(Constant.FieldName.USERNAME)||
-                    key.equals(Constant.FieldName.EMAIL)||key.equals(Constant.FieldName.PASSWORD))){
-                throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
-        //校验userId
-        if (action.equals("create")){
-            if (checkUserId(userId.toString())){
-                throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }else if(action.equals("update")){
-            //修改时userId不可被修改
-            Client client = context.getClient();
-            GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
-            Map<String, Object> source = getResponse.getSource();
-            if(!userId.equals(source.get(Constant.FieldName.USERID))){
-                throw new uContentException("userId can't be modified", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
-
     }
 
 }

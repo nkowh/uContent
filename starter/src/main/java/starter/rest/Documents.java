@@ -11,6 +11,7 @@ import starter.service.DocumentService;
 import starter.uContentException;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 @RestController
 @RequestMapping(value="svc/",produces = MediaType.APPLICATION_JSON_VALUE)
@@ -25,8 +26,8 @@ public class Documents {
                         @RequestParam String query,
                         @RequestParam(defaultValue = "0") int start,
                         @RequestParam(defaultValue = "10") int limit,
-                        @RequestParam SortBuilder[] sort,
-                        @RequestParam(defaultValue = "true") boolean allowableActions) {
+                        @RequestParam(defaultValue = "[]")SortBuilder[] sort,
+                        @RequestParam(defaultValue = "false") boolean allowableActions) {
         try {
             XContentBuilder xContentBuilder = documentService.query(type, query, start, limit, sort, allowableActions);
             return xContentBuilder.string();
@@ -42,6 +43,8 @@ public class Documents {
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (ParseException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -52,6 +55,8 @@ public class Documents {
             XContentBuilder result = documentService.create(type, parser.getBody(), parser.getFiles());
             return result.string();
         } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (ParseException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -69,7 +74,7 @@ public class Documents {
     @RequestMapping(value = "{type}/{id}", method = RequestMethod.GET)
     public String get(@PathVariable String type,
                       @PathVariable String id,
-                      @RequestParam(defaultValue = "true") boolean allowableActions) {
+                      @RequestParam(defaultValue = "false") boolean allowableActions) {
         try {
             Json json = documentService.get(type, id, false, allowableActions);
             return json.toXContentBuilder().string();

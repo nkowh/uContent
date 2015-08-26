@@ -2,7 +2,6 @@ package starter;
 
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpStatusCodeException;
 
 public class uContentException extends RuntimeException {
 
