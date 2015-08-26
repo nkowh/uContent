@@ -70,7 +70,7 @@ public class UserService {
         SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME);
         if (limit>0){
             searchRequestBuilder.setFrom(start).setSize(limit);
-            if (StringUtils.isEmpty(query)) {
+            if (query != null && !query.isEmpty()) {
                 searchRequestBuilder.setQuery(query);
             }
         }
