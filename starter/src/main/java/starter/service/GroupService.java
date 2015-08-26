@@ -317,7 +317,10 @@ public class GroupService {
         while (iterator.hasNext()){
             Map.Entry<String, Object> entry = iterator.next();
             String key = entry.getKey();
-            if(!(key.equals(Constant.FieldName.GROUPNAME))){
+//            if(!(key.equals(Constant.FieldName.GROUPNAME))){
+//                throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
+//            }
+            if(!(key.equals(Constant.FieldName.GROUPNAME)||key.equals(Constant.FieldName.USERS))){
                 throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
