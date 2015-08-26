@@ -74,7 +74,7 @@ public class Documents {
     @RequestMapping(value = "{type}/{id}", method = RequestMethod.GET)
     public String get(@PathVariable String type,
                       @PathVariable String id,
-                      @RequestParam(defaultValue = "true") boolean allowableActions) {
+                      @RequestParam(defaultValue = "false") boolean allowableActions) {
         try {
             Json json = documentService.get(type, id, false, allowableActions);
             return json.toXContentBuilder().string();

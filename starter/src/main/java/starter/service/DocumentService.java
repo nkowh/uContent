@@ -391,7 +391,7 @@ public class DocumentService {
                 if(v == null){
                     Object defaultValue = entry.get(Constant.FieldName.DEFAULTVALUE);
                     if (defaultValue == null || defaultValue.toString().equals("")) {
-                        throw new uContentException(String.format("Property : %s value is required", propName), HttpStatus.BAD_REQUEST);
+                        throw new uContentException(String.format("Property : %s is required", propName), HttpStatus.BAD_REQUEST);
                     }
                     body.put(propName, formatValue(entry.get(Constant.FieldName.TYPE).toString(), defaultValue));
                 }
