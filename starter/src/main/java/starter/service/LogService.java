@@ -63,10 +63,10 @@ public class LogService {
                     .field("consume_format", source.get("timeInfo.consume_format"))
                     .endObject()
 
-                    //.startObject("actionInfo")
-                    //.field("className", source.get("actionInfo.className"))
-                    //.field("methodName", source.get("actionInfo.methodName"))
-                    //.endObject()
+                            //.startObject("actionInfo")
+                            //.field("className", source.get("actionInfo.className"))
+                            //.field("methodName", source.get("actionInfo.methodName"))
+                            //.endObject()
 
                     .startObject("requestInfo")
                     .field("ipAddress", source.get("requestInfo.ipAddress"))

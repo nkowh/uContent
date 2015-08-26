@@ -57,8 +57,6 @@ public class LogAspect {
     //private final String CLASS_NAME = "CLASS_NAME";
     //private final String METHOD_NAME = "METHOD_NAME";
 
-    //private final String RESPONSE_STATUSCODE = "RESPONSE_STATUSCODE";
-    //private final String RESPONSE_HEADER = "RESPONSE_HEADER";
     private final String RESPONSE_RESULT = "RESPONSE_RESULT";
 
     private final String EXCEPTION_MSG = "EXCEPTION_MSG";
@@ -182,7 +180,7 @@ public class LogAspect {
         for (; headerNames.hasMoreElements(); ) {
             String thisName = headerNames.nextElement();
             String thisValue = request.getHeader(thisName);
-            headerList.add(thisName + ":" + thisValue);
+            headerList.add("{" + thisName + ":" + thisValue + "}");
         }
         Object[] headerObjects = headerList.toArray();
         String headerInfo = Arrays.toString(headerObjects);
@@ -229,9 +227,13 @@ public class LogAspect {
         HttpServletResponse response = context.getResponse();
         int response_statusCode = response.getStatus();
         Collection<String> headerNames = response.getHeaderNames();
-        Object[] headerObjects = headerNames.toArray();
+        List<String> headerList = new ArrayList<>();
+        for (String headerName : headerNames) {
+            String header = response.getHeader(headerName);
+            headerList.add("{" + headerName + ":" + header + "}");
+        }
+        Object[] headerObjects = headerList.toArray();
         String response_header = Arrays.toString(headerObjects);
-        System.out.println("response_header: " + response_header);//todo  待删除
         Object result = getThreadLocal(RESPONSE_RESULT);
         String response_result = MSG_NONE;
         if (result != null) {
