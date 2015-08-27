@@ -115,6 +115,8 @@ public class GroupService {
 
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
         body.put(Constant.FieldName.CREATEDON, new Date());
+        body.put(Constant.FieldName.LASTUPDATEDBY, null);
+        body.put(Constant.FieldName.LASTUPDATEDON, null);
         IndexResponse indexResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.GROUPTYPENAME).setSource(body).execute().actionGet();
         builder.startObject()
                 .field("_index", indexResponse.getIndex())
@@ -320,7 +322,11 @@ public class GroupService {
 //            if(!(key.equals(Constant.FieldName.GROUPNAME))){
 //                throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
 //            }
-            if(!(key.equals(Constant.FieldName.GROUPNAME)||key.equals(Constant.FieldName.USERS))){
+            if(!(key.equals(Constant.FieldName.GROUPNAME)||key.equals(Constant.FieldName.USERS)||
+                    key.equals(Constant.FieldName.CREATEDBY)||key.equals(Constant.FieldName.CREATEDON)||
+                    key.equals(Constant.FieldName.LASTUPDATEDBY)||key.equals(Constant.FieldName.LASTUPDATEDON)||
+                    key.equals(Constant.FieldName._ID)
+            )){
                 throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }

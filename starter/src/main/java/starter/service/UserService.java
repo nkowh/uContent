@@ -111,6 +111,8 @@ public class UserService {
 
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
         body.put(Constant.FieldName.CREATEDON, new Date());
+        body.put(Constant.FieldName.LASTUPDATEDBY, null);
+        body.put(Constant.FieldName.LASTUPDATEDON, null);
         IndexResponse indexResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.USERTYPENAME).setSource(body).execute().actionGet();
         builder.startObject()
                 .field("_index", indexResponse.getIndex())
@@ -280,7 +282,11 @@ public class UserService {
             Map.Entry<String, Object> entry = iterator.next();
             String key = entry.getKey();
             if(!(key.equals(Constant.FieldName.USERID)||key.equals(Constant.FieldName.USERNAME)||
-                    key.equals(Constant.FieldName.EMAIL)||key.equals(Constant.FieldName.PASSWORD))){
+                    key.equals(Constant.FieldName.EMAIL)||key.equals(Constant.FieldName.PASSWORD)||
+                    key.equals(Constant.FieldName.CREATEDBY)||key.equals(Constant.FieldName.CREATEDON)||
+                    key.equals(Constant.FieldName.LASTUPDATEDBY)||key.equals(Constant.FieldName.LASTUPDATEDON)||
+                    key.equals(Constant.FieldName._ID)
+            )){
                 throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
