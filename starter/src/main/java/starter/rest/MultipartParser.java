@@ -1,6 +1,5 @@
 package starter.rest;
 
-import org.elasticsearch.common.lang3.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -9,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-class MultipartParser {
+public class MultipartParser {
     private MultipartHttpServletRequest request;
     private Json body;
     private List<MultipartFile> files;

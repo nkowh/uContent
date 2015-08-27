@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
+import starter.rest.MultipartParser;
 import starter.service.LogService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,7 +31,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Aspect
 @Component
@@ -159,24 +159,25 @@ public class LogAspect {
                     }
                 } else if (args[i] instanceof StandardMultipartHttpServletRequest) { //解析上传的文件流的参数信息，转换为字符串类型的参数
                     StandardMultipartHttpServletRequest multipartHttpServletRequest = (StandardMultipartHttpServletRequest) args[i];
-                    Set<Map.Entry<String, List<MultipartFile>>> entrySet = multipartHttpServletRequest.getMultiFileMap().entrySet();
-                    String fileInfoString = "{";
-                    for (Map.Entry<String, List<MultipartFile>> entry : entrySet) {
-                        fileInfoString += entry.getKey() + ":[";
-                        List<MultipartFile> thisValue = entry.getValue();
-                        for (MultipartFile multipartFile : thisValue) {//可能一个文件名对应多个流文件
+                    MultipartParser parser = new MultipartParser(multipartHttpServletRequest).invoke();
+                    List<MultipartFile> files = parser.getFiles();
+                    if (!files.isEmpty()) {
+                        String fileInfoString = "[";
+                        for (MultipartFile multipartFile : files) {//可能一个文件名对应多个流文件
                             //byte[] bytes = multipartFile.getBytes();
                             //InputStream inputStream = multipartFile.getInputStream();
-                            //String name = multipartFile.getName();
+                            String name = multipartFile.getName();
                             long size = multipartFile.getSize();
                             String contentType = multipartFile.getContentType();
                             String originalFilename = multipartFile.getOriginalFilename();
-                            fileInfoString += "{size:" + size + ",contentType:" + contentType + ",originalFilename:" + originalFilename + "},";
+                            fileInfoString += "{name:" + name + ",size:" + size + ",contentType:" + contentType + ",originalFilename:" + originalFilename +
+                                    "},";
                         }
-                        fileInfoString = fileInfoString.substring(0, fileInfoString.length() - 1) + "],";
+                        fileInfoString = fileInfoString.substring(0, fileInfoString.length() - 1) + "]";
+                        args[i] = fileInfoString;
+                    } else {
+                        args[i] = "[]";
                     }
-                    fileInfoString = fileInfoString.substring(0, fileInfoString.length() - 1) + "}";
-                    args[i] = fileInfoString;
                 }
             }
             String requestParams = Arrays.toString(args);
