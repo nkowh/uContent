@@ -111,6 +111,8 @@ public class GroupService {
         Client client = context.getClient();
         XContentBuilder builder= XContentFactory.jsonBuilder();
 
+        body.remove(Constant.FieldName._ID);
+
         validateGroup(body, "create", "");
 
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
@@ -206,8 +208,12 @@ public class GroupService {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
 
+        body.remove(Constant.FieldName._ID);
+
         validateGroup(body, "update", id);
 
+        body.remove(Constant.FieldName.CREATEDBY);
+        body.remove(Constant.FieldName.CREATEDON);
         body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
         body.put(Constant.FieldName.LASTUPDATEDON, new Date());
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).setDoc(body).execute().actionGet();

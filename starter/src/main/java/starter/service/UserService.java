@@ -107,6 +107,8 @@ public class UserService {
         Client client = context.getClient();
         XContentBuilder builder= XContentFactory.jsonBuilder();
 
+        body.remove(Constant.FieldName._ID);
+
         validateUser(body, "create", "");
 
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
@@ -173,8 +175,12 @@ public class UserService {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
 
+        body.remove(Constant.FieldName._ID);
+
         validateUser(body, "update", id);
 
+        body.remove(Constant.FieldName.CREATEDBY);
+        body.remove(Constant.FieldName.CREATEDON);
         body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
         body.put(Constant.FieldName.LASTUPDATEDON, new Date());
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), Constant.FieldName.USERTYPENAME, id).setDoc(body).execute().actionGet();

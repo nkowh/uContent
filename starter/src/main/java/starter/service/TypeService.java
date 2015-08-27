@@ -249,8 +249,8 @@ public class TypeService {
         //填装基本属性
         pros.put(Constant.FieldName.NAME,makeProperty(Constant.FieldName.NAME, "string", Constant.FieldName.NOT_ANALYZED,true, "", "", "", ""));
         pros.put(Constant.FieldName.DESCRIPTION,makeProperty(Constant.FieldName.DESCRIPTION, "string", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
-        pros.put(Constant.FieldName.CREATEDBY,makeProperty(Constant.FieldName.CREATEDBY, "string", Constant.FieldName.NOT_ANALYZED, true, "", "", "", ""));
-        pros.put(Constant.FieldName.CREATEDON,makeProperty(Constant.FieldName.CREATEDON, "date", Constant.FieldName.NOT_ANALYZED, true, "", "", "", ""));
+        pros.put(Constant.FieldName.CREATEDBY,makeProperty(Constant.FieldName.CREATEDBY, "string", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
+        pros.put(Constant.FieldName.CREATEDON,makeProperty(Constant.FieldName.CREATEDON, "date", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
         pros.put(Constant.FieldName.LASTUPDATEDBY,makeProperty(Constant.FieldName.LASTUPDATEDBY, "string", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
         pros.put(Constant.FieldName.LASTUPDATEDON,makeProperty(Constant.FieldName.LASTUPDATEDON, "date", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
 
