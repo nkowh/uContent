@@ -14,6 +14,8 @@ import org.elasticsearch.search.sort.SortBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 import starter.service.LogService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +30,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Aspect
 @Component
@@ -140,9 +143,8 @@ public class LogAspect {
         //获取请求参数信息
         Object[] args = joinpoint.getArgs();
         if (args != null && args.length > 0) {
-            //解析SortBuilder参数信息，还原为字符串类型的参数
             for (int i = 0; i < args.length; i++) {
-                if (args[i] instanceof SortBuilder[]) {
+                if (args[i] instanceof SortBuilder[]) { //解析SortBuilder参数信息，还原为字符串类型的参数
                     SortBuilder[] sorts = (SortBuilder[]) args[i];
                     if (sorts != null && sorts.length != 0) {//非默认值时进行处理
                         String sortString = "[";
@@ -155,6 +157,26 @@ public class LogAspect {
                     } else {//默认值的时候不处理
                         args[i] = "[]";
                     }
+                } else if (args[i] instanceof StandardMultipartHttpServletRequest) { //解析上传的文件流的参数信息，转换为字符串类型的参数
+                    StandardMultipartHttpServletRequest multipartHttpServletRequest = (StandardMultipartHttpServletRequest) args[i];
+                    Set<Map.Entry<String, List<MultipartFile>>> entrySet = multipartHttpServletRequest.getMultiFileMap().entrySet();
+                    String fileInfoString = "{";
+                    for (Map.Entry<String, List<MultipartFile>> entry : entrySet) {
+                        fileInfoString += entry.getKey() + ":[";
+                        List<MultipartFile> thisValue = entry.getValue();
+                        for (MultipartFile multipartFile : thisValue) {//可能一个文件名对应多个流文件
+                            //byte[] bytes = multipartFile.getBytes();
+                            //InputStream inputStream = multipartFile.getInputStream();
+                            //String name = multipartFile.getName();
+                            long size = multipartFile.getSize();
+                            String contentType = multipartFile.getContentType();
+                            String originalFilename = multipartFile.getOriginalFilename();
+                            fileInfoString += "{size:" + size + ",contentType:" + contentType + ",originalFilename:" + originalFilename + "},";
+                        }
+                        fileInfoString = fileInfoString.substring(0, fileInfoString.length() - 1) + "],";
+                    }
+                    fileInfoString = fileInfoString.substring(0, fileInfoString.length() - 1) + "}";
+                    args[i] = fileInfoString;
                 }
             }
             String requestParams = Arrays.toString(args);
