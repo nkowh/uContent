@@ -135,9 +135,10 @@ public class DocumentService {
         return processGet(getResponse, head, allowableActions);
     }
 
-    public XContentBuilder update(String type, String id, Json body) throws IOException {
+    public XContentBuilder update(String type, String id, Json body) throws IOException, ParseException {
         GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.UPDATE);
         processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
+        validate(body, type);
         beforeUpdate(body);
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
@@ -150,7 +151,7 @@ public class DocumentService {
         return xContentBuilder;
     }
 
-    public XContentBuilder patch(String type, String id, Json body) throws IOException {
+    public XContentBuilder patch(String type, String id, Json body) throws IOException, ParseException {
         return update(type, id, body);
     }
 

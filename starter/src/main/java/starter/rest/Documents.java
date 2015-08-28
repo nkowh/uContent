@@ -90,6 +90,8 @@ public class Documents {
             return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (ParseException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -99,6 +101,8 @@ public class Documents {
             XContentBuilder xContentBuilder = documentService.patch(type, id, body);
             return xContentBuilder.string();
         } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (ParseException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
