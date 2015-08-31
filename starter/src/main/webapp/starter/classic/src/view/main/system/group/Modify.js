@@ -32,15 +32,13 @@ Ext.define('starter.view.main.system.group.Modify', {
         allowBlank: false
     },{
         xtype: 'itemselector',
-        name: 'Users',
+        name: 'users',
         id: 'itemselector-Users',
         anchor: '100%',
-        fieldLabel: 'Users',
-        bind : {
-            store : 'users'
-        },
-        displayField: 'Name',
-        valueField: 'Id',
+        fieldLabel: 'users',
+        store : {type : 'users'},
+        displayField: 'userName',
+        valueField: '_id',
         msgTarget: 'side',
         fromTitle: 'Available',
         toTitle: 'Selected'

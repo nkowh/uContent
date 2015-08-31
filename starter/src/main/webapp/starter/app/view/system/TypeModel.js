@@ -7,7 +7,7 @@ Ext.define('starter.system.TypeModel', {
         properties : {type : 'properties'}
     },
     data: {
-        pageSize : 10,
+        properties : [],
         listTitle: '类型管理',
         createTitle : '创建类型',
         modifyTitle : '修改类型',

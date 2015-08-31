@@ -8,7 +8,8 @@ Ext.define('starter.model.Property', {
         {name: 'promptMessage',   type: 'string'},
         {name: 'order',   type: 'int'},
         {name: 'required', type: 'boolean'},
-        {properties: 'isFullTextIndex', type: 'boolean'}
+        {name: 'isFullIndex', type: 'boolean'},
+        {properties: 'index', type: 'string'}
     ]
     //idProperty: 'name',
 });

@@ -11,10 +11,10 @@ Ext.define('starter.view.main.system.user.Users', {
         columns: [
         { text: 'UserId',width: 200, flex : 1, dataIndex: 'userId' },
         { text: 'UserName',width: 200, flex : 1, dataIndex: 'userName' },
-        { text: 'CreateBy',width: 130, dataIndex: 'createBy' },
-        { text: 'CreationDate',width: 150, dataIndex: 'creationDate', xtype: 'datecolumn',   format:'Y-m-d' },
-        { text: 'LastModifiedBy',width: 130, dataIndex: 'lastModifiedBy' },
-        { text: 'LastModificationDate',width: 150, dataIndex: 'lastModificationDate', xtype: 'datecolumn',   format:'Y-m-d' }
+        { text: 'CreatedBy',width: 130, dataIndex: 'createdBy' },
+        { text: 'CreatedOn',width: 150, dataIndex: 'createdOn', xtype: 'datecolumn',   format:'Y-m-d H:i:s' },
+        { text: 'LastUpdatedBy',width: 130, dataIndex: 'lastupdatedBy' },
+        { text: 'LastUpdatedOn',width: 150, dataIndex: 'lastupdatedOn', xtype: 'datecolumn',   format:'Y-m-d H:i:s' }
     ],
     dockedItems: [{
         xtype: 'toolbar',

@@ -24,6 +24,11 @@ Ext.define('starter.system.GroupController', {
     },
     loadModifyData: function (e, eOpts) {
         var record = this.getView().record;
+        var users = record.get('users');
+        var usersObj = this.getView().down('itemselector');
+        Ext.Array.each(users, function(user, index, countriesItSelf) {
+            var userIds = usersObj.setValue(user.userId);
+        });
         this.getView().getForm().loadRecord(record);
     },
     deleteGroup : function(e){
@@ -45,33 +50,48 @@ Ext.define('starter.system.GroupController', {
         var me = this;
         var form = this.getView().getForm();
         if (form.isValid()) {
-            var groupName = form.down('textfield[name=groupName]').getValue();
-            Ext.Ajax.request({
-                url: '/svc/groups',
-                callback: function (options, success, response) {
-                    if (!success) {
-                        return;
-                    }
-                    if( response.responseText==''){
-                        var group = Ext.create('starter.model.Group', form.getValues());
-                        var store = this.getViewModel().getStore('groups');
-                        store.add(group);
-                        me.getView().up('window').close();
-                    }
-                }
+            var group = Ext.create('starter.model.Group', form.getValues());
+            var store = this.getViewModel().getStore('groups');
+            var userIds = this.getView().down('itemselector').getValue();
+            var users = [];
+            Ext.Array.each(userIds, function(userid, index, countriesItSelf) {
+                users.push({'userId':userid});
             });
+            group.set('users',users);
+            store.add(group);
+            me.getView().up('window').close();
 
         }
     },
     modifySave : function(e){
+        var me = this;
         var form = e.up('form').getForm();
         var userValues = form.getValues();
         if (form.isValid()) {
             var store = this.getViewModel().getStore('groups');
-            var group =form.getRecord();
-            form.updateRecord(group);
-            store.commitChanges();
-            this.getView().up('window').close();
+            var group = form.getValues();
+            var userIds = this.getView().down('itemselector').getValue();
+            var users = [];
+            Ext.Array.each(userIds, function(user, index, countriesItSelf) {
+                users.push({'userId':user.userId});
+            });
+            group.users = users;
+            Ext.Ajax.request({
+                method: 'PATCH',
+                headers : {'Content-Type':'application/json'},
+                url: '/svc/groups/' + group._id,
+                params : Ext.JSON.encode(group),
+                callback: function (options, success, response) {
+                    if (!success) {
+                        return;
+                    }
+                    store.load();
+                    me.getView().up('window').close();
+                }
+            });
+            //form.updateRecord(group);
+            //store.commitChanges();
+
         }
 
     }

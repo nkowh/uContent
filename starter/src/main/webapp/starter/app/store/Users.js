@@ -24,7 +24,7 @@ Ext.define('starter.store.Users', {
         },
         reader: {
             type: 'json',
-            rootProperty: 'value',
+            rootProperty: 'users',
             totalProperty: 'total'
         }
     },

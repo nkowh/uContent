@@ -6,10 +6,10 @@ Ext.define('starter.model.User', {
         {name: 'userName', type: 'string'},
         {name: 'email', type: 'string'},
         {name: 'password', type: 'string'},
-        {name: 'createBy',  type: 'string'},
-        {name: 'creationDate',   type: 'date'},
-        {name: 'lastModifiedBy', type: 'string'},
-        {name: 'lastModificationDate', type: 'date'}
+        {name: 'createdBy',  type: 'string'},
+        {name: 'createdOn',   type: 'date'},
+        {name: 'lastupdatedBy', type: 'string'},
+        {name: 'lastupdatedOn', type: 'date'}
     ],
     idProperty: '_id'
 });

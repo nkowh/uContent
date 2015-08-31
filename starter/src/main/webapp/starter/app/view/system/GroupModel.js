@@ -3,7 +3,7 @@ Ext.define('starter.system.GroupModel', {
 
     alias: 'viewmodel.group',
     stores: {
-        users: {type: 'users',pageSize : 0},
+        users: {type: 'users',pageSize : 1},
         groups: {type: 'groups'}
     },
     data: {

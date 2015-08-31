@@ -16,7 +16,7 @@ Ext.define('starter.store.Groups', {
         },
         reader: {
             type: 'json',
-            rootProperty: 'value',
+            rootProperty: 'groups',
             totalProperty: 'total'
         }
     },

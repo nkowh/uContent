@@ -28,12 +28,19 @@ Ext.define('starter.system.UserController', {
     },
     deleteUser : function(e){
         var me = this;
-        var grid = e.up('grid');
         var record = this.getView().getSelectionModel().getSelection();
         var id = record[0].get('Id');
         if(record&&record.length>0){
             Ext.Msg.confirm("Title","Are you sure to delete this User？",function(r) {
-                me.getViewModel().getStore('users').remove(record[0]);
+                var store = me.getViewModel().getStore('users');
+                store.remove(record[0]);
+                store.sync({success: function(batch, options) {
+                    Ext.Msg.alert('message', 'Success.');
+                },
+                    failure: function(batch, options) {
+                        Ext.Msg.alert('message', options.request.scope.reader.jsonData["message"]);
+                    }
+                });
             });
 
         }else{
@@ -45,58 +52,37 @@ Ext.define('starter.system.UserController', {
         var me = this;
         var form = this.getView().getForm();
         if (form.isValid()) {
-            var userId = form.down('textfield[name=userId]').getValue();
-            Ext.Ajax.request({
-                url: '/svc/users/'+userId+'/exist',
-                callback: function (options, success, response) {
-                    if (!success) {
-                        return;
-                    }
-                    if( response.responseText!=''){
-                        var data =  Ext.decode(response.responseText);
-                        if(data.exist){
-                            Ext.Msg.alert('message', 'The user with the same userId already exists.');
-                        }else{
-                            var user = Ext.create('starter.model.User', form.getValues());
-                            var store = this.getViewModel().getStore('users');
-                            store.add(user);
-                            me.getView().up('window').close();
-                        }
-                    }
-                }
-            });
 
+           var user = Ext.create('starter.model.User', form.getValues());
+           //user.phantom = true;
+            var store = me.getViewModel().getStore('users');
+            //store.suspendAutoSync();
+            store.add(user);
+            store.sync({success: function(batch, options) {
+                me.getView().up('window').close();
+                Ext.Msg.alert('message', 'Success.');
+            },
+               failure: function(batch, options) {
+                   Ext.Msg.alert('message', options.request.scope.reader.jsonData["message"]);
+               },
+                scope : me
+            });
         }
     },
     modifySave : function(e){
         var me = this;
         var form = e.up('form').getForm();
-        var userValues = form.getValues();
         if (form.isValid()) {
-            var userId = form.down('textfield[name=userId]').getValue();
-            Ext.Ajax.request({
-                url: '/svc/users/'+userId+'/exist',
-                callback: function (options, success, response) {
-                    if (!success) {
-                        return;
-                    }
-                    if( response.responseText==''){
-                        var data =  Ext.decode(response.responseText);
-                        if(data.exist){
-                            Ext.Msg.alert('message', 'The user with the same userId already exists.');
-                        }else {
-                            var store = me.getViewModel().getStore('users');
-                            var user = form.getRecord();
-                            form.updateRecord(user);
-                            store.commitChanges();
-                            me.getView().up('window').close();
-                        }
-                    }
-                }
-            });
+            var store = me.getViewModel().getStore('users');
+            var user = form.getValues();
+            //form.updateRecord(user);
+            var record = store.getById(user._id);
+            record.set(user);
+            //store.commitChanges();
+            store.sync();
+        }
 
         }
 
-    }
 
 });

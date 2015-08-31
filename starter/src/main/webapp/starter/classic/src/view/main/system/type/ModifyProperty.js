@@ -1,11 +1,11 @@
-Ext.define('starter.view.main.system.type.CreateProperty', {
+Ext.define('starter.view.main.system.type.ModifyProperty', {
     extend: 'Ext.grid.Panel',
-    xtype: 'createProperty',
+    xtype: 'modifyProperty',
     controller: 'type',
     viewModel: 'type',
     bind: {
         title: '{propertyTitle}',
-        store : '{properties}'
+        store :  '{properties}'
     },
     columns: [{
         header: 'Name',
@@ -60,17 +60,11 @@ Ext.define('starter.view.main.system.type.CreateProperty', {
         header: 'Required',
         dataIndex: 'required',
         width: 80
-
     }, {
         xtype: 'checkcolumn',
         header: 'Index',
         dataIndex: 'isFullIndex',
         width: 80
-        //editor: {
-        //    xtype: 'checkbox',
-        //    inputValue : 'analyzed',
-        //    uncheckedValue: 'not_analyzed'
-        //}
     },  {
         header: 'Order',
         dataIndex: 'order',
@@ -83,14 +77,18 @@ Ext.define('starter.view.main.system.type.CreateProperty', {
         listeners:{
             "beforeedit" : 'validateProperty'
             //"edit" : 'editProperty'
+
         }
     },
     dockedItems: [{
         xtype: 'toolbar',
         dock: 'top',
         items: ['->',
-            { xtype: 'button', text: 'Add', handler: 'addProperty' },
-            { xtype: 'button', text: 'Delete',handler: 'deleteProperty'}
+            { xtype: 'button', text: 'Add', handler: 'addModifyProperty' },
+            { xtype: 'button', text: 'Delete',handler: 'deleteModifyProperty'}
         ]
-    }]
+    }],
+    listeners:{
+        "rowdblclick" : 'modifyProperty'
+    }
 });

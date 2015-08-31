@@ -4,13 +4,13 @@ Ext.define('starter.view.main.document.IndexDocument', {
 
     controller: 'indexdocument',
     viewModel: 'indexdocument',
-
     title:{
         bind: {
             text: '{title}'
         }
     },
-
+    height: 650,
+    scrollable : 'y',
     fieldDefaults: {
         labelAlign: 'right',
         labelWidth: 115,
@@ -36,7 +36,6 @@ Ext.define('starter.view.main.document.IndexDocument', {
                     valueField: 'name',
                     bind: {
                         store :  '{types}'
-                        //value : '{tValue}'
                     },
                     listeners: {
                         change:"changeType"
@@ -45,7 +44,7 @@ Ext.define('starter.view.main.document.IndexDocument', {
             ]
         }, {
             xtype: 'fieldset',
-            itemId: 'documenttype',
+            itemId: 'propertyList',
             title: 'Contact Information',
 
             defaultType: 'textfield',
@@ -54,8 +53,71 @@ Ext.define('starter.view.main.document.IndexDocument', {
             },
 
             items: []
+        }, {
+            xtype: 'fieldset',
+            itemId: 'aclList',
+            title: 'Acl Information',
+            defaults: {
+                anchor: '100%'
+            },
+
+            items: [{
+                        xtype: 'container',
+                        title: 'acl',
+                        layout: 'hbox',
+                        margin :  '2 5 2 5',
+                        items: [
+                            {
+                                fieldLabel: 'ACE',
+                                xtype: 'tagfield',
+                                name : 'operationObj',
+                                displayField: 'name',
+                                valueField: 'id',
+                                forceSelection: true
+                            }, {
+                                xtype: 'tagfield',
+                                store: ['READ', 'WRITE','UPDATE','DELETE'],
+                                forceSelection: true
+                            }, {
+                                xtype: 'button',
+                                text: '+',
+                                handler: 'addAcl'
+                            }
+                        ]
+                    }]
+        }, {
+            xtype: 'fieldset',
+            itemId: 'stream',
+            title: 'Stream Information',
+
+            defaults: {
+                anchor: '100%'
+            },
+
+            items: [{
+                xtype: 'filefield',
+                name: 'file',
+                fieldLabel: 'Files',
+                labelWidth: 50,
+                msgTarget: 'side',
+                anchor: '100%',
+                buttonText: 'Select Photo...',
+                listeners : {
+                    afterrender: function (file, eOpts) {
+                        var el = file.getEl();
+                        file.fileInputEl.set({multiple: 'multiple'});
+                    }
+                }
+            }]
         }];
         me.callParent();
+    },
+    buttons: [ {
+        text: 'Save',
+        handler : 'save'
+    }],
+    listeners: {
+        beforerender: 'loadAclData'
     }
 
 });

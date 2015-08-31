@@ -24,8 +24,7 @@ Ext.define('starter.view.main.system.user.Modify', {
     defaultType: 'textfield',
     items: [{
         name: '_id',
-        xtype: 'hiddenfield',
-        allowBlank: false
+        xtype: 'hiddenfield'
     },{
         fieldLabel: 'User Id',
         name: 'userId',

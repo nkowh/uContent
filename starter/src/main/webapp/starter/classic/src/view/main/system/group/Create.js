@@ -2,12 +2,12 @@ Ext.define('starter.view.main.system.group.Create', {
     extend: 'Ext.form.Panel',
     xtype: 'createGroup',
     controller: 'group',
+    viewModel: 'group',
     requires : [
         'Ext.ux.form.ItemSelector',
         'Ext.ux.ajax.JsonSimlet',
         'Ext.ux.ajax.SimManager'
     ],
-    viewModel: 'group',
     initComponent: function(){
         var me = this;
         Ext.apply(this, {
@@ -40,16 +40,19 @@ Ext.define('starter.view.main.system.group.Create', {
         allowBlank: false
     },{
         xtype: 'itemselector',
-        name: 'Users',
+        name: 'users',
         id: 'itemselector-Users',
         anchor: '100%',
         fieldLabel: 'Users',
-        bind : {
-            store : 'users'
-        },
-        displayField: 'Name',
-        valueField: 'Id',
+        store : {type : 'users',pageSize:10000},
+        //bind : {
+        //    store : 'users'
+        //},
+        displayField: 'userName',
+        valueField: '_id',
         msgTarget: 'side',
+        height : 400,
+        scrollable : true,
         fromTitle: 'Available',
         toTitle: 'Selected'
     }]

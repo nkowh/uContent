@@ -3,30 +3,11 @@ Ext.define('starter.view.document.IndexDocumentController', {
 
     alias: 'controller.indexdocument',
 
-    isDocument: function (fullname) {
-        var me = this;
-        var match = _.find(me.entityTypes, function (entityType) {
-            var $entityType = $(entityType);
-            var name = $entityType.attr('Name');
-            var baseType = $entityType.attr('BaseType');
-            if (me.namespace + '.' + name !== fullname)return false;
-            if (baseType === 'com.nikoyo.uContent.dm.Document')
-                return true;
-            else if (fullname === 'com.nikoyo.uContent.dm.Document')
-                return true;
-            else if (baseType != null)
-                return me.isDocument($entityType.attr('BaseType'), me.namespace, me.entityTypes);
-            return false;
-        });
-        return match;
-    },
-
-
     changeType: function (combo, newValue, oldValue, eOpts) {
         var me = this;
         if(newValue&&newValue!=oldValue){
             var form = this.getView();
-            var fieldset = form.down('fieldset[itemId="documenttype"]');
+            var fieldset = form.down('fieldset[itemId="propertyList"]');
             fieldset.removeAll(true);
             var type = newValue;
             Ext.Ajax.request({
@@ -37,7 +18,7 @@ Ext.define('starter.view.document.IndexDocumentController', {
                     }
                     if(response.responseText!=''){
                         var properties = Ext.decode(response.responseText);
-                        Ext.Array.each(properties, function(property, index, countriesItSelf) {
+                        Ext.Array.each(properties.properties, function(property, index, countriesItSelf) {
                             fieldset.add({
                                 fieldLabel: property.name,
                                 name: property.name
@@ -50,14 +31,116 @@ Ext.define('starter.view.document.IndexDocumentController', {
         }
 
     },
+    drawPeopertyField : function(type,property){
+        var field = {};
+        if(type=='string'){
+            field = {
+                fieldLabel: property.name,
+                name: property.name
+            };
+        }
+        if(type=='integer'){
+            field = {
+                xtype: 'numberfield',
+                fieldLabel: property.name,
+                minValue: -2147483647,
+                maxValue: 2147483647,
+                name: property.name
+            };
+        }
+        if(type=='float'){
 
-    findType: function (fullname) {
+        }
+        if(type=='boolean'){
+
+        }
+        if(type=='date'){
+
+        }
+    },
+    addAcl : function(){
         var me = this;
-        if (fullname == null)return null;
-        return _.find(me.entityTypes, function (entityType) {
-            var $entityType = $(entityType);
-            var name = $entityType.attr('Name');
-            return me.namespace + '.' + name === fullname;
+        var aclcontainer = this.getView().down('fieldset[itemId=aclList]');
+        var index = aclcontainer.items.length;
+        aclcontainer.add({
+            xtype: 'container',
+            title: 'acl',
+            layout: 'hbox',
+            margin :  '2 5 2 5',
+            items: [
+                {
+                    fieldLabel: 'ACE',
+                    xtype: 'tagfield',
+                    name : 'operationObj',
+                    displayField: 'name',
+                    valueField: 'id',
+                    forceSelection: true
+                }, {
+                    xtype: 'tagfield',
+                    store: ['READ', 'WRITE','UPDATE','DELETE'],
+                    forceSelection: true
+                }, {
+                    xtype: 'button',
+                    text: '-',
+                    handler:  function (e) {
+                        var acl = e.up('container');
+                        var aclcontainer = me.getView().down('fieldset[itemId=aclList]');
+                        aclcontainer.remove(acl);
+
+                    }
+                }
+            ]
+        });
+
+        this.loadAclOperationObj(index);
+    },
+    save : function(){
+        var form = this.getView().getForm();
+        if (form.isValid()) {
+
+        }
+    },
+    loadAclData : function(){
+        this.loadAclOperationObj(0);
+    },
+    loadAclOperationObj : function(index){
+        var me = this;
+        var userResult = [];
+        var groupResult = [];
+        var data = [];
+        Ext.Ajax.request({
+            url: '/svc/users?limit=100000',
+            callback: function (options, success, response) {
+                if(!success){
+                    return ;
+                }
+                if(response.responseText!=''){
+                    var users = Ext.decode(response.responseText);
+                    userResult = Ext.Array.map(users.users,function(item,index){
+                        return {'id':item._id,'name':item.userName,'isUser':true,'isGroup':false};
+                    });
+                }
+                Ext.Ajax.request({
+                    url: '/svc/groups?limit=100000',
+                    callback: function (options, success, response) {
+                        if(!success){
+                            return ;
+                        }
+                        if(response.responseText!=''){
+                            var groups = Ext.decode(response.responseText);
+                            groupResult = Ext.Array.map(groups.groups,function(item,index){
+                                return {'id':item._id,'name':item.groupName,'isUser':false,'isGroup':true};
+                            });
+                        }
+                        data = Ext.Array.merge( userResult, groupResult) ;
+                        me.getView().query('tagfield[name="operationObj"]')[index].bindStore(
+                            Ext.create('Ext.data.Store', {
+                            fields : ['id','name','isUser','isGroup'],
+                            data : data
+                        }));
+                    }
+                });
+            }
         });
     }
 });

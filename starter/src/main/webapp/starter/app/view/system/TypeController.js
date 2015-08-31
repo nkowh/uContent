@@ -4,75 +4,44 @@ Ext.define('starter.system.TypeController', {
 
     openCreateWin: function (sender, record) {
         var me = this;
-        Ext.create('Ext.window.Window', {
-            title:'新建类型',
-            width: 1050,
-            header: {
-                titlePosition: 2,
-                titleAlign: 'center'
-            },
-            height: 600,
-            layout: {
-                type: 'border',
-                padding: 5
-            },
-            items:[{
-                region: 'north',
-                xtype: 'createTypeInfo'
-            },{
-                region: 'center',
-                xtype: 'createProperty'
-            }],
-            buttons: [{
-                text: 'Close',
-                handler: function() {
-                    this.up('window').close();
-                }
-            }, {
-                text: 'Submit',
-                handler : function(e){
-                    var form = e.up('window').down('form');
-                    var grid =  e.up('window').down('grid');
-                    if (form.isValid()) {
-                        var type = Ext.create('starter.model.Type', form.getValues());
-                        var gstore = grid.store;
-                        var record = gstore.getAt(0);
-                        if(record&&!record.isValid()&&record.get('name')!=''){
-                            return;
-                        }
-                        var properties = []
-                        var size = gstore.getCount();
-                        for(var i=0;i<size;i++){
-                            var pRecord = gstore.getAt(i);
-                            properties.push(pRecord.getData());
-                        }
-                        type.set('properties',properties);
-                        type.phantom =true;
-                        var store = me.getViewModel().getStore('types');
-                        store.add(type);
-                        e.up('window').close();
-                    }
-                }
-            }]
-        }).show();
+        Ext.create('starter.view.main.system.type.Create').show();
     },
     openModifyWin: function (grid, record, tr, rowIndex, e, eOpts) {
-        Ext.create('Ext.window.Window', {
-            layout: {
-                type: 'border',
-                padding: 5
-            },
-            title:'修改类型',
-            items:[{
-                xtype: 'modifyType',
-                record : record
-            }]
-        }).show();
+        var me = this;
+        Ext.create('starter.view.main.system.type.Modify',{ record : record}).show();
         return ;
     },
-    loadModifyData: function (e, eOpts) {
-        var record = this.getView().record;
-        this.getView().getForm().loadRecord(record);
+    loadModifyData: function() {
+        var me = this;
+        var record =  this.getView().record;
+        this.getView().down('form').loadRecord(record);
+        var type = record.get('name');
+        Ext.Ajax.request({
+            url: '/svc/types/'+type,
+            callback: function (options, success, response) {
+                if(!success){
+                    return ;
+                }
+                if(response.responseText!=''){
+                    var properties = Ext.decode(response.responseText);
+                    Ext.Array.each(properties.properties, function(property, index, countriesItSelf) {
+                        if(property.index=='analyzed'){
+                            property.isFullIndex = true;
+                        }
+                        if(property.index=='not_analyzed'){
+                            property.isFullIndex = false;
+                        }
+                    });
+                    me.getView().down('grid').bindStore(
+                        Ext.create('Ext.data.Store', {
+                            model: 'starter.model.Property',
+                            data : properties.properties,
+                            initData : properties.properties
+                        }));
+
+                }
+            }
+        });
     },
     deleteType : function(e){
         var me = this;
@@ -99,7 +68,7 @@ Ext.define('starter.system.TypeController', {
             type: 'string',
             pattern: '',
             promptMessage: '',
-            isFullTextIndex: false,
+            isFullIndex: false,
             defaultValue: '',
             required: false,
             order :order
@@ -135,8 +104,13 @@ Ext.define('starter.system.TypeController', {
         var defaultValue = e.record.get('defaultValue');
         var pattern = e.record.get('pattern');
         var promptMessage = e.record.get('promptMessage');
-
-
+        if(e.field=='name'||e.field=='type'){
+            if(e.grid.store.initData){
+                if(Ext.Array.contains(e.grid.store.initData, e.record.data)){
+                    e.cancel = true;
+                }
+            }
+        }
         if(e.field=='defaultValue') {
             if (type != '') {
                 this.validateByType(type, e.column.field);
@@ -158,5 +132,115 @@ Ext.define('starter.system.TypeController', {
         if (store.getCount() > 0) {
             sm.select(0);
         }
+    },
+    deleteModifyProperty : function(e){
+        var grid =  this.getView();
+        var store = grid.store;
+        var sm = grid.getSelectionModel();
+        var record = sm.getSelection()[0];
+
+        if(record){
+            var isOld = Ext.Array.contains(store.initData, record.data);
+            if(isOld){
+                Ext.Msg.alert('message', 'You cannot delete the property.');
+                return ;
+            }else
+            store.remove(record);
+        }
+        if (store.getCount() > 0) {
+            sm.select(0);
+        }
+    },
+    addModifyProperty : function(e){
+        var grid =  this.getView();
+        var store = grid.store;
+        var order = store.data.length+1;
+        var record = store.getAt(0);
+        // Create a model instance
+        if(store.getCount()==0||record.isValid()){
+            var r = Ext.create('starter.model.Property', {
+                name: '',
+                type: 'string',
+                pattern: '',
+                promptMessage: '',
+                isFullIndex: false,
+                defaultValue: '',
+                required: false,
+                order :order
+            });
+
+            store.insert(0, r);
+        }
+    },
+    createSave : function(e){
+        var form = e.up('window').down('form');
+        var grid =  e.up('window').down('grid');
+        if (form.isValid()) {
+            var type = Ext.create('starter.model.Type', form.getValues());
+            var gstore = grid.store;
+            var record = gstore.getAt(0);
+            if(record&&!record.isValid()&&record.get('name')!=''){
+                return;
+            }
+            var properties = []
+            var size = gstore.getCount();
+            for(var i=0;i<size;i++){
+                var pRecord = gstore.getAt(i);
+                if(pRecord.get('isFullIndex')){
+                    pRecord.set('index','analyzed');
+                }else{
+                    pRecord.set('index','not_analyzed');
+
+                }
+                properties.push(pRecord.getData());
+            }
+            type.set('properties',properties);
+            type.phantom =true;
+            var store = this.getViewModel().getStore('types');
+            store.add(type);
+            e.up('window').close();
+        }
+    },
+    modifySave : function(e){
+        var me = this;
+        var form = e.up('window').down('form');
+        var grid =  e.up('window').down('grid');
+        var store = me.getViewModel().getStore('types');
+        if (form.isValid()) {
+            var type = form.getValues();
+            var gstore = grid.store;
+            var record = gstore.getAt(0);
+            if(record&&!record.isValid()&&record.get('name')!=''){
+                return;
+            }
+            var properties = []
+            var size = gstore.getCount();
+            for(var i=0;i<size;i++){
+                var pRecord = gstore.getAt(i);
+                if(pRecord.get('isFullIndex')){
+                    pRecord.set('index','analyzed');
+                }else{
+                    pRecord.set('index','not_analyzed');
+
+                }
+                properties.push(pRecord.getData());
+            }
+            type.properties = properties;
+            //type.set('properties',properties);
+            Ext.Ajax.request({
+                method: 'PATCH',
+                headers : {'Content-Type':'application/json'},
+                url: '/svc/types/' + type.name,
+                params : Ext.JSON.encode(type),
+                callback: function (options, success, response) {
+                    if (!success) {
+                        return;
+                    }
+                    store.load();
+                    me.getView().close();
+                }
+            });
+        }
+
     }
 });

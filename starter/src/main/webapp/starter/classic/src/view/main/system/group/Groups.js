@@ -9,11 +9,11 @@ Ext.define('starter.view.main.system.group.Groups', {
         store :  '{groups}'
     },
     columns: [
-        { text: 'Name',width: 200, flex : 1, dataIndex: 'Name' },
-        { text: 'CreateBy',width: 130, dataIndex: 'CreateBy' },
-        { text: 'CreatedOn',width: 150, dataIndex: 'CreatedOn'},
-        { text: 'LastUpdatedBy',width: 130, dataIndex: 'LastUpdatedBy' },
-        { text: 'LastUpdatedOn',width: 150, dataIndex: 'LastUpdatedOn' }
+        { text: 'Name',width: 200, flex : 1, dataIndex: 'groupName' },
+       { text: 'CreatedBy',width: 130, dataIndex: 'createdBy' },
+              { text: 'CreatedOn',width: 150, dataIndex: 'createdOn', xtype: 'datecolumn',   format:'Y-m-d H:i:s' },
+              { text: 'LastUpdatedBy',width: 130, dataIndex: 'lastupdatedBy' },
+              { text: 'LastUpdatedOn',width: 150, dataIndex: 'lastupdatedOn', xtype: 'datecolumn',   format:'Y-m-d H:i:s' }
     ],
     dockedItems: [{
         xtype: 'toolbar',
@@ -22,14 +22,6 @@ Ext.define('starter.view.main.system.group.Groups', {
             { xtype: 'button', text: 'Add', handler: 'openCreateWin' },
             { xtype: 'button', text: 'Delete',handler: 'deleteGroup'}
         ]
-    },{
-        xtype : 'slider',
-        bind: {
-            value: '{size}',
-            fieldLabel: '显示数量' + '{size}'
-        }
-        //value: 10,
-
     },{
         xtype: 'pagingtoolbar',
         dock: 'bottom',

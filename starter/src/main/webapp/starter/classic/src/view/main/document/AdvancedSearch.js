@@ -9,7 +9,6 @@ Ext.define('starter.view.main.document.AdvancedSearch', {
         pack: 'start',
         align: 'stretch'
     },
-    bodyPadding: 10,
 
     defaults: {
         frame: true,
