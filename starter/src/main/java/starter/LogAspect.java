@@ -163,7 +163,7 @@ public class LogAspect {
                     List<MultipartFile> files = parser.getFiles();
                     if (!files.isEmpty()) {
                         String fileInfoString = "[";
-                        for (MultipartFile multipartFile : files) {//可能一个文件名对应多个流文件
+                        for (MultipartFile multipartFile : files) {
                             //byte[] bytes = multipartFile.getBytes();
                             //InputStream inputStream = multipartFile.getInputStream();
                             String name = multipartFile.getName();
@@ -210,7 +210,6 @@ public class LogAspect {
         Object[] headerObjects = headerList.toArray();
         String headerInfo = Arrays.toString(headerObjects);
         threadLocalMap.put(REQUEST_HEADER, headerInfo);
-
 
         //记录开始时间
         long startTimeMillis = System.currentTimeMillis();

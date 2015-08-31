@@ -43,6 +43,9 @@ public class DocumentService {
     @Autowired
     private TypeService typeService;
 
+    @Autowired
+    private UserService userService;
+
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
 
@@ -172,7 +175,7 @@ public class DocumentService {
 
     private void beforeCreate(Json body){
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
-        body.put(Constant.FieldName.CREATEDON, new DateTime());
+        body.put(Constant.FieldName.CREATEDON, new Date());
         body.put(Constant.FieldName.LASTUPDATEDBY, "");
         body.put(Constant.FieldName.LASTUPDATEDON, null);
         List<Object> permission = new ArrayList<Object>();
@@ -213,7 +216,7 @@ public class DocumentService {
         return json;
     }
 
-    private Set getUserPermission(String user, Object acl){
+    private Set getUserPermission(String user, Object acl) throws IOException {
         Set uPermission = getPermissionByUser(user, acl);
         List<String> groups = getGroups(user);
         Set gPermission = getPermissionByGroups(groups, acl);
@@ -221,9 +224,8 @@ public class DocumentService {
         return uPermission;
     }
 
-    private List<String> getGroups(String user){
-        List<String> groups = new ArrayList<String>();
-        return groups;
+    private List<String> getGroups(String user) throws IOException {
+        return userService.getGroupsOfUser(user);
     }
 
     private Set getPermissionByUser(String user, Object acl){
@@ -254,7 +256,7 @@ public class DocumentService {
         return permission;
     }
 
-    private boolean hasPermission(String user, Object acl, Constant.Permission action){
+    private boolean hasPermission(String user, Object acl, Constant.Permission action) throws IOException {
         List<Map<String, Object>> _acl = (List<Map<String, Object>>)acl;
         Set permission = getPermissionByUser(user, _acl);
         if (permission.contains(action.toString())) {
@@ -269,7 +271,7 @@ public class DocumentService {
     private void beforeUpdate(Json body){
         if(body != null){
             body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
-            body.put(Constant.FieldName.LASTUPDATEDON, new DateTime());
+            body.put(Constant.FieldName.LASTUPDATEDON, new Date());
         }
     }
 
@@ -353,7 +355,7 @@ public class DocumentService {
     }
 
 
-    public GetResponse checkPermission(String type, String id, String user, Constant.Permission permission){
+    public GetResponse checkPermission(String type, String id, String user, Constant.Permission permission) throws IOException {
         GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
@@ -372,7 +374,7 @@ public class DocumentService {
         while (iterator.hasNext()){
             Map.Entry<String, Object> entry = iterator.next();
             String key = entry.getKey();
-            if (key.equals(Constant.FieldName.STREAMS)) {
+            if (key.equals(Constant.FieldName.STREAMS) || key.equals(Constant.FieldName.ACL)) {
                 continue;
             }
             if (!keySet.contains(key)) {//ignore undefined property
