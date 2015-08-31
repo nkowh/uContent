@@ -143,10 +143,11 @@ Ext.define('starter.document.AdvancedSearchController', {
         }
     },
     onDeleteButton : function(e){
-        if(this.getView().items.length==1){
-            return ;
-        }
-        e.up('searchcondition').removeAll();
+
+        var condtion = this.getView();
+        var conditionContainer = this.getView().up('fieldset[title=Condition]');
+        conditionContainer.remove(condtion);
+
     },
     search : function(){
         var form = this.getView().getForm();
