@@ -39,36 +39,8 @@ public class GroupService {
     @Autowired
     private RequestContext context;
 
-//    public XContentBuilder all() throws IOException {
-//        Client client = context.getClient();
-//        //QueryBuilder queryBuilder = QueryBuilders.termQuery()
-//        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).execute().actionGet();
-//        SearchHits hits = searchResponse.getHits();
-//        XContentBuilder builder= XContentFactory.jsonBuilder();
-//        builder.startObject();
-//        builder.startArray("groups");
-//        for (SearchHit searchHitFields : searchResponse.getHits()) {
-//            builder.startObject()
-//                    .field("_id", searchHitFields.getId())
-//                    .field(Constant.FieldName.GROUPNAME, searchHitFields.getSource().get(Constant.FieldName.GROUPNAME))
-//                    .field(Constant.FieldName.USERS, searchHitFields.getSource().get(Constant.FieldName.USERS))
-//                    .field(Constant.FieldName.CREATEDBY, searchHitFields.getSource().get(Constant.FieldName.CREATEDBY))
-//                    .field(Constant.FieldName.CREATEDON, searchHitFields.getSource().get(Constant.FieldName.CREATEDON))
-//                    .field(Constant.FieldName.LASTUPDATEDBY, searchHitFields.getSource().get(Constant.FieldName.LASTUPDATEDBY))
-//                    .field(Constant.FieldName.LASTUPDATEDON, searchHitFields.getSource().get(Constant.FieldName.LASTUPDATEDON))
-//                    .endObject();
-//        }
-//        builder.endArray();
-//        builder.endObject();
-//        //System.out.println(builder.string());
-//        return builder;
-//    }
-
     public XContentBuilder all(String query, int start, int limit, SortBuilder[] sort) throws IOException {
         Client client = context.getClient();
-        //QueryBuilder queryBuilder = QueryBuilders.termQuery()
-        //SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).execute().actionGet();
-
         SearchResponse searchResponse = null;
         if (limit>0){
             SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex())
@@ -103,7 +75,7 @@ public class GroupService {
         }
         builder.endArray();
         builder.endObject();
-        //System.out.println(builder.string());
+        System.out.println(builder.string());
         return builder;
     }
 
@@ -112,7 +84,6 @@ public class GroupService {
         XContentBuilder builder= XContentFactory.jsonBuilder();
 
         body.remove(Constant.FieldName._ID);
-
         validateGroup(body, "create", "");
 
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
@@ -149,27 +120,6 @@ public class GroupService {
         return builder;
     }
 
-    public XContentBuilder ifGroupNameExist(String groupName) throws IOException {
-        Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.GROUPNAME, groupName);
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
-        XContentBuilder builder= XContentFactory.jsonBuilder();
-        if(searchResponse.getHits().totalHits()>0){
-            builder.startObject().field("exist", true).endObject();
-        }else{
-            builder.startObject().field("exist", false).endObject();
-        }
-        System.out.println(builder.string());
-        return builder;
-    }
-
-    public SearchHits checkGroupName(String groupName) {
-        Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.GROUPNAME, groupName);
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
-        return searchResponse.getHits();
-    }
-
     public XContentBuilder getUsers(String id) throws IOException {
         Client client = context.getClient();
         XContentBuilder builder= XContentFactory.jsonBuilder();
@@ -177,22 +127,24 @@ public class GroupService {
         Map<String, Object> source = getResponse.getSource();
         builder.startObject();
         builder.startArray(Constant.FieldName.USERS);
-        ArrayList<HashMap<String, Object>> users = (ArrayList<HashMap<String, Object>>)source.get(Constant.FieldName.USERS);
+        ArrayList<Object> users = (ArrayList<Object>)source.get(Constant.FieldName.USERS);
         if (users!=null){
-            for (HashMap<String, Object> user:users){
-                GetResponse getUserResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, user.get(Constant.FieldName.USERID).toString()).execute().actionGet();
-                Map<String, Object> userSource = getUserResponse.getSource();
-                builder.startObject()
-                        .field("_id", id)
-                        .field(Constant.FieldName.USERID, userSource.get(Constant.FieldName.USERID))
-                        .field(Constant.FieldName.USERNAME, userSource.get(Constant.FieldName.USERNAME))
-                        .field(Constant.FieldName.EMAIL, userSource.get(Constant.FieldName.EMAIL))
-                        .field(Constant.FieldName.PASSWORD, userSource.get(Constant.FieldName.PASSWORD))
-                        .field(Constant.FieldName.CREATEDBY, userSource.get(Constant.FieldName.CREATEDBY))
-                        .field(Constant.FieldName.CREATEDON, userSource.get(Constant.FieldName.CREATEDON))
-                        .field(Constant.FieldName.LASTUPDATEDBY, userSource.get(Constant.FieldName.LASTUPDATEDBY))
-                        .field(Constant.FieldName.LASTUPDATEDON, userSource.get(Constant.FieldName.LASTUPDATEDON))
-                        .endObject();
+            for (Object user:users){
+                GetResponse getUserResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, user.toString()).execute().actionGet();
+                if (getUserResponse.isExists()){
+                    Map<String, Object> userSource = getUserResponse.getSource();
+                    builder.startObject()
+                            .field("_id", id)
+                            .field(Constant.FieldName.USERID, userSource.get(Constant.FieldName.USERID))
+                            .field(Constant.FieldName.USERNAME, userSource.get(Constant.FieldName.USERNAME))
+                            .field(Constant.FieldName.EMAIL, userSource.get(Constant.FieldName.EMAIL))
+                            .field(Constant.FieldName.PASSWORD, userSource.get(Constant.FieldName.PASSWORD))
+                            .field(Constant.FieldName.CREATEDBY, userSource.get(Constant.FieldName.CREATEDBY))
+                            .field(Constant.FieldName.CREATEDON, userSource.get(Constant.FieldName.CREATEDON))
+                            .field(Constant.FieldName.LASTUPDATEDBY, userSource.get(Constant.FieldName.LASTUPDATEDBY))
+                            .field(Constant.FieldName.LASTUPDATEDON, userSource.get(Constant.FieldName.LASTUPDATEDON))
+                            .endObject();
+                }
             }
         }
         builder.endArray();
@@ -209,7 +161,6 @@ public class GroupService {
         }
 
         body.remove(Constant.FieldName._ID);
-
         validateGroup(body, "update", id);
 
         body.remove(Constant.FieldName.CREATEDBY);
@@ -249,27 +200,23 @@ public class GroupService {
     public XContentBuilder refUsers(String id, Json userIds) throws IOException {
         Client client = context.getClient();
         GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
-        Map<String, Object> source = getResponse.getSource();
-        ArrayList<HashMap<String, String>> users = (ArrayList<HashMap<String, String>>)source.get(Constant.FieldName.USERS);
-//        if (users!=null){
-//            ArrayList<HashMap<String, String>> uids = (ArrayList<HashMap<String, String>>)userIds.get(Constant.FieldName.USERS);
-//            if (uids!=null){
-//                for(HashMap<String, String> uid:uids) {
-//                    boolean exist = false;
-//                    for (HashMap<String, String> user : users) {
-//                        if(user.get(uid).equals(user)){
-//                            exist = true;
-//                        }
-//                    }
-//                    if(!exist){
-//                        users.add(uid);
-//                    }
-//                }
-//            }
-//        }else{
-//            source.put(Constant.FieldName.USERS, userIds.get(Constant.FieldName.USERS));
-//        }
-        source.put(Constant.FieldName.USERS, userIds.get(Constant.FieldName.USERS));
+        if (!getResponse.isExists()) {
+            throw new uContentException("Not found", HttpStatus.NOT_FOUND);
+        }
+
+        Object users = userIds.get(Constant.FieldName.USERS);
+        if (users!=null){
+            if (users instanceof List){
+                for(Object userOjb:(ArrayList<Object>)users){
+                    //TODO:校验每个用户存在性
+                }
+            }else{
+                throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        Map<String, Object> source = new HashMap<String, Object>();
+        source.put(Constant.FieldName.USERS, users);
         source.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
         source.put(Constant.FieldName.LASTUPDATEDON, new Date());
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).setDoc(source).execute().actionGet();
@@ -295,11 +242,7 @@ public class GroupService {
             builder.startObject(Constant.FieldName.GROUPTYPENAME);
             builder.startObject("properties")
                     .startObject(Constant.FieldName.GROUPNAME).field("type", "string").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.USERS)
-                        .startObject("properties")
-                            .startObject(Constant.FieldName.USERID).field("type", "string").field("store", "yes").endObject()
-                        .endObject()
-                    .endObject()
+                    .startObject(Constant.FieldName.USERS).field("type", "string").field("store", "yes").endObject()
                     .startObject(Constant.FieldName.CREATEDBY).field("type", "string").field("store", "yes").endObject()
                     .startObject(Constant.FieldName.CREATEDON).field("type", "date").field("store", "yes").endObject()
                     .startObject(Constant.FieldName.LASTUPDATEDBY).field("type", "string").field("store", "yes").endObject()
@@ -314,10 +257,40 @@ public class GroupService {
         }
     }
 
+    public void initialGroupData(){
+        Client client = context.getClient();
+    }
+
     private void validateGroup(Json body, String action, String id) {
+        //校验groupName
         Object groupName = body.get(Constant.FieldName.GROUPNAME);
-        if (StringUtils.isEmpty(groupName)){
-            throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
+        if (action.equals("create")){
+            if (StringUtils.isEmpty(groupName)){
+                throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }else if(action.equals("update")){
+            if (groupName.equals("")){
+                throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        //校验groupName是否存在
+        if (!StringUtils.isEmpty(groupName)){
+            SearchHits searchHits = checkGroupName(groupName.toString());
+            if (action.equals("create")){
+                if (searchHits.totalHits()>0){
+                    throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }else if(action.equals("update")){
+                if (searchHits.totalHits()>0){
+                    //修改时发现与其他group的groupname相同
+                    for (SearchHit searchHitFields : searchHits) {
+                        if(!id.equals(searchHitFields.getId())){
+                            throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
+                        }
+                    }
+                }
+            }
         }
 
         //校验是否有多余的属性
@@ -325,9 +298,6 @@ public class GroupService {
         while (iterator.hasNext()){
             Map.Entry<String, Object> entry = iterator.next();
             String key = entry.getKey();
-//            if(!(key.equals(Constant.FieldName.GROUPNAME))){
-//                throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
-//            }
             if(!(key.equals(Constant.FieldName.GROUPNAME)||key.equals(Constant.FieldName.USERS)||
                     key.equals(Constant.FieldName.CREATEDBY)||key.equals(Constant.FieldName.CREATEDON)||
                     key.equals(Constant.FieldName.LASTUPDATEDBY)||key.equals(Constant.FieldName.LASTUPDATEDON)||
@@ -337,21 +307,24 @@ public class GroupService {
             }
         }
 
-        //校验groupName存在
-        SearchHits searchHits = checkGroupName(groupName.toString());
-        if (action.equals("create")){
-            if (searchHits.totalHits()>0){
-                throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }else if(action.equals("update")){
-            if (searchHits.totalHits()>0){
-                //修改时发现与其他group的groupname相同
-                for (SearchHit searchHitFields : searchHits) {
-                    if(!id.equals(searchHitFields.getId())){
-                        throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
-                    }
+        //校验users
+        Object users = body.get(Constant.FieldName.USERS);
+        if (users!=null){
+            if (users instanceof List){
+                for(Object userOjb:(ArrayList<Object>)users){
+
                 }
+            }else{
+                throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
     }
+
+    private SearchHits checkGroupName(String groupName) {
+        Client client = context.getClient();
+        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.GROUPNAME, groupName);
+        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
+        return searchResponse.getHits();
+    }
 }
+

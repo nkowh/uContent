@@ -137,6 +137,7 @@ public class Systems {
             XContentBuilder result = userService.update(id, body);
             return result.string();
         } catch (IOException e) {
+            e.printStackTrace();
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -197,7 +198,7 @@ public class Systems {
         }
     }
 
-    @RequestMapping(value = "groups/{id}/users", method = RequestMethod.POST)
+    @RequestMapping(value = "groups/{id}/users", method = RequestMethod.PATCH)
     public String refGroupUsers(@PathVariable String id,
                                  @RequestBody Json userIds) {
         try {
@@ -217,17 +218,6 @@ public class Systems {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-    @RequestMapping(value = "groups/{groupName}/exist", method = RequestMethod.GET)
-    public String ifGroupNameExist(@PathVariable String groupName) {
-        try {
-            XContentBuilder result = groupService.ifGroupNameExist(groupName);
-            return result.string();
-        } catch (IOException e) {
-            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
 
     @RequestMapping(value = "groups/{id}/users", method = RequestMethod.GET)
     public String getGroupUsers(@PathVariable String id) {

@@ -147,26 +147,7 @@ public class UserService {
         return builder;
     }
 
-    public XContentBuilder ifUserExist(String userId) throws IOException {
-        Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERID, userId);
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(queryBuilder).execute().actionGet();
-        XContentBuilder builder= XContentFactory.jsonBuilder();
-        if(searchResponse.getHits().totalHits()>0){
-            builder.startObject().field("exist", true).endObject();
-        }else{
-            builder.startObject().field("exist", false).endObject();
-        }
-        System.out.println(builder.string());
-        return builder;
-    }
 
-    public boolean checkUserId(String userId) {
-        Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERID, userId);
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(queryBuilder).execute().actionGet();
-        return searchResponse.getHits().totalHits()>0;
-    }
 
     public XContentBuilder update(String id, Json body) throws IOException {
         Client client = context.getClient();
@@ -277,9 +258,33 @@ public class UserService {
     }
 
     private void validateUser(Json body, String action, String id) {
+        //校验userId
         Object userId = body.get(Constant.FieldName.USERID);
-        if (StringUtils.isEmpty(userId)){
-            throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
+        if (action.equals("create")){
+            if (StringUtils.isEmpty(userId)){
+                throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }else if(action.equals("update")){
+            if (userId.equals("")){
+                throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        //校验userId
+        if (!StringUtils.isEmpty(userId)){
+            if (action.equals("create")){
+                if (checkUserId(userId.toString())){
+                    throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }else if(action.equals("update")){
+                //修改时userId不可被修改
+                Client client = context.getClient();
+                GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
+                Map<String, Object> source = getResponse.getSource();
+                if(!userId.equals(source.get(Constant.FieldName.USERID))){
+                    throw new uContentException("userId can't be modified", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }
         }
 
         //校验是否有多余的属性
@@ -297,21 +302,13 @@ public class UserService {
             }
         }
 
-        //校验userId
-        if (action.equals("create")){
-            if (checkUserId(userId.toString())){
-                throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }else if(action.equals("update")){
-            //修改时userId不可被修改
-            Client client = context.getClient();
-            GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
-            Map<String, Object> source = getResponse.getSource();
-            if(!userId.equals(source.get(Constant.FieldName.USERID))){
-                throw new uContentException("userId can't be modified", HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        }
+    }
 
+    private boolean checkUserId(String userId) {
+        Client client = context.getClient();
+        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERID, userId);
+        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(queryBuilder).execute().actionGet();
+        return searchResponse.getHits().totalHits()>0;
     }
 
 }
