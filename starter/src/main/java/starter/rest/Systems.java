@@ -121,15 +121,6 @@ public class Systems {
         }
     }
 
-    @RequestMapping(value = "users/{userId}/exist", method = RequestMethod.GET)
-    public String ifUserExist(@PathVariable String userId) {
-        try {
-            XContentBuilder result = userService.ifUserExist(userId);
-            return result.string();
-        } catch (IOException e) {
-            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 
     @RequestMapping(value = "users/{id}", method = RequestMethod.PATCH)
     public String updateUser(@PathVariable String id,@RequestBody Json body) {
