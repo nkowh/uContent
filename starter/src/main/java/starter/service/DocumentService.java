@@ -175,7 +175,7 @@ public class DocumentService {
 
     private void beforeCreate(Json body){
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
-        body.put(Constant.FieldName.CREATEDON, new Date());
+        body.put(Constant.FieldName.CREATEDON, new DateTime().toLocalDate());
         body.put(Constant.FieldName.LASTUPDATEDBY, "");
         body.put(Constant.FieldName.LASTUPDATEDON, null);
         List<Object> permission = new ArrayList<Object>();
@@ -271,7 +271,7 @@ public class DocumentService {
     private void beforeUpdate(Json body){
         if(body != null){
             body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
-            body.put(Constant.FieldName.LASTUPDATEDON, new Date());
+            body.put(Constant.FieldName.LASTUPDATEDON, new DateTime().toLocalDate());
         }
     }
 
