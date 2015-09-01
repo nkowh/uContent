@@ -404,7 +404,7 @@ public class DocumentService {
 
 
     private Object formatValue(String type, Object value) throws ParseException {
-        if (value == null) {
+        if (value == null || value.toString().equals("")) {
             return null;
         }
         String StringValue = value.toString();
