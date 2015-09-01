@@ -128,7 +128,8 @@ public class UserService {
 
         //user创建成功后加入到everyone组
         if (indexResponse.isCreated()){
-            synchronizeEveryoneGroup();
+            //由于执行的同步问题会导致加不进去，暂时取消
+            //synchronizeEveryoneGroup();
         }
         System.out.println(builder.string());
         return builder;
@@ -208,6 +209,7 @@ public class UserService {
 
         //同步everyone组数据
         if (deleteResponse.isFound()){
+            //由于执行的同步问题会导致加不进去，暂时取消
             synchronizeEveryoneGroup();
         }
         return builder;
