@@ -242,12 +242,10 @@ public class Systems {
 
 
     @RequestMapping(value = "system", method = RequestMethod.POST)
-    public String systemDataInitial() {
+    public void systemDataInitial() {
         try {
-            //XContentBuilder result = groupService.create(body);
-            userService.initialUserMapping();
-            groupService.initialGroupMapping();
-            return "";
+            userService.initialUserData();
+            groupService.initialGroupData();
         } catch (Exception e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }

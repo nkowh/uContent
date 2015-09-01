@@ -58,6 +58,10 @@ public class Constant {
         }
     }
 
+    public static final String ADMIN = "admin";
+    public static final String ADMINGROUP = "adminGroup";
+    public static final String EVERYONE = "everyone";
+    public static final String DEFAULTPASSWORD = "123456";
 
     /**
      * ES中mapping定义相关字段名称

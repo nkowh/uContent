@@ -158,6 +158,10 @@ public class GroupService {
         GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
+        }else{
+            if (getResponse.getId().equals(Constant.ADMINGROUP)||getResponse.getId().equals(Constant.EVERYONE)){
+                throw new uContentException("Can't Be Modified", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
 
         body.remove(Constant.FieldName._ID);
@@ -184,7 +188,12 @@ public class GroupService {
         GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
+        }else{
+            if (getResponse.getId().equals(Constant.ADMINGROUP)||getResponse.getId().equals(Constant.EVERYONE)){
+                throw new uContentException("Can't Be Deleted", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
+
         DeleteResponse deleteResponse = client.prepareDelete(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject()
@@ -208,7 +217,7 @@ public class GroupService {
         if (users!=null){
             if (users instanceof List){
                 for(Object userOjb:(ArrayList<Object>)users){
-                    //TODO:校验每个用户存在性
+
                 }
             }else{
                 throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -231,8 +240,10 @@ public class GroupService {
         return builder;
     }
 
-    public void initialGroupMapping() throws IOException {
+    public void initialGroupData() throws IOException {
         Client client = context.getClient();
+
+        //创建group Mapping
         GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).addTypes(Constant.FieldName.GROUPTYPENAME).get();
         ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getMappingsResponse.getMappings();
         if(mappings.size()==0){
@@ -255,10 +266,41 @@ public class GroupService {
         }else{
             //艹，居然有！！！！！
         }
-    }
 
-    public void initialGroupData(){
-        Client client = context.getClient();
+
+        //创建ADMINGROUP
+        if (!client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, Constant.ADMINGROUP).execute().actionGet().isExists()) {
+            Map<String, Object> adminGroup = new HashMap<String, Object>();
+            adminGroup.put(Constant.FieldName.GROUPNAME, Constant.ADMINGROUP);
+            List<String> users = new ArrayList<String>();
+            users.add(Constant.ADMIN);
+            adminGroup.put(Constant.FieldName.USERS, users);
+            adminGroup.put(Constant.FieldName.CREATEDBY, Constant.ADMIN);
+            adminGroup.put(Constant.FieldName.CREATEDON, new Date());
+            adminGroup.put(Constant.FieldName.LASTUPDATEDBY, null);
+            adminGroup.put(Constant.FieldName.LASTUPDATEDON, null);
+
+            IndexResponse adminGroupResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.GROUPTYPENAME
+            ).setId(Constant.ADMINGROUP).setSource(adminGroup).execute().actionGet();
+        }else{
+
+        }
+
+        //创建EVERYONE
+        if (!client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, Constant.EVERYONE).execute().actionGet().isExists()) {
+            Map<String, Object> everyone = new HashMap<String, Object>();
+            everyone.put(Constant.FieldName.GROUPNAME, Constant.EVERYONE);
+            everyone.put(Constant.FieldName.USERS, new ArrayList<String>());
+            everyone.put(Constant.FieldName.CREATEDBY, Constant.ADMIN);
+            everyone.put(Constant.FieldName.CREATEDON, new Date());
+            everyone.put(Constant.FieldName.LASTUPDATEDBY, null);
+            everyone.put(Constant.FieldName.LASTUPDATEDON, null);
+
+            IndexResponse everyOneResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.GROUPTYPENAME
+            ).setId(Constant.EVERYONE).setSource(everyone).execute().actionGet();
+        }else{
+
+        }
     }
 
     private void validateGroup(Json body, String action, String id) {

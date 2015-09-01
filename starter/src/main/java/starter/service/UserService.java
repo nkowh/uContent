@@ -154,6 +154,10 @@ public class UserService {
         GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
+        }else{
+            if (getResponse.getId().equals(Constant.ADMIN)){
+                throw new uContentException("Can't Be Modified", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
 
         body.remove(Constant.FieldName._ID);
@@ -181,6 +185,10 @@ public class UserService {
         GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
+        }else{
+            if (getResponse.getId().equals(Constant.ADMIN)){
+                throw new uContentException("Can't Be Deleted", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
         DeleteResponse deleteResponse = client.prepareDelete(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
@@ -229,8 +237,10 @@ public class UserService {
         return groups;
     }
 
-    public void initialUserMapping() throws IOException {
+    public void initialUserData() throws IOException {
         Client client = context.getClient();
+
+        //创建user Mapping
         GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).addTypes(Constant.FieldName.USERTYPENAME).get();
         ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getMappingsResponse.getMappings();
         if(mappings.size()==0){
@@ -254,6 +264,24 @@ public class UserService {
             PutMappingResponse putMappingResponse = client.admin().indices().putMapping(mapping).actionGet();
         }else{
             //艹，居然有！！！！！
+        }
+
+        //创建ADMIN
+        if (!client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, Constant.ADMIN).execute().actionGet().isExists()) {
+            Map<String, Object> adminGroup = new HashMap<String, Object>();
+            adminGroup.put(Constant.FieldName.USERID, Constant.ADMIN);
+            adminGroup.put(Constant.FieldName.USERNAME, Constant.ADMIN);
+            adminGroup.put(Constant.FieldName.EMAIL, "");
+            adminGroup.put(Constant.FieldName.PASSWORD, Constant.DEFAULTPASSWORD);
+            adminGroup.put(Constant.FieldName.CREATEDBY, Constant.ADMIN);
+            adminGroup.put(Constant.FieldName.CREATEDON, new Date());
+            adminGroup.put(Constant.FieldName.LASTUPDATEDBY, null);
+            adminGroup.put(Constant.FieldName.LASTUPDATEDON, null);
+
+            IndexResponse adminGroupResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.USERTYPENAME
+            ).setId(Constant.ADMIN).setSource(adminGroup).execute().actionGet();
+        }else{
+
         }
     }
 
