@@ -9,12 +9,23 @@ Ext.define('starter.document.AdvancedSearchController', {
                     if(!success){
                         return ;
                     }
+                    var data = [{
+                            name: "name",
+                            type: "string",
+                            index: "analyzed",
+                            required: true,
+                            defaultValue: "",
+                            pattern: "",
+                            promptMessage: "",
+                            order: "0"
+                        }];
                     if(response.responseText!=''){
                         var properties = Ext.decode(response.responseText);
+                        data = Ext.Array.insert( properties.properties, 0, data );
                         aPanel.query('combobox[name="property"]')[index].bindStore(
                             Ext.create('Ext.data.Store', {
                                 model : Ext.create('starter.model.Property'),
-                                data: properties.properties
+                                data: data
                             })
                         );
                     }
@@ -59,7 +70,7 @@ Ext.define('starter.document.AdvancedSearchController', {
             Ext.Array.each(removeList, function(r, index, countriesItSelf) {
                 condition.remove(r);
             });
-            if(newValue=='term'){
+            if(newValue=='term'||newValue=='wildcard'){
                 condition.insert(3,{
                     name: 'value'
                 });
@@ -181,6 +192,11 @@ Ext.define('starter.document.AdvancedSearchController', {
                     var pValue= condition.child('textfield[name="value"]').getValue();
                     queryItem.term ={};
                     queryItem.term[property] =  pValue;
+                }
+                if(operator=='wildcard'){
+                    var pValue= condition.child('textfield[name="value"]').getValue();
+                    queryItem.wildcard ={};
+                    queryItem.wildcard[property] =  pValue;
                 }
                 if(operator=='fuzzy'){
                     queryItem.fuzzy =   { };
