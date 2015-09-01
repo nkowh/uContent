@@ -24,12 +24,13 @@ public class Documents {
     @RequestMapping(value = "{type}", method = {RequestMethod.GET})
     public String query(@PathVariable String type,
                         @RequestParam String query,
+                        @RequestParam(defaultValue = "_fullText") String highlight,
                         @RequestParam(defaultValue = "0") int start,
                         @RequestParam(defaultValue = "10") int limit,
                         @RequestParam(defaultValue = "[]")SortBuilder[] sort,
                         @RequestParam(defaultValue = "false") boolean allowableActions) {
         try {
-            XContentBuilder xContentBuilder = documentService.query(type, query, start, limit, sort, allowableActions);
+            XContentBuilder xContentBuilder = documentService.query(type, query, start, limit, sort, highlight, allowableActions);
             return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
