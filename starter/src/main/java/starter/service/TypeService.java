@@ -137,6 +137,7 @@ public class TypeService {
                         .startObject(Constant.FieldName.STREAMNAME).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
                         .startObject(Constant.FieldName.LENGTH).field(Constant.FieldName.TYPE, "long").field("store", "yes").endObject()
                         .startObject(Constant.FieldName.CONTENTTYPE).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.FULLTEXT).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
                         .endObject()
                         .endObject();
 

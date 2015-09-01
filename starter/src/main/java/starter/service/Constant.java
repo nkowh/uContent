@@ -81,6 +81,8 @@ public class Constant {
         public static final String STREAMNAME = "streamName";
         public static final String CONTENTTYPE = "contentType";
         public static final String LENGTH = "length";
+        public static final String FULLTEXT = "_fullText";
+
         public static final String REQUIRED = "required";
         public static final String TYPE = "type";
         public static final String DEFAULTVALUE = "defaultValue";
