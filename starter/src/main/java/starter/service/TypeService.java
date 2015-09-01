@@ -141,7 +141,17 @@ public class TypeService {
                         .endObject();
 
                 //组装_acl属性
-                builder.startObject("_acl").field(Constant.FieldName.TYPE, "nested").endObject();
+                builder.startObject("_acl").field(Constant.FieldName.TYPE, "nested")
+                        .startObject(Constant.FieldName.PROPERTIES)
+                        .startObject(Constant.FieldName.PERMISSION).field(Constant.FieldName.TYPE, "string").
+                            field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.USER).field(Constant.FieldName.TYPE, "string").
+                            field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.GROUP).field(Constant.FieldName.TYPE, "string").
+                            field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .endObject()
+                        .endObject();
+
 
                 //组装创建信息属性
                 builder.startObject(Constant.FieldName.CREATEDBY).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
