@@ -65,6 +65,7 @@ public class GroupService {
         for (SearchHit searchHitFields : searchResponse.getHits()) {
             builder.startObject()
                     .field("_id", searchHitFields.getId())
+                    .field(Constant.FieldName.GROUPID, searchHitFields.getSource().get(Constant.FieldName.GROUPID))
                     .field(Constant.FieldName.GROUPNAME, searchHitFields.getSource().get(Constant.FieldName.GROUPNAME))
                     .field(Constant.FieldName.USERS, searchHitFields.getSource().get(Constant.FieldName.USERS))
                     .field(Constant.FieldName.CREATEDBY, searchHitFields.getSource().get(Constant.FieldName.CREATEDBY))
@@ -90,7 +91,8 @@ public class GroupService {
         body.put(Constant.FieldName.CREATEDON, new Date());
         body.put(Constant.FieldName.LASTUPDATEDBY, null);
         body.put(Constant.FieldName.LASTUPDATEDON, null);
-        IndexResponse indexResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.GROUPTYPENAME).setSource(body).execute().actionGet();
+        IndexResponse indexResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.GROUPTYPENAME).
+                setId(body.get(Constant.FieldName.GROUPID).toString()).setSource(body).execute().actionGet();
         builder.startObject()
                 .field("_index", indexResponse.getIndex())
                 .field("_type", indexResponse.getType())
@@ -109,6 +111,7 @@ public class GroupService {
         Map<String, Object> source = getResponse.getSource();
         builder.startObject()
                 .field("_id", id)
+                .field(Constant.FieldName.GROUPID, source.get(Constant.FieldName.GROUPID))
                 .field(Constant.FieldName.GROUPNAME, source.get(Constant.FieldName.GROUPNAME))
                 .field(Constant.FieldName.USERS, source.get(Constant.FieldName.USERS))
                 .field(Constant.FieldName.CREATEDBY, source.get(Constant.FieldName.CREATEDBY))
@@ -213,6 +216,7 @@ public class GroupService {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
 
+        //传入的users必须为数组
         Object users = userIds.get(Constant.FieldName.USERS);
         if (users!=null){
             if (users instanceof List){
@@ -252,6 +256,7 @@ public class GroupService {
             builder.startObject();
             builder.startObject(Constant.FieldName.GROUPTYPENAME);
             builder.startObject("properties")
+                    .startObject(Constant.FieldName.GROUPID).field("type", "string").field("store", "yes").endObject()
                     .startObject(Constant.FieldName.GROUPNAME).field("type", "string").field("store", "yes").endObject()
                     .startObject(Constant.FieldName.USERS).field("type", "string").field("store", "yes").endObject()
                     .startObject(Constant.FieldName.CREATEDBY).field("type", "string").field("store", "yes").endObject()
@@ -271,6 +276,7 @@ public class GroupService {
         //创建ADMINGROUP
         if (!client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, Constant.ADMINGROUP).execute().actionGet().isExists()) {
             Map<String, Object> adminGroup = new HashMap<String, Object>();
+            adminGroup.put(Constant.FieldName.GROUPID, Constant.ADMINGROUP);
             adminGroup.put(Constant.FieldName.GROUPNAME, Constant.ADMINGROUP);
             List<String> users = new ArrayList<String>();
             users.add(Constant.ADMIN);
@@ -289,6 +295,7 @@ public class GroupService {
         //创建EVERYONE
         if (!client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, Constant.EVERYONE).execute().actionGet().isExists()) {
             Map<String, Object> everyone = new HashMap<String, Object>();
+            everyone.put(Constant.FieldName.GROUPID, Constant.EVERYONE);
             everyone.put(Constant.FieldName.GROUPNAME, Constant.EVERYONE);
             everyone.put(Constant.FieldName.USERS, new ArrayList<String>());
             everyone.put(Constant.FieldName.CREATEDBY, Constant.ADMIN);
@@ -304,21 +311,51 @@ public class GroupService {
     }
 
     private void validateGroup(Json body, String action, String id) {
-        //校验groupName
+        //校验groupId groupName
+        Object groupId = body.get(Constant.FieldName.GROUPID);
         Object groupName = body.get(Constant.FieldName.GROUPNAME);
         if (action.equals("create")){
-            if (StringUtils.isEmpty(groupName)){
+            if (StringUtils.isEmpty(groupId)||StringUtils.isEmpty(groupName)){
                 throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }else if(action.equals("update")){
-            if (groupName.equals("")){
+            if (groupId.equals("")||groupName.equals("")){
                 throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        Client client = context.getClient();
+        //校验groupId是否存在
+        if (!StringUtils.isEmpty(groupId)){
+            QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.GROUPID, groupId);
+            SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
+            SearchHits searchHits = searchResponse.getHits();
+            if (action.equals("create")){
+                if (searchHits.totalHits()>0){
+                    throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+            }else if(action.equals("update")){
+//                if (searchHits.totalHits()>0){
+//                    for (SearchHit searchHitFields : searchHits) {
+//                        if(!id.equals(searchHitFields.getId())){
+//                            throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
+//                        }
+//                    }
+//                }
+                //修改时groupId不可被修改
+                GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
+                Map<String, Object> source = getResponse.getSource();
+                if(!groupId.equals(source.get(Constant.FieldName.GROUPID))){
+                    throw new uContentException("groupId can't be modified", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
             }
         }
 
         //校验groupName是否存在
         if (!StringUtils.isEmpty(groupName)){
-            SearchHits searchHits = checkGroupName(groupName.toString());
+            QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.GROUPNAME, groupName);
+            SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
+            SearchHits searchHits = searchResponse.getHits();
             if (action.equals("create")){
                 if (searchHits.totalHits()>0){
                     throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -340,7 +377,7 @@ public class GroupService {
         while (iterator.hasNext()){
             Map.Entry<String, Object> entry = iterator.next();
             String key = entry.getKey();
-            if(!(key.equals(Constant.FieldName.GROUPNAME)||key.equals(Constant.FieldName.USERS)||
+            if(!(key.equals(Constant.FieldName.GROUPID)||key.equals(Constant.FieldName.GROUPNAME)||key.equals(Constant.FieldName.USERS)||
                     key.equals(Constant.FieldName.CREATEDBY)||key.equals(Constant.FieldName.CREATEDON)||
                     key.equals(Constant.FieldName.LASTUPDATEDBY)||key.equals(Constant.FieldName.LASTUPDATEDON)||
                     key.equals(Constant.FieldName._ID)
@@ -360,13 +397,6 @@ public class GroupService {
                 throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-    }
-
-    private SearchHits checkGroupName(String groupName) {
-        Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.GROUPNAME, groupName);
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
-        return searchResponse.getHits();
     }
 }
 

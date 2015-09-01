@@ -114,6 +114,7 @@ public class Constant {
 
         //fields of group
         public static final String GROUPTYPENAME = "group";
+        public static final String GROUPID = "groupId";
         public static final String GROUPNAME = "groupName";
         public static final String USERS = "users";
 

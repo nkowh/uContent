@@ -108,14 +108,16 @@ public class UserService {
         XContentBuilder builder= XContentFactory.jsonBuilder();
 
         body.remove(Constant.FieldName._ID);
-
         validateUser(body, "create", "");
 
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
         body.put(Constant.FieldName.CREATEDON, new Date());
         body.put(Constant.FieldName.LASTUPDATEDBY, null);
         body.put(Constant.FieldName.LASTUPDATEDON, null);
-        IndexResponse indexResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.USERTYPENAME).setSource(body).execute().actionGet();
+        IndexResponse indexResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.USERTYPENAME).
+                //默认设置_id为userId
+                setId(body.get(Constant.FieldName.USERID).toString()).
+                setSource(body).execute().actionGet();
         builder.startObject()
                 .field("_index", indexResponse.getIndex())
                 .field("_type", indexResponse.getType())
@@ -123,6 +125,11 @@ public class UserService {
                 .field("_version", indexResponse.getVersion())
                 .field("created", indexResponse.isCreated())
                 .endObject();
+
+        //user创建成功后加入到everyone组
+        if (indexResponse.isCreated()){
+            synchronizeEveryoneGroup();
+        }
         System.out.println(builder.string());
         return builder;
     }
@@ -161,7 +168,6 @@ public class UserService {
         }
 
         body.remove(Constant.FieldName._ID);
-
         validateUser(body, "update", id);
 
         body.remove(Constant.FieldName.CREATEDBY);
@@ -199,21 +205,27 @@ public class UserService {
                 .field("_version", deleteResponse.getVersion())
                 .field("found", deleteResponse.isFound())
                 .endObject();
+
+        //同步everyone组数据
+        if (deleteResponse.isFound()){
+            synchronizeEveryoneGroup();
+        }
         return builder;
     }
 
     public XContentBuilder getGroups(String id) throws IOException {
         Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERID, id);
+        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERS, id);
         SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject().field("total", searchResponse.getHits().totalHits());
         builder.startObject("groups");
         for (SearchHit searchHitFields : searchResponse.getHits()) {
             builder.startObject()
-                    .field("_id", searchHitFields.getId())
-                    .field("groupName", searchHitFields.getSource().get("groupName"))
-                    .field("users", searchHitFields.getSource().get("users"))
+                    .field(Constant.FieldName._ID, searchHitFields.getId())
+                    .field(Constant.FieldName.GROUPID, searchHitFields.getSource().get(Constant.FieldName.GROUPID))
+                    .field(Constant.FieldName.GROUPNAME, searchHitFields.getSource().get(Constant.FieldName.GROUPNAME))
+                    .field(Constant.FieldName.USERS, searchHitFields.getSource().get(Constant.FieldName.USERS))
                     .field(Constant.FieldName.CREATEDBY, searchHitFields.getSource().get(Constant.FieldName.CREATEDBY))
                     .field(Constant.FieldName.CREATEDON, searchHitFields.getSource().get(Constant.FieldName.CREATEDON))
                     .field(Constant.FieldName.LASTUPDATEDBY, searchHitFields.getSource().get(Constant.FieldName.LASTUPDATEDBY))
@@ -288,25 +300,28 @@ public class UserService {
     private void validateUser(Json body, String action, String id) {
         //校验userId
         Object userId = body.get(Constant.FieldName.USERID);
+        Object userName = body.get(Constant.FieldName.USERNAME);
         if (action.equals("create")){
-            if (StringUtils.isEmpty(userId)){
+            if (StringUtils.isEmpty(userId)||StringUtils.isEmpty(userName)){
                 throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }else if(action.equals("update")){
-            if (userId.equals("")){
+            if (userId.equals("")||userName.equals("")){
                 throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
 
         //校验userId
         if (!StringUtils.isEmpty(userId)){
+            Client client = context.getClient();
             if (action.equals("create")){
-                if (checkUserId(userId.toString())){
+                QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERID, userId);
+                SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(queryBuilder).execute().actionGet();
+                if (searchResponse.getHits().totalHits()>0){
                     throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }else if(action.equals("update")){
                 //修改时userId不可被修改
-                Client client = context.getClient();
                 GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
                 Map<String, Object> source = getResponse.getSource();
                 if(!userId.equals(source.get(Constant.FieldName.USERID))){
@@ -332,11 +347,23 @@ public class UserService {
 
     }
 
-    private boolean checkUserId(String userId) {
+    private void synchronizeEveryoneGroup(){
         Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERID, userId);
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(queryBuilder).execute().actionGet();
-        return searchResponse.getHits().totalHits()>0;
+        //首先获取所有user
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME);
+        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+        List<String> users = new ArrayList<String>();
+        for (SearchHit searchHitFields : searchResponse.getHits()) {
+            users.add(searchHitFields.getSource().get(Constant.FieldName.USERID).toString());
+        }
+
+        //更新Everyon
+        Map<String, Object> source = new HashMap<String, Object>();
+        source.put(Constant.FieldName.USERS, users);
+        source.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
+        source.put(Constant.FieldName.LASTUPDATEDON, new Date());
+        UpdateResponse updateResponse = client.prepareUpdate(context.getIndex(), Constant.FieldName.GROUPTYPENAME, Constant.EVERYONE)
+                .setDoc(source).execute().actionGet();
     }
 
 }
