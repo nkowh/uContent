@@ -9,7 +9,7 @@ Ext.define('starter.view.main.document.IndexDocument', {
             text: '{title}'
         }
     },
-    height: 650,
+    height: 600,
     scrollable : 'y',
     fieldDefaults: {
         labelAlign: 'right',
@@ -21,7 +21,7 @@ Ext.define('starter.view.main.document.IndexDocument', {
         var me = this;
         this.items = [{
             xtype: 'fieldset',
-            title: 'User Info',
+            title: 'Document Info',
             defaultType: 'textfield',
             defaults: {
                 anchor: '100%'
@@ -40,6 +40,14 @@ Ext.define('starter.view.main.document.IndexDocument', {
                     listeners: {
                         change:"changeType"
                     }
+                },{
+                    name : 'name',
+                    itemId: 'documentName',
+                    fieldLabel: 'Name',
+                    allowBlank: false
+                },{
+                    xtype: 'hiddenfield',
+                    name: '_acl'
                 }
             ]
         }, {
@@ -57,6 +65,7 @@ Ext.define('starter.view.main.document.IndexDocument', {
             xtype: 'fieldset',
             itemId: 'aclList',
             title: 'Acl Information',
+
             defaults: {
                 anchor: '100%'
             },
@@ -76,6 +85,7 @@ Ext.define('starter.view.main.document.IndexDocument', {
                                 forceSelection: true
                             }, {
                                 xtype: 'tagfield',
+                                name : 'permission',
                                 store: ['READ', 'WRITE','UPDATE','DELETE'],
                                 forceSelection: true
                             }, {
@@ -98,7 +108,6 @@ Ext.define('starter.view.main.document.IndexDocument', {
                 xtype: 'filefield',
                 name: 'file',
                 fieldLabel: 'Files',
-                labelWidth: 50,
                 msgTarget: 'side',
                 anchor: '100%',
                 buttonText: 'Select Photo...',

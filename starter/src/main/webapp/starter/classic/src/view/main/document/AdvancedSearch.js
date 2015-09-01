@@ -1,7 +1,7 @@
 Ext.define('starter.view.main.document.AdvancedSearch', {
     extend: 'Ext.panel.Panel',
     xtype: 'advancedsearch',
-    title: 'AdvancedSearch',
+    title: '',
     controller: 'advancedsearch',
     viewModel: 'advancedsearch',
     layout: {
@@ -28,11 +28,31 @@ Ext.define('starter.view.main.document.AdvancedSearch', {
         columns: [{
             header: 'Name',
             dataIndex: 'name',
-            width: 130
+            flex : 1,
+            width: 200
         }, {
             header: 'Type',
-            dataIndex: 'type',
-            width: 100
+            dataIndex: '_type',
+            width: 150
+        }, {
+            header: 'CreatedOn',
+            dataIndex: 'createdOn',
+            xtype: 'datecolumn',
+            width: 150,   format:'Y-m-d'
+
+        }, {
+            header: 'CreatedBy',
+            dataIndex: 'createdBy',
+            width: 150
+        }, {
+            header: 'LastUpdatedOn',
+            dataIndex: 'lastupdatedOn',
+            xtype: 'datecolumn',
+            width: 150,   format:'Y-m-d'
+        }, {
+            header: 'LastUpdatedBy',
+            dataIndex: 'lastupdatedBy',
+            width: 150
         }],
         dockedItems: [{
                 xtype: 'pagingtoolbar',

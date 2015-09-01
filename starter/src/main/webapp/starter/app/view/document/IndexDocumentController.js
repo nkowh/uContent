@@ -19,10 +19,8 @@ Ext.define('starter.view.document.IndexDocumentController', {
                     if(response.responseText!=''){
                         var properties = Ext.decode(response.responseText);
                         Ext.Array.each(properties.properties, function(property, index, countriesItSelf) {
-                            fieldset.add({
-                                fieldLabel: property.name,
-                                name: property.name
-                            });
+                           var field = me.drawPeopertyField(property);
+                            fieldset.add(field);
                         });
 
                     }
@@ -31,32 +29,49 @@ Ext.define('starter.view.document.IndexDocumentController', {
         }
 
     },
-    drawPeopertyField : function(type,property){
+    drawPeopertyField : function(property){
+        var type = property.type;
         var field = {};
         if(type=='string'){
             field = {
                 fieldLabel: property.name,
-                name: property.name
+                name: property.name,
+                value : property.defaultValue
             };
         }
-        if(type=='integer'){
+        if(type=='integer'||type=='float'){
             field = {
                 xtype: 'numberfield',
                 fieldLabel: property.name,
                 minValue: -2147483647,
                 maxValue: 2147483647,
-                name: property.name
+                name: property.name,
+                value : property.defaultValue
             };
         }
-        if(type=='float'){
-
-        }
         if(type=='boolean'){
-
+            field = {
+                xtype: 'combobox',
+                name: property.name,
+                fieldLabel: property.name,
+                value :  property.defaultValue,
+                minWidth : 100,
+                store: [true,false ]
+            }
         }
-        if(type=='date'){
-
+        if(type=='date') {
+            field = {
+                xtype: 'datefield',
+                fieldLabel: property.name,
+                anchor: '100%',
+                name: property.name,
+                value : property.defaultValue
+            };
         }
+        if(property.required){
+            field.allowBlank = false;
+        }
+        return field;
     },
     addAcl : function(){
         var me = this;
@@ -97,6 +112,61 @@ Ext.define('starter.view.document.IndexDocumentController', {
     save : function(){
         var form = this.getView().getForm();
         if (form.isValid()) {
+            var type = this.getView().down('combo[name=type]');
+            var name = this.getView().down('textfield[itemId=documentName]').getValue();
+            var aclcontainer = this.getView().down('fieldset[itemId=aclList]');
+            var aclItems = aclcontainer.items;
+            if(aclItems){
+                var _acl =[];
+                Ext.Array.each(aclItems.items, function(aclItem, index, countriesItSelf) {
+                   var operationObjs =  aclItem.child('tagfield[name="operationObj"]').getValueRecords( ) ;
+                    var permission = aclItem.child('tagfield[name="permission"]').getValue();
+                    Ext.Array.each(operationObjs, function(operationObj, index, countriesItSelf) {
+                        var ace = {};
+                        if(operationObj.get('isUser')){
+                            ace.user = operationObj.get('name');
+                        }
+                        if(operationObj.get('isGroup')){
+                            ace.group = operationObj.get('name');
+                        }
+                        ace.permission = permission;
+                        _acl.push(ace);
+                    });
+                });
+                this.getView().down('hiddenfield[name=_acl]').setValue(Ext.encode(_acl));
+            }
+
+            form.submit({
+                url: '/svc/'+type.getValue(),
+                waitMsg: 'uploading ...',
+                success: function(form, action) {
+                    Ext.toast({
+                        html: 'Docuemnt Saved',
+                        title: 'message',
+                        width: 200,
+                        align: 't'
+                    });
+                    form.reset();
+                },
+                failure: function(form, action) {
+                    if(response.responseText.status=='200'){
+                        Ext.toast({
+                            html: 'Docuemnt Saved',
+                            title: 'message',
+                            width: 200,
+                            align: 't'
+                        });
+                        form.reset();
+                    }else{
+                        Ext.toast({
+                            html: 'error',
+                            title: 'message',
+                            width: 200,
+                            align: 't'
+                        });
+                    }
+                }
+            });
 
         }
     },
@@ -117,7 +187,7 @@ Ext.define('starter.view.document.IndexDocumentController', {
                 if(response.responseText!=''){
                     var users = Ext.decode(response.responseText);
                     userResult = Ext.Array.map(users.users,function(item,index){
-                        return {'id':item._id,'name':item.userName,'isUser':true,'isGroup':false};
+                        return {'id':item.userId,'name':item.userName,'isUser':true,'isGroup':false};
                     });
                 }
                 Ext.Ajax.request({
@@ -129,7 +199,7 @@ Ext.define('starter.view.document.IndexDocumentController', {
                         if(response.responseText!=''){
                             var groups = Ext.decode(response.responseText);
                             groupResult = Ext.Array.map(groups.groups,function(item,index){
-                                return {'id':item._id,'name':item.groupName,'isUser':false,'isGroup':true};
+                                return {'id':item.groupId,'name':item.groupName,'isUser':false,'isGroup':true};
                             });
                         }
                         data = Ext.Array.merge( userResult, groupResult) ;
