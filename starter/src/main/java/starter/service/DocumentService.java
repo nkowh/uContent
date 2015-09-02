@@ -13,6 +13,7 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.common.joda.time.DateTime;
+import org.elasticsearch.common.joda.time.LocalDateTime;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
@@ -198,10 +199,11 @@ public class DocumentService {
 
 
     private void beforeCreate(Json body){
+        LocalDateTime localDateTime = new DateTime().toLocalDateTime();
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
-        body.put(Constant.FieldName.CREATEDON, new DateTime().toDate());
-        body.put(Constant.FieldName.LASTUPDATEDBY, "");
-        body.put(Constant.FieldName.LASTUPDATEDON, null);
+        body.put(Constant.FieldName.CREATEDON, localDateTime);
+        body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
+        body.put(Constant.FieldName.LASTUPDATEDON, localDateTime);
         List<Object> permission = new ArrayList<Object>();
         permission.add(Constant.Permission.read);
         permission.add(Constant.Permission.write);
@@ -292,8 +294,9 @@ public class DocumentService {
 
     private void beforeUpdate(Json body){
         if(body != null){
+            LocalDateTime localDateTime = new DateTime().toLocalDateTime();
             body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
-            body.put(Constant.FieldName.LASTUPDATEDON, new DateTime());
+            body.put(Constant.FieldName.LASTUPDATEDON, localDateTime);
         }
     }
 
@@ -432,7 +435,7 @@ public class DocumentService {
         }
         String StringValue = value.toString();
         switch (type){
-            case Constant.Type.INT :
+            case Constant.Type.INTEGER :
                 return Integer.valueOf(StringValue);
             case Constant.Type.FLOAT :
                 return Float.valueOf(StringValue);

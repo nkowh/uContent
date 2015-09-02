@@ -117,7 +117,7 @@ public class Constant {
      */
     public class Type{
         public static final String STRING = "String";
-        public static final String INT = "int";
+        public static final String INTEGER = "integer";
         public static final String FLOAT = "float";
         public static final String DATE = "date";
         public static final String BOOLEAN = "boolean";
