@@ -435,7 +435,7 @@ public class DocumentService {
         }
         String StringValue = value.toString();
         switch (type){
-            case Constant.Type.INT :
+            case Constant.Type.INTEGER :
                 return Integer.valueOf(StringValue);
             case Constant.Type.FLOAT :
                 return Float.valueOf(StringValue);
