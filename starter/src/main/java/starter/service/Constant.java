@@ -73,8 +73,8 @@ public class Constant {
         public static final String NAME = "name";
         public static final String CREATEDBY = "createdBy";
         public static final String CREATEDON = "createdOn";
-        public static final String LASTUPDATEDBY = "lastupdatedBy";
-        public static final String LASTUPDATEDON = "lastupdatedOn";
+        public static final String LASTUPDATEDBY = "lastUpdatedBy";
+        public static final String LASTUPDATEDON = "lastUpdatedOn";
         public static final String ACL = "_acl";
         public static final String STREAMS = "_streams";
         public static final String STREAMID = "streamId";
@@ -82,7 +82,6 @@ public class Constant {
         public static final String CONTENTTYPE = "contentType";
         public static final String LENGTH = "length";
         public static final String FULLTEXT = "_fullText";
-
         public static final String REQUIRED = "required";
         public static final String TYPE = "type";
         public static final String DEFAULTVALUE = "defaultValue";

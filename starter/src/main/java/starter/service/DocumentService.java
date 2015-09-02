@@ -1,6 +1,15 @@
 package starter.service;
 
 
+import com.drew.lang.StringUtil;
+import org.apache.commons.io.IOUtils;
+import org.apache.tika.Tika;
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.txt.TXTParser;
+import org.apache.tika.sax.BodyContentHandler;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -21,12 +30,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 import starter.RequestContext;
 import starter.rest.Json;
 import starter.service.fs.FileSystem;
 import starter.uContentException;
 
-import java.io.IOException;
+import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -49,7 +60,7 @@ public class DocumentService {
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
 
-    public XContentBuilder query(String type, String query, int start, int limit, SortBuilder[] sort, boolean allowableActions) throws IOException {
+    public XContentBuilder query(String type, String query, int start, int limit, SortBuilder[] sort, String highlight, boolean allowableActions) throws IOException {
         SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setTypes(type).setFrom(start).setSize(limit);
         //set query
         if (StringUtils.isNotBlank(query)) {
@@ -60,6 +71,9 @@ public class DocumentService {
             for(SortBuilder sortBuilder : sort){
                 searchRequestBuilder.addSort(sortBuilder);
             }
+        }
+        if (StringUtils.isNotBlank(highlight)) {
+            searchRequestBuilder.addHighlightedField(highlight);
         }
         //set acl filter
         TermFilterBuilder termFilter1 = FilterBuilders.termFilter(Constant.FieldName.USER, context.getUserName());
@@ -78,7 +92,8 @@ public class DocumentService {
                     .field("_type", hit.getType())
                     .field("_id", hit.getId())
                     .field("_score", hit.getScore())
-                    .field("_version", hit.getVersion());
+                    .field("_version", hit.getVersion())
+                    .field("_highlight", hit.getHighlightFields());
             Map<String, Object> source = hit.getSource();
             Iterator<Map.Entry<String, Object>> iterator = source.entrySet().iterator();
             while (iterator.hasNext()){
@@ -122,6 +137,7 @@ public class DocumentService {
                 stream.put(Constant.FieldName.STREAMNAME, file.getName());
                 stream.put(Constant.FieldName.LENGTH, file.getSize());
                 stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
+                stream.put(Constant.FieldName.FULLTEXT, parse(file.getInputStream()));
                 streams.add(stream);
             }
             body.put(Constant.FieldName.STREAMS, streams);
@@ -175,7 +191,7 @@ public class DocumentService {
 
     private void beforeCreate(Json body){
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
-        body.put(Constant.FieldName.CREATEDON, new DateTime().toLocalDate());
+        body.put(Constant.FieldName.CREATEDON, new DateTime());
         body.put(Constant.FieldName.LASTUPDATEDBY, "");
         body.put(Constant.FieldName.LASTUPDATEDON, null);
         List<Object> permission = new ArrayList<Object>();
@@ -271,7 +287,7 @@ public class DocumentService {
     private void beforeUpdate(Json body){
         if(body != null){
             body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
-            body.put(Constant.FieldName.LASTUPDATEDON, new DateTime().toLocalDate());
+            body.put(Constant.FieldName.LASTUPDATEDON, new DateTime());
         }
     }
 
@@ -356,7 +372,8 @@ public class DocumentService {
 
 
     public GetResponse checkPermission(String type, String id, String user, Constant.Permission permission) throws IOException {
-        GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).execute().actionGet();
+        String[] exclude = {"_streams._fullText"};
+        GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).setFetchSource(null,exclude).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
@@ -420,7 +437,26 @@ public class DocumentService {
             default:
                 return StringValue;
         }
+    }
 
+
+    public String parse(InputStream in){
+        try {
+            AutoDetectParser parser = new AutoDetectParser();
+            BodyContentHandler handler = new BodyContentHandler();
+            Metadata metadata = new Metadata();
+            parser.parse(in, handler, metadata);
+            return handler.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        } catch (TikaException e) {
+            e.printStackTrace();
+        } finally{
+            IOUtils.closeQuietly(in);
+        }
+        return "";
     }
 
 }

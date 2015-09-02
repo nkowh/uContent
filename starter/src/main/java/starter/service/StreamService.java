@@ -137,6 +137,7 @@ public class StreamService {
             stream.put(Constant.FieldName.STREAMNAME, file.getName());
             stream.put(Constant.FieldName.LENGTH, file.getSize());
             stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
+            stream.put(Constant.FieldName.FULLTEXT, documentService.parse(file.getInputStream()));
             newStreams.add(stream);
         }
         Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
