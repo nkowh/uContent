@@ -10,20 +10,23 @@ Ext.define('starter.view.document.FullTextSearchModel', {
 
     },
     formulas: {
-        pageSize: {
-            get: function (get) {
-                return get('size');
-            },
-
-            set: function (size) {
-                this.set('size', size);
-                this.getStore('documents').setPageSize(size);
-                this.getStore('documents').load();
-            }
-        }
+        //pageSize: {
+        //    get: function (get) {
+        //        return get('size');
+        //    },
+        //
+        //    set: function (size) {
+        //        this.set('size', size);
+        //        this.getStore('documents').setPageSize(size);
+        //        this.getStore('documents').load();
+        //    }
+        //}
     },
     stores: {
-        documents: {type: 'documents', pageSize: '{size}'}
+        fulltext: {
+            type: 'documents'
+        }
     }
 
-});
+})
+;

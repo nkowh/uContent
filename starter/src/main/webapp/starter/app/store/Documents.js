@@ -1,7 +1,7 @@
 Ext.define('starter.store.Documents', {
     extend: 'Ext.data.Store',
     alias: 'store.documents',
-    autoLoad: true,
+    autoLoad: false,
     proxy: {
         type: 'rest',
         url: '/svc/types',

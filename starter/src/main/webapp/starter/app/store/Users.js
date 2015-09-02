@@ -3,7 +3,7 @@ Ext.define('starter.store.Users', {
     alias : 'store.users',
     model: 'starter.model.User',
     pageSize: 10,
-    autoSync : true,
+    //autoSync : true,
     remoteSort : true,
     sorters  : [{
         property : "userId",

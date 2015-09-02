@@ -2,87 +2,79 @@ Ext.define('starter.system.UserController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.user',
 
-    openCreateWin: function (sender, record) {
+    openCreateWin: function () {
         Ext.create('Ext.window.Window', {
             layout: 'fit',
-            title:'新建用户',
-            items:[{
-                xtype: 'createUser'
+            title: '新建用户',
+            items: [{
+                xtype: 'createUser',
+                store: this.getView().getStore()
             }]
         }).show();
     },
     openModifyWin: function (grid, record, tr, rowIndex, e, eOpts) {
         Ext.create('Ext.window.Window', {
             layout: 'fit',
-            title:'修改用户',
-            items:[{
+            title: '修改用户',
+            items: [{
                 xtype: 'modifyUser',
-                record : record
+                record: record
             }]
         }).show();
-        return ;
+        return;
     },
     loadModifyData: function (e, eOpts) {
         var record = this.getView().record;
         this.getView().getForm().loadRecord(record);
     },
-    deleteUser : function(e){
+    deleteUser: function (e) {
         var me = this;
         var record = this.getView().getSelectionModel().getSelection();
-        var id = record[0].get('Id');
-        if(record&&record.length>0){
-            Ext.Msg.confirm("Title","Are you sure to delete this User？",function(r) {
-                var store = me.getViewModel().getStore('users');
-                store.remove(record[0]);
-                store.sync({success: function(batch, options) {
-                    Ext.Msg.alert('message', 'Success.');
-                },
-                    failure: function(batch, options) {
-                        Ext.Msg.alert('message', options.request.scope.reader.jsonData["message"]);
-                    }
-                });
-            });
-
-        }else{
+        if (!record || record.length == 0) {
             Ext.Msg.alert('message', 'Please select one item at least.');
-            return ;
+            return;
         }
+
+        Ext.Msg.confirm("Title", "Are you sure to delete this User ?", function (r) {
+            var store = record[0].store;
+            store.remove(record[0]);
+            me.sync(store);
+        });
     },
-    createSave : function(e){
+
+    createSave: function (e) {
         var me = this;
         var form = this.getView().getForm();
-        if (form.isValid()) {
+        if (!form.isValid())return;
+        var store = me.getView().store;
+        var user = store.add(form.getValues())[0];
+        user.phantom = true;
+        me.sync(store);
 
-           var user = Ext.create('starter.model.User', form.getValues());
-           //user.phantom = true;
-            var store = me.getViewModel().getStore('users');
-            //store.suspendAutoSync();
-            store.add(user);
-            store.sync({success: function(batch, options) {
-                me.getView().up('window').close();
-                Ext.Msg.alert('message', 'Success.');
-            },
-               failure: function(batch, options) {
-                   Ext.Msg.alert('message', options.request.scope.reader.jsonData["message"]);
-               },
-                scope : me
-            });
-        }
     },
-    modifySave : function(e){
+
+    modifySave: function (e) {
         var me = this;
         var form = e.up('form').getForm();
-        if (form.isValid()) {
-            var store = me.getViewModel().getStore('users');
-            var user = form.getValues();
-            //form.updateRecord(user);
-            var record = store.getById(user._id);
-            record.set(user);
-            //store.commitChanges();
-            store.sync();
-        }
+        if (!form.isValid())return;
+        var record = me.getView().record;
+        record.set(form.getValues());
+        me.sync(record.store);
+    },
 
-        }
+    sync: function (store) {
+        var me = this;
+        var view = me.getView();
+        var window = view.up('window');
+        view.mask('loading...');
+        store.sync({
+            callback: function (batch, options) {
+                view.unmask();
+                if (window)window.close();
+            }
+        });
+
+    }
 
 
 });

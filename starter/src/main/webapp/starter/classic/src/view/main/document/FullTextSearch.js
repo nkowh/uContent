@@ -7,44 +7,75 @@ Ext.define('starter.view.main.document.FullTextSearch', {
 
 
     bind: {
-        title: '{title}',
-        store:'{documents}'
+        store: '{fulltext}'
     },
     tbar: [
         {
-            text: 'save',
-            handler: 'save'
+            xtype: 'textfield',
+            name: 'keytext'
+        }, {
+            text: '搜索',
+            handler: 'search'
         }
     ],
     bbar: [
-        {
-            xtype: 'slider',
-            minValue: 1,
-            width: 300,
-            bind: {
-                fieldLabel: '显示数量' + '{pageSize}',
-                value: '{pageSize}'
-            }
-        }
-    ],
-    columns: [
-        {text: 'Name', dataIndex: 'Name', flex: 1},
-        {text: 'Id', dataIndex: 'Id', flex: 1},
-        {text: 'CreateBy', dataIndex: 'CreateBy', flex: 1},
-        {text: 'LastUpdatedBy', dataIndex: 'LastUpdatedBy', flex: 1},
-        {text: 'CreatedOn', xtype: 'datecolumn', format: 'C', dataIndex: 'CreatedOn', flex: 1},
-        {text: 'LastUpdatedOn', xtype: 'datecolumn', format: 'Y-m-d H:i:sT', dataIndex: 'LastUpdatedOn', flex: 1},
-        {
-            xtype: 'actioncolumn',
-            items: [{
-                iconCls: 'fa fa-times',
-                tooltip: '删除',
-                handler: 'delete'
-            }]
-        }
+        //{
+        //    xtype: 'slider',
+        //    minValue: 1,
+        //    width: 300,
+        //    bind: {
+        //        fieldLabel: '显示数量' + '{pageSize}',
+        //        value: '{pageSize}'
+        //    }
+        //}
     ],
 
+    initComponent: function () {
+        //var store = Ext.create('KitchenSink.store.ForumThreads');
+
+        Ext.apply(this, {
+            store: [],
+            features: [{
+                ftype: 'rowbody',
+                setupRowData: function (record, rowIndex, rowValues) {
+                    var headerCt = this.view.headerCt,
+                        colspan = headerCt.getColumnCount();
+                    Ext.apply(rowValues, {
+                        rowBody: '<div style="padding: 1em">' + record.get("highlight") + '</div>',
+                        rowBodyColspan: colspan
+                    });
+                }
+            }],
+            viewConfig: {
+                trackOver: false,
+                stripeRows: false
+            },
+            columns: [
+                {text: 'Score', dataIndex: 'score', xtype: 'numbercolumn', flex: 1, sortable: false},
+                {text: 'Name', dataIndex: 'name', flex: 1, sortable: false},
+                {text: 'CreateBy', dataIndex: 'createdBy', flex: 1, sortable: false},
+                {text: 'CreatedOn', xtype: 'datecolumn', format: 'Y-m-d H:i:s', dataIndex: 'createdOn', flex: 1, sortable: false},
+                {text: 'LastUpdatedBy', dataIndex: 'lastUpdatedBy', flex: 1, sortable: false},
+                {
+                    text: 'LastUpdatedOn',
+                    xtype: 'datecolumn',
+                    format: 'Y-m-d H:i:s',
+                    dataIndex: 'lastUpdatedOn',
+                    flex: 1, sortable: false
+                }
+            ]
+
+        });
+        this.callParent();
+    },
+
     listeners: {
-        select: 'onDocumentSelected'
+        // select: 'onDocumentSelected'
     }
+
+    //afterRender: function(){
+    //    this.callParent(arguments);
+    //    this.getStore().loadPage(1);
+    //},
+
 });

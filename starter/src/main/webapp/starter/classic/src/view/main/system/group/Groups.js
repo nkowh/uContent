@@ -9,6 +9,7 @@ Ext.define('starter.view.main.system.group.Groups', {
         store :  '{groups}'
     },
     columns: [
+        { text: 'Id',width: 200, flex : 1, dataIndex: 'groupId' },
         { text: 'Name',width: 200, flex : 1, dataIndex: 'groupName' },
        { text: 'CreatedBy',width: 130, dataIndex: 'createdBy' },
               { text: 'CreatedOn',width: 150, dataIndex: 'createdOn', xtype: 'datecolumn',   format:'Y-m-d H:i:s' },

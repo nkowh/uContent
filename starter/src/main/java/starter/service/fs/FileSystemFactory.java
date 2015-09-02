@@ -19,7 +19,7 @@ public class FileSystemFactory {
         if ("local".equalsIgnoreCase(fs)) {
             return new LocalFileSystem(config.getRoot());
         } else if ("losf".equalsIgnoreCase(fs)) {
-            return new BlockFileSystem(client.settings().get("node.name"), config.getRoot(), config.getBlocksize());
+            return new BlockFileSystem(client.settings().get("name"), config.getRoot(), config.getBlocksize());
         } else if ("s3".equalsIgnoreCase(fs)) {
             //return new S3FileSystem(config.getAccessKey(), config.getSecretKey(), config.getBucketName(), config.getEndpoint());
         }
