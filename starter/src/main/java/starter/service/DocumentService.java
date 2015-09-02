@@ -58,6 +58,7 @@ public class DocumentService {
 
     public XContentBuilder query(String[] types, String query, int start, int limit, SortBuilder[] sort, String highlight, boolean allowableActions) throws IOException {
         SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setFrom(start).setSize(limit);
+        //set types
         if (types != null && types.length > 0) {
             searchRequestBuilder.setTypes(types);
         }else{
@@ -74,9 +75,14 @@ public class DocumentService {
                 searchRequestBuilder.addSort(sortBuilder);
             }
         }
+        //set highlight
         if (StringUtils.isNotBlank(highlight)) {
             searchRequestBuilder.addHighlightedField(highlight);
         }
+        //_fullText field not return
+        String[] exclude = {"_streams._fullText"};
+        searchRequestBuilder.setFetchSource(null, exclude);
+
         //set acl filter
         TermFilterBuilder termFilter1 = FilterBuilders.termFilter(Constant.FieldName.USER, context.getUserName());
         TermFilterBuilder termFilter2 = FilterBuilders.termFilter(Constant.FieldName.PERMISSION, Constant.Permission.read);
