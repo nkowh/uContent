@@ -319,7 +319,7 @@ public class GroupService {
                 throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }else if(action.equals("update")){
-            if (groupId.equals("")||groupName.equals("")){
+            if ("".equals(groupId)||"".equals(groupName)){
                 throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
@@ -379,8 +379,7 @@ public class GroupService {
             String key = entry.getKey();
             if(!(key.equals(Constant.FieldName.GROUPID)||key.equals(Constant.FieldName.GROUPNAME)||key.equals(Constant.FieldName.USERS)||
                     key.equals(Constant.FieldName.CREATEDBY)||key.equals(Constant.FieldName.CREATEDON)||
-                    key.equals(Constant.FieldName.LASTUPDATEDBY)||key.equals(Constant.FieldName.LASTUPDATEDON)||
-                    key.equals(Constant.FieldName._ID)
+                    key.equals(Constant.FieldName.LASTUPDATEDBY)||key.equals(Constant.FieldName.LASTUPDATEDON)
             )){
                 throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
             }

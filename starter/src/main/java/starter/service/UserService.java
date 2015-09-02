@@ -308,7 +308,7 @@ public class UserService {
                 throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }else if(action.equals("update")){
-            if (userId.equals("")||userName.equals("")){
+            if ("".equals(userId)||"".equals(userName)){
                 throw new uContentException("Can't Be Blank", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
@@ -340,8 +340,7 @@ public class UserService {
             if(!(key.equals(Constant.FieldName.USERID)||key.equals(Constant.FieldName.USERNAME)||
                     key.equals(Constant.FieldName.EMAIL)||key.equals(Constant.FieldName.PASSWORD)||
                     key.equals(Constant.FieldName.CREATEDBY)||key.equals(Constant.FieldName.CREATEDON)||
-                    key.equals(Constant.FieldName.LASTUPDATEDBY)||key.equals(Constant.FieldName.LASTUPDATEDON)||
-                    key.equals(Constant.FieldName._ID)
+                    key.equals(Constant.FieldName.LASTUPDATEDBY)||key.equals(Constant.FieldName.LASTUPDATEDON)
             )){
                 throw new uContentException("Bad Data", HttpStatus.INTERNAL_SERVER_ERROR);
             }
