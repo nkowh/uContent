@@ -73,6 +73,20 @@ public class TypeService {
         return builder;
     }
 
+    public List<String> getAllTypes() throws IOException {
+        List<String> allTypes = new ArrayList<String>();
+        XContentBuilder all = all();
+        Json parse = Json.parse(all.string());
+        Object documentTypes = parse.get("documentTypes");
+        if(documentTypes!=null && documentTypes instanceof List){
+            List<HashMap<String, Object>> types = (ArrayList<HashMap<String, Object>>)documentTypes;
+            for(HashMap<String, Object> type:types){
+                allTypes.add(type.get(Constant.FieldName.NAME).toString());
+            }
+        }
+        return allTypes;
+    }
+
     public XContentBuilder create(Json body) throws IOException {
         Client client = context.getClient();
 
@@ -201,6 +215,9 @@ public class TypeService {
     }
 
     public XContentBuilder get(String id) throws IOException {
+
+        List<String> allTypes = getAllTypes();
+
         Client client = context.getClient();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).
