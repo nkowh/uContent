@@ -14,30 +14,47 @@ import java.io.IOException;
 import java.text.ParseException;
 
 @RestController
-@RequestMapping(value="svc/",produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value="/svc",produces = MediaType.APPLICATION_JSON_VALUE)
 public class Documents {
 
     @Autowired
     private DocumentService documentService;
 
 
-    @RequestMapping(value = "{type}", method = {RequestMethod.GET})
+    @RequestMapping(value = "/{type}", method = {RequestMethod.GET})
     public String query(@PathVariable String type,
-                        @RequestParam String query,
+                        @RequestParam(defaultValue = "")String query,
                         @RequestParam(defaultValue = "_fullText") String highlight,
                         @RequestParam(defaultValue = "0") int start,
                         @RequestParam(defaultValue = "10") int limit,
                         @RequestParam(defaultValue = "[]")SortBuilder[] sort,
                         @RequestParam(defaultValue = "false") boolean allowableActions) {
         try {
-            XContentBuilder xContentBuilder = documentService.query(type, query, start, limit, sort, highlight, allowableActions);
+            String[] types = {type};
+            XContentBuilder xContentBuilder = documentService.query(types, query, start, limit, sort, highlight, allowableActions);
             return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @RequestMapping(value = "{type}", method = RequestMethod.POST, consumes = "application/json")
+    @RequestMapping(value = "", method = {RequestMethod.GET})
+    public String all(@RequestParam(defaultValue = "") String[] types,
+                        @RequestParam(defaultValue = "") String query,
+                        @RequestParam(defaultValue = "_fullText") String highlight,
+                        @RequestParam(defaultValue = "0") int start,
+                        @RequestParam(defaultValue = "10") int limit,
+                        @RequestParam(defaultValue = "[]")SortBuilder[] sort,
+                        @RequestParam(defaultValue = "false") boolean allowableActions) {
+        try {
+            XContentBuilder xContentBuilder = documentService.query(types, query, start, limit, sort, highlight, allowableActions);
+            return xContentBuilder.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(value = "/{type}", method = RequestMethod.POST, consumes = "application/json")
     public String createWithoutStream(@PathVariable String type, @RequestBody Json body) {
         try {
             XContentBuilder result = documentService.create(type, body);
@@ -49,7 +66,7 @@ public class Documents {
         }
     }
 
-    @RequestMapping(value = "{type}", method = RequestMethod.POST, consumes = "multipart/*")
+    @RequestMapping(value = "/{type}", method = RequestMethod.POST, consumes = "multipart/*")
     public String create(@PathVariable String type, MultipartHttpServletRequest request) {
         try {
             MultipartParser parser = new MultipartParser(request).invoke();
@@ -62,7 +79,7 @@ public class Documents {
         }
     }
 
-    @RequestMapping(value = "{type}/{id}", method = RequestMethod.HEAD)
+    @RequestMapping(value = "/{type}/{id}", method = RequestMethod.HEAD)
     public String head(@PathVariable String type, @PathVariable String id) {
         try {
             Json json = documentService.head(type, id);
@@ -72,7 +89,7 @@ public class Documents {
         }
     }
 
-    @RequestMapping(value = "{type}/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{type}/{id}", method = RequestMethod.GET)
     public String get(@PathVariable String type,
                       @PathVariable String id,
                       @RequestParam(defaultValue = "false") boolean allowableActions) {
@@ -84,7 +101,7 @@ public class Documents {
         }
     }
 
-    @RequestMapping(value = "{type}/{id}", method = RequestMethod.PUT, consumes = "application/json")
+    @RequestMapping(value = "/{type}/{id}", method = RequestMethod.PUT, consumes = "application/json")
     public String updateWithoutStream(@PathVariable String type, @PathVariable String id, @RequestBody Json body) {
         try {
             XContentBuilder xContentBuilder = documentService.update(type, id, body);
@@ -96,7 +113,7 @@ public class Documents {
         }
     }
 
-    @RequestMapping(value = "{type}/{id}", method = RequestMethod.PATCH, consumes = "application/json")
+    @RequestMapping(value = "/{type}/{id}", method = RequestMethod.PATCH, consumes = "application/json")
     public String patchWithoutStream(@PathVariable String type, @PathVariable String id, @RequestBody Json body) {
         try {
             XContentBuilder xContentBuilder = documentService.patch(type, id, body);
@@ -108,7 +125,7 @@ public class Documents {
         }
     }
 
-    @RequestMapping(value = "{type}/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{type}/{id}", method = RequestMethod.DELETE)
     public String delete(@PathVariable String type, @PathVariable String id) {
         try {
             XContentBuilder xContentBuilder = documentService.delete(type, id);

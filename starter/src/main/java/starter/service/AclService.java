@@ -25,7 +25,7 @@ public class AclService {
     private DocumentService documentService;
 
     public XContentBuilder all(String type, String id) throws IOException {
-        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.READ);
+        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.read);
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
         xContentBuilder.startArray();
         List<Map<String, Object>> acl =  (List<Map<String, Object>>)getResponse.getSource().get("_acl");
@@ -43,7 +43,7 @@ public class AclService {
     }
 
     public XContentBuilder update(String type, String id, Json body) throws IOException {
-        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.UPDATE);
+        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.write);
         documentService.processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
         Map<String, Object> acl = new HashMap<String, Object>();
         acl.put(Constant.FieldName.ACL, getResponse.getSource().get(Constant.FieldName.ACL));

@@ -11,10 +11,8 @@ public class Constant {
      * 权限
      */
     public enum Permission{
-        READ(1),
-        WRITE(2),
-        UPDATE(4),
-        DELETE(8);
+        read(1),
+        write(2);
 
         private int value = -1;
 
@@ -29,13 +27,9 @@ public class Constant {
         public static Permission fromValue(int value) {
             switch (value){
                 case 1:
-                    return READ;
+                    return read;
                 case 2:
-                    return WRITE;
-                case 4:
-                    return UPDATE;
-                case 8:
-                    return DELETE;
+                    return write;
                 default:
                     throw new RuntimeException("No type match for [" + value + "]");
             }
@@ -45,13 +39,9 @@ public class Constant {
             String lowersOpType = permission.toLowerCase(Locale.ROOT);
             switch (lowersOpType) {
                 case "read":
-                    return Permission.READ;
+                    return Permission.read;
                 case "write":
-                    return Permission.WRITE;
-                case "update":
-                    return Permission.UPDATE;
-                case "delete":
-                    return Permission.DELETE;
+                    return Permission.write;
                 default:
                     throw new RuntimeException("permission [" + permission + "] not allowed, either [read] or [write] are allowed");
             }

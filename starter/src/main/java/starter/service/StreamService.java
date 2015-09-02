@@ -30,7 +30,7 @@ public class StreamService {
     private DocumentService documentService;
 
     public XContentBuilder get(String type, String id) throws IOException {
-        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.READ);
+        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.read);
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startArray();
         Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
         if(streams != null){
@@ -51,7 +51,7 @@ public class StreamService {
 
 
     public XContentBuilder get(String type, String id, String streamId) throws IOException {
-        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.READ);
+        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.read);
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
         Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
         if(streams != null){
@@ -73,7 +73,7 @@ public class StreamService {
 
 
     public Map<String, Object> getStream(String type, String id, String streamId) throws IOException {
-        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.READ);
+        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.read);
         Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
         if (streams != null) {
             List<Map<String, Object>> _streams = (List<Map<String, Object>>) streams;
@@ -93,7 +93,7 @@ public class StreamService {
 
 
     public XContentBuilder delete(String type, String id, List<String> streamIds) throws IOException {
-        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.UPDATE);
+        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.write);
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
         xContentBuilder.startObject()
                 .field("_index", context.getIndex())
@@ -125,7 +125,7 @@ public class StreamService {
 
 
     public XContentBuilder add(String type, String id, Integer order, List<MultipartFile> files) throws IOException {
-        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.UPDATE);
+        GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.write);
         List<Map<String, Object>> newStreams = new ArrayList<Map<String, Object>>();
         for(MultipartFile file : files){
             Map<String, Object> stream = new HashMap<String, Object>();

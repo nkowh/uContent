@@ -1,14 +1,10 @@
 package starter.service;
 
 
-import com.drew.lang.StringUtil;
 import org.apache.commons.io.IOUtils;
-import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.Parser;
-import org.apache.tika.parser.txt.TXTParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
@@ -30,14 +26,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import starter.RequestContext;
 import starter.rest.Json;
 import starter.service.fs.FileSystem;
 import starter.uContentException;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -60,8 +56,14 @@ public class DocumentService {
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
 
-    public XContentBuilder query(String type, String query, int start, int limit, SortBuilder[] sort, String highlight, boolean allowableActions) throws IOException {
-        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setTypes(type).setFrom(start).setSize(limit);
+    public XContentBuilder query(String[] types, String query, int start, int limit, SortBuilder[] sort, String highlight, boolean allowableActions) throws IOException {
+        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setFrom(start).setSize(limit);
+        if (types != null && types.length > 0) {
+            searchRequestBuilder.setTypes(types);
+        }else{
+            List<String> allTypes = typeService.getAllTypes();
+            searchRequestBuilder.setTypes(allTypes.toArray(new String[]{}));
+        }
         //set query
         if (StringUtils.isNotBlank(query)) {
             searchRequestBuilder.setQuery(query);
@@ -77,7 +79,7 @@ public class DocumentService {
         }
         //set acl filter
         TermFilterBuilder termFilter1 = FilterBuilders.termFilter(Constant.FieldName.USER, context.getUserName());
-        TermFilterBuilder termFilter2 = FilterBuilders.termFilter(Constant.FieldName.PERMISSION, Constant.Permission.READ.toString().toLowerCase());
+        TermFilterBuilder termFilter2 = FilterBuilders.termFilter(Constant.FieldName.PERMISSION, Constant.Permission.read);
         BoolFilterBuilder boolFilter = FilterBuilders.boolFilter().must(termFilter1, termFilter2);
         FilterBuilder filter = FilterBuilders.nestedFilter(Constant.FieldName.ACL, boolFilter);
         searchRequestBuilder.setPostFilter(filter);
@@ -150,12 +152,12 @@ public class DocumentService {
     }
 
     public Json get(String type, String id, boolean head, boolean allowableActions) throws IOException {
-        GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.READ);
+        GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.read);
         return processGet(getResponse, head, allowableActions);
     }
 
     public XContentBuilder update(String type, String id, Json body) throws IOException, ParseException {
-        GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.UPDATE);
+        GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.write);
         processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
         validate(body, type);
         beforeUpdate(body);
@@ -175,7 +177,7 @@ public class DocumentService {
     }
 
     public XContentBuilder delete(String type, String id) throws IOException {
-        checkPermission(type, id, context.getUserName(), Constant.Permission.DELETE);
+        checkPermission(type, id, context.getUserName(), Constant.Permission.write);
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
         xContentBuilder.startObject()
                 .field("_index", context.getIndex())
@@ -191,14 +193,12 @@ public class DocumentService {
 
     private void beforeCreate(Json body){
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
-        body.put(Constant.FieldName.CREATEDON, new DateTime());
+        body.put(Constant.FieldName.CREATEDON, new DateTime().toDate());
         body.put(Constant.FieldName.LASTUPDATEDBY, "");
         body.put(Constant.FieldName.LASTUPDATEDON, null);
         List<Object> permission = new ArrayList<Object>();
-        permission.add(Constant.Permission.READ);
-        permission.add(Constant.Permission.WRITE);
-        permission.add(Constant.Permission.UPDATE);
-        permission.add(Constant.Permission.DELETE);
+        permission.add(Constant.Permission.read);
+        permission.add(Constant.Permission.write);
         Map<String, Object> ace = new HashMap<String, Object>();
         ace.put(Constant.FieldName.USER, context.getUserName());
         ace.put(Constant.FieldName.PERMISSION, permission);
