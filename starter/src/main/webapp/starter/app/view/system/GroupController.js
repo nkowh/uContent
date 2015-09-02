@@ -5,95 +5,77 @@ Ext.define('starter.system.GroupController', {
     openCreateWin: function (sender, record) {
         Ext.create('Ext.window.Window', {
             layout: 'fit',
-            title:'新建组',
-            items:[{
-                xtype: 'createGroup'
+            title: '新建组',
+            items: [{
+                xtype: 'createGroup',
+                store: this.getView().getStore()
             }]
         }).show();
     },
     openModifyWin: function (grid, record, tr, rowIndex, e, eOpts) {
         Ext.create('Ext.window.Window', {
             layout: 'fit',
-            title:'修改组',
-            items:[{
+            title: '修改组',
+            items: [{
                 xtype: 'modifyGroup',
-                record : record
+                record: record
             }]
         }).show();
-        return ;
     },
     loadModifyData: function (e, eOpts) {
         var record = this.getView().record;
         var users = record.get('users');
         var usersObj = this.getView().down('itemselector');
-        Ext.Array.each(users, function(user, index, countriesItSelf) {
-            var userIds = usersObj.setValue(user.userId);
-        });
+        // usersObj.setValue(['AU9j1LcP4oXt9xabfnOL']);
+        //Ext.Array.each(users, function (user, index, countriesItSelf) {
+        //    var userIds = usersObj.setValue(user.userId);
+        //});
         this.getView().getForm().loadRecord(record);
     },
-    deleteGroup : function(e){
+    deleteGroup: function (e) {
         var me = this;
         var grid = e.up('grid');
         var record = this.getView().getSelectionModel().getSelection();
-        var id = record[0].get('Id');
-        if(record&&record.length>0){
-            Ext.Msg.confirm("Title","Are you sure to delete this Group？",function(r) {
-                me.getViewModel().getStore('groups').remove(record[0]);
+        var store = record[0].store;
+        if (record && record.length > 0) {
+            Ext.Msg.confirm("Title", "Are you sure to delete this Group？", function (r) {
+                store.remove(record[0]);
+                me.sync(store);
             });
-
-        }else{
+        } else {
             Ext.Msg.alert('message', 'Please select one item at least.');
-            return ;
         }
     },
-    createSave : function(e){
+    createSave: function (e) {
         var me = this;
         var form = this.getView().getForm();
-        if (form.isValid()) {
-            var group = Ext.create('starter.model.Group', form.getValues());
-            var store = this.getViewModel().getStore('groups');
-            var userIds = this.getView().down('itemselector').getValue();
-            var users = [];
-            Ext.Array.each(userIds, function(userid, index, countriesItSelf) {
-                users.push({'userId':userid});
-            });
-            group.set('users',users);
-            store.add(group);
-            me.getView().up('window').close();
-
-        }
+        if (!form.isValid())return;
+        var store = this.getView().store;
+        var group = store.add(form.getValues())[0];
+        group.phantom = true;
+        me.sync(store);
     },
-    modifySave : function(e){
+    modifySave: function (e) {
         var me = this;
-        var form = e.up('form').getForm();
-        var userValues = form.getValues();
-        if (form.isValid()) {
-            var store = this.getViewModel().getStore('groups');
-            var group = form.getValues();
-            var userIds = this.getView().down('itemselector').getValue();
-            var users = [];
-            Ext.Array.each(userIds, function(user, index, countriesItSelf) {
-                users.push({'userId':user.userId});
-            });
-            group.users = users;
-            Ext.Ajax.request({
-                method: 'PATCH',
-                headers : {'Content-Type':'application/json'},
-                url: '/svc/groups/' + group._id,
-                params : Ext.JSON.encode(group),
-                callback: function (options, success, response) {
-                    if (!success) {
-                        return;
-                    }
-                    store.load();
-                    me.getView().up('window').close();
-                }
-            });
-            //form.updateRecord(group);
-            //store.commitChanges();
+        var record = me.getView().record;
+        var form = me.getView().getForm();
+        if (!form.isValid())return;
+        var group = form.getValues();
+        record.set('groupName', group.groupName);
+        record.set('users', group.users);
+        me.sync(record.store)
+    },
 
-        }
-
+    sync: function (store) {
+        var view = this.getView();
+        var window = view.up('window');
+        view.mask('loading...');
+        store.sync({
+            callback: function (batch, options) {
+                view.unmask();
+                if (window)window.close();
+            }
+        });
     }
 
 });

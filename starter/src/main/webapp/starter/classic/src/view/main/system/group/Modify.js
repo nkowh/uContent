@@ -35,6 +35,7 @@ Ext.define('starter.view.main.system.group.Modify', {
         name: 'users',
         id: 'itemselector-Users',
         anchor: '100%',
+        delimiter:null,
         fieldLabel: 'users',
         store : {type : 'users'},
         displayField: 'userName',

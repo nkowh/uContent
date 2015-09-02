@@ -22,37 +22,39 @@ Ext.define('starter.view.main.document.AdvancedSearch', {
 
     items: [Ext.create('starter.view.main.document.SearchForm'),{
         title: 'Result List',
-        collapsible: true,
         itemId : 'searchGrid',
         xtype : 'grid',
+        listeners:{
+            itemdblclick:'showImage'
+        },
         columns: [{
             header: 'Name',
             dataIndex: 'name',
-            flex : 1,
-            width: 200
+            flex : 1
         }, {
             header: 'Type',
             dataIndex: '_type',
-            width: 150
+            flex: 1
         }, {
             header: 'CreatedOn',
             dataIndex: 'createdOn',
             xtype: 'datecolumn',
-            width: 150,   format:'Y-m-d'
-
+            format:'Y-m-d',
+            flex: 1
         }, {
             header: 'CreatedBy',
             dataIndex: 'createdBy',
-            width: 150
+            flex: 1
         }, {
             header: 'LastUpdatedOn',
             dataIndex: 'lastupdatedOn',
             xtype: 'datecolumn',
-            width: 150,   format:'Y-m-d'
+            flex: 1,
+            format:'Y-m-d'
         }, {
             header: 'LastUpdatedBy',
             dataIndex: 'lastupdatedBy',
-            width: 150
+            flex: 1
         }],
         dockedItems: [{
                 xtype: 'pagingtoolbar',

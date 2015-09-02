@@ -57,6 +57,7 @@ Ext.define('starter.view.main.Main', {
     },
 
     defaults: {
+        layout:'fit',
         bodyPadding: 20,
         tabConfig: {
             plugins: 'responsive',
@@ -119,8 +120,6 @@ Ext.define('starter.view.main.Main', {
     }, {
         title: '配置',
         iconCls: 'fa-cog',
-        bind: {
-            html: '{loremIpsum}'
-        }
+        items: []
     }]
 });

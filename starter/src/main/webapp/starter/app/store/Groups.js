@@ -3,8 +3,8 @@ Ext.define('starter.store.Groups', {
     alias : 'store.groups',
     model: 'starter.model.Group',
     pageSize: 10,
-    autoSync : true,
-     sorters  : [{
+    autoSync : false,
+    sorters  : [{
             property : "groupName",
             direction: "DESC"
         }],

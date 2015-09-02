@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping(value="svc/",produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "svc/", produces = MediaType.APPLICATION_JSON_VALUE)
 public class Streams {
 
     @Autowired
@@ -44,6 +44,16 @@ public class Streams {
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @RequestMapping(value = "{type}/{id}/_streams/{streamId}", method = RequestMethod.GET, params = "accept=image/jpeg")
+    public void geJpeg(@PathVariable String type, @PathVariable String id, @PathVariable String streamId, HttpServletResponse response) {
+        getStream(type, id, streamId, response);
+    }
+
+    @RequestMapping(value = "{type}/{id}/_streams/{streamId}", method = RequestMethod.GET, params = "accept=image/png")
+    public void getPng(@PathVariable String type, @PathVariable String id, @PathVariable String streamId, HttpServletResponse response) {
+        getStream(type, id, streamId, response);
     }
 
     @RequestMapping(value = "{type}/{id}/_streams/{streamId}", method = RequestMethod.GET, produces = "image/*")
@@ -76,8 +86,8 @@ public class Streams {
 
     @RequestMapping(value = "{type}/{id}/_streams", method = RequestMethod.POST, consumes = "multipart/*")
     public Object add(@PathVariable String type, @PathVariable String id,
-                         @RequestParam(defaultValue = "0") Integer order,
-                         MultipartHttpServletRequest request) {
+                      @RequestParam(defaultValue = "0") Integer order,
+                      MultipartHttpServletRequest request) {
         try {
             MultipartParser parser = new MultipartParser(request).invoke();
             XContentBuilder result = streamService.add(type, id, order, parser.getFiles());
@@ -86,10 +96,6 @@ public class Streams {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-
-
-
 
 
 }

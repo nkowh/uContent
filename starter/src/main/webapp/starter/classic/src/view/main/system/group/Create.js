@@ -18,7 +18,7 @@ Ext.define('starter.view.main.system.group.Create', {
                 }
             }, {
                 text: 'Submit',
-                formBind: true, //only enabled once the form is valid
+                formBind: true,
                 disabled: true,
                 handler: 'createSave'
             }]
@@ -35,6 +35,10 @@ Ext.define('starter.view.main.system.group.Create', {
     // The fields
     defaultType: 'textfield',
     items: [{
+        fieldLabel: 'Group Id',
+        name: 'groupId',
+        allowBlank: false
+    },{
         fieldLabel: 'Group Name',
         name: 'groupName',
         allowBlank: false
@@ -44,10 +48,8 @@ Ext.define('starter.view.main.system.group.Create', {
         id: 'itemselector-Users',
         anchor: '100%',
         fieldLabel: 'Users',
+        delimiter:null,
         store : {type : 'users',pageSize:10000},
-        //bind : {
-        //    store : 'users'
-        //},
         displayField: 'userName',
         valueField: '_id',
         msgTarget: 'side',
