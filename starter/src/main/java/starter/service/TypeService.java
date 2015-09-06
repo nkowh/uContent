@@ -178,15 +178,14 @@ public class TypeService {
                 for(Object property:properties){
                     if (property!=null){
                         LinkedHashMap<String, Object> pro = (LinkedHashMap<String, Object>)property;
-                        builder.startObject(pro.get(Constant.FieldName.NAME).toString())
-                                .field(Constant.FieldName.TYPE, pro.get(Constant.FieldName.TYPE).toString())
-                                .field(Constant.FieldName.INDEX, pro.get(Constant.FieldName.INDEX).toString())
-                                .field(Constant.FieldName.REQUIRED, Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()))
-                                .field(Constant.FieldName.DEFAULTVALUE, pro.get(Constant.FieldName.DEFAULTVALUE).toString())
-                                .field(Constant.FieldName.PATTERN, pro.get(Constant.FieldName.PATTERN).toString())
-                                .field(Constant.FieldName.PROMPTMESSAGE, pro.get(Constant.FieldName.PROMPTMESSAGE).toString())
-                                .field(Constant.FieldName.ORDER, pro.get(Constant.FieldName.ORDER).toString())
-                                .endObject();
+                        builder.startObject(pro.get(Constant.FieldName.NAME).toString());
+                        builder.field(Constant.FieldName.TYPE, pro.get(Constant.FieldName.TYPE).toString());
+                        //非bool类型的字段才做是否分词控制
+                        if(!pro.get(Constant.FieldName.TYPE).toString().toUpperCase().equals("BOOLEAN")){
+                            builder.field(Constant.FieldName.INDEX, pro.get(Constant.FieldName.INDEX).toString());
+                        }
+                        builder.field("store", "yes");
+                        builder.endObject();
                     }
                 }
 

@@ -16,6 +16,8 @@ import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -256,6 +258,15 @@ public class GroupService {
                 .field("_isCreated", updateResponse.isCreated())
                 .endObject();
         return builder;
+    }
+
+    public boolean checkUserInAdminGroup(){
+        Client client = context.getClient();
+        QueryBuilder qbUser = QueryBuilders.matchQuery(Constant.FieldName.USERS, context.getUserName());
+        MatchQueryBuilder qbGroup = QueryBuilders.matchQuery(Constant.FieldName.GROUPID, Constant.ADMINGROUP);
+        BoolQueryBuilder must = QueryBuilders.boolQuery().must(qbUser).must(qbGroup);
+        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(must).execute().actionGet();
+        return searchResponse.getHits().totalHits()>0;
     }
 
     public void initialGroupData() throws IOException {
