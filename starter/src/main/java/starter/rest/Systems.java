@@ -114,7 +114,7 @@ public class Systems {
     @RequestMapping(value = "users/{id}", method = RequestMethod.GET)
     public String getUser(@PathVariable String id) {
         try {
-            XContentBuilder result = userService.get(id);
+            XContentBuilder result = userService.get(id).toXContentBuilder();
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -203,7 +203,7 @@ public class Systems {
     @RequestMapping(value = "groups/{id}", method = RequestMethod.GET)
     public String getGroup(@PathVariable String id) {
         try {
-            XContentBuilder result = groupService.get(id);
+            XContentBuilder result = groupService.get(id).toXContentBuilder();
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);

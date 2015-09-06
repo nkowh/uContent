@@ -135,24 +135,25 @@ public class UserService {
         return builder;
     }
 
-    public XContentBuilder get(String id) throws IOException {
+    public Json get(String id) {
         Client client = context.getClient();
-        XContentBuilder builder= XContentFactory.jsonBuilder();
         GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
         Map<String, Object> source = getResponse.getSource();
-        builder.startObject()
-                .field("_id", id)
-                .field(Constant.FieldName.USERID, source.get(Constant.FieldName.USERID))
-                .field(Constant.FieldName.USERNAME, source.get(Constant.FieldName.USERNAME))
-                .field(Constant.FieldName.EMAIL, source.get(Constant.FieldName.EMAIL))
-                .field(Constant.FieldName.PASSWORD, source.get(Constant.FieldName.PASSWORD))
-                .field(Constant.FieldName.CREATEDBY, source.get(Constant.FieldName.CREATEDBY))
-                .field(Constant.FieldName.CREATEDON, source.get(Constant.FieldName.CREATEDON))
-                .field(Constant.FieldName.LASTUPDATEDBY, source.get(Constant.FieldName.LASTUPDATEDBY))
-                .field(Constant.FieldName.LASTUPDATEDON, source.get(Constant.FieldName.LASTUPDATEDON))
-                .endObject();
-        System.out.println(builder.string());
-        return builder;
+        if (getResponse.isExists()){
+            Json json = new Json();
+            json.put(Constant.FieldName._ID, id);
+            json.put(Constant.FieldName.USERID, source.get(Constant.FieldName.USERID));
+            json.put(Constant.FieldName.USERNAME, source.get(Constant.FieldName.USERNAME));
+            json.put(Constant.FieldName.EMAIL, source.get(Constant.FieldName.EMAIL));
+            json.put(Constant.FieldName.PASSWORD, source.get(Constant.FieldName.PASSWORD));
+            json.put(Constant.FieldName.CREATEDBY, source.get(Constant.FieldName.CREATEDBY));
+            json.put(Constant.FieldName.CREATEDON, source.get(Constant.FieldName.CREATEDON));
+            json.put(Constant.FieldName.LASTUPDATEDBY, source.get(Constant.FieldName.LASTUPDATEDBY));
+            json.put(Constant.FieldName.LASTUPDATEDON, source.get(Constant.FieldName.LASTUPDATEDON));
+            return json;
+        }else{
+            throw new uContentException("Not found", HttpStatus.NOT_FOUND);
+        }
     }
 
 
