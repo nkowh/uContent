@@ -62,7 +62,8 @@
      */
     "requires": [
         "font-awesome",
-        "odata"
+        "odata",
+        "ux"
     ],
 
     /**
