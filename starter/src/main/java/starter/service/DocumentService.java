@@ -23,6 +23,8 @@ import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.TermFilterBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -53,6 +55,8 @@ public class DocumentService {
 
     @Autowired
     private UserService userService;
+
+    Logger logger = LoggerFactory.getLogger(DocumentService.class);
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -140,6 +144,7 @@ public class DocumentService {
                 Map<String, Object> stream = new HashMap<String, Object>();
                 String fileId = fs.write(file.getBytes());
                 if (StringUtils.isBlank(fileId)) {
+                    logger.error("FS store failed");
                     throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
                 stream.put(Constant.FieldName.STREAMID, fileId);
@@ -384,9 +389,11 @@ public class DocumentService {
         String[] exclude = {"_streams._fullText"};
         GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).setFetchSource(null,exclude).execute().actionGet();
         if (!getResponse.isExists()) {
+            logger.warn(String.format("The doc: %s in type %s of index %s is not exist", id, type, context.getIndex()));
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
         if (!hasPermission(user, getResponse.getSource().get(Constant.FieldName.ACL), permission)) {
+            logger.warn(String.format("The doc: %s in type %s of index %s is not exist", id, type, context.getIndex()));
             throw new uContentException("Forbidden", HttpStatus.FORBIDDEN);
         }
         return getResponse;
