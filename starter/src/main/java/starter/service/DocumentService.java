@@ -220,7 +220,13 @@ public class DocumentService {
         Map<String, Object> ace = new HashMap<String, Object>();
         ace.put(Constant.FieldName.USER, context.getUserName());
         ace.put(Constant.FieldName.PERMISSION, permission);
-        List<Map<String, Object>> acl = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> acl = null;
+        Object o = body.get(Constant.FieldName.ACL);
+        if (o != null) {
+            acl = (List<Map<String, Object>>) o;
+        }else{
+            acl = new ArrayList<Map<String, Object>>();
+        }
         acl.add(ace);
         body.put(Constant.FieldName.ACL, acl);
     }
