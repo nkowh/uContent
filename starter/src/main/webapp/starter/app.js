@@ -1,8 +1,25 @@
-/*
- * This file is generated and updated by Sencha Cmd. You can edit this file as
- * needed for your application, but these edits will have to be merged by
- * Sencha Cmd when upgrading.
- */
+Ext.form.action.Submit.override({
+    onSuccess: function(response) {
+        var form = this.form,
+            formActive = form && !form.destroying && !form.destroyed,
+            success = true,
+            result = this.processResponse(response);
+
+        if (result !== true && !result._created) {
+            if (result.errors && formActive) {
+                form.markInvalid(result.errors);
+            }
+            this.failureType = Ext.form.action.Action.SERVER_INVALID;
+            success = false;
+        }
+
+        if (formActive) {
+            form.afterAction(this, success);
+        }
+    }
+});
+
+
 Ext.application({
     name: 'starter',
 
@@ -17,7 +34,7 @@ Ext.application({
     // modern toolkit, the main view will be added to the Viewport.
     //
     mainView: 'starter.view.main.Main'
-	
+
     //-------------------------------------------------------------------------
     // Most customizations should be made to starter.Application. If you need to
     // customize this file, doing so below this section reduces the likelihood

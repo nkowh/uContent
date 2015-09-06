@@ -172,11 +172,14 @@ Ext.define('starter.system.TypeController', {
             store.insert(0, r);
         }
     },
+
     createSave : function(e){
+        var me = this;
         var form = e.up('window').down('form');
         var grid =  e.up('window').down('grid');
+        var store = me.getViewModel().getStore('types');
         if (form.isValid()) {
-            var type = Ext.create('starter.model.Type', form.getValues());
+            var type = form.getValues();
             var gstore = grid.store;
             var record = gstore.getAt(0);
             if(record&&!record.isValid()&&record.get('name')!=''){
@@ -194,13 +197,25 @@ Ext.define('starter.system.TypeController', {
                 }
                 properties.push(pRecord.getData());
             }
-            type.set('properties',properties);
-            type.phantom =true;
-            var store = this.getViewModel().getStore('types');
-            store.add(type);
-            e.up('window').close();
+            type.properties = properties;
+            //type.set('properties',properties);
+            Ext.Ajax.request({
+                method: 'POST',
+                headers : {'Content-Type':'application/json;charset=utf-8'},
+                url: '/svc/types',
+                params : Ext.JSON.encode(type),
+                callback: function (options, success, response) {
+                    if (!success) {
+                        return;
+                    }
+                    store.load();
+                    me.getView().close();
+                }
+            });
         }
+
     },
+
     modifySave : function(e){
         var me = this;
         var form = e.up('window').down('form');
@@ -229,7 +244,7 @@ Ext.define('starter.system.TypeController', {
             //type.set('properties',properties);
             Ext.Ajax.request({
                 method: 'PATCH',
-                headers : {'Content-Type':'application/json'},
+                headers : {'Content-Type':'application/json;charset=utf-8'},
                 url: '/svc/types/' + type.name,
                 params : Ext.JSON.encode(type),
                 callback: function (options, success, response) {

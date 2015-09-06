@@ -4,8 +4,10 @@ Ext.define('starter.store.Types', {
     model: 'starter.model.Type',
     pageSize: 10,
     autoSync : true,
+    autoLoad: true,
     proxy: {
         type: 'rest',
+        headers: {'Content-Type': "application/json;charset=utf-8" },
         url: '/svc/types',
         startParam : '',
         pageParam : '',
@@ -14,6 +16,5 @@ Ext.define('starter.store.Types', {
             type: 'json',
             root :'documentTypes'
         }
-    },
-    autoLoad: true
+    }
 });
