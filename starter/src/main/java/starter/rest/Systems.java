@@ -89,7 +89,6 @@ public class Systems {
                            @RequestParam(defaultValue = "10") int limit,
                            @RequestParam(defaultValue = "[]") SortBuilder[] sort) {
         try {
-            checkAuthorize();
             XContentBuilder result = userService.all(query, start, limit, sort);
             return result.string();
         } catch (IOException e) {
@@ -146,7 +145,6 @@ public class Systems {
     @RequestMapping(value = "users/{id}/groups", method = RequestMethod.GET)
     public String getUserGroups(@PathVariable String id) {
         try {
-            checkAuthorize();
             XContentBuilder result = userService.getGroups(id);
             return result.string();
         } catch (IOException e) {
@@ -163,7 +161,6 @@ public class Systems {
                             @RequestParam(defaultValue = "10") int limit,
                             @RequestParam(defaultValue = "[]") SortBuilder[] sort) {
         try {
-            checkAuthorize();
             XContentBuilder result = groupService.all(query, start, limit, sort);
             return result.string();
         } catch (IOException e) {
