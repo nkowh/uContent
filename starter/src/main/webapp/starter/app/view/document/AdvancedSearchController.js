@@ -9,15 +9,22 @@ Ext.define('starter.document.AdvancedSearchController', {
                 if (!success) {
                     return;
                 }
+
                 var data = [{
                     name: "name",
-                    type: "string",
-                    index: "analyzed",
-                    required: true,
-                    defaultValue: "",
-                    pattern: "",
-                    promptMessage: "",
-                    order: "0"
+                    type: "string"
+                },{
+                    name: "createdBy",
+                    type: "string"
+                },{
+                    name: "lastUpdatedBy",
+                    type: "string"
+                },{
+                    name: "createdOn",
+                    type: "date"
+                },{
+                    name: "lastUpdatedOn",
+                    type: "date"
                 }];
                 if (response.responseText != '') {
                     var properties = Ext.decode(response.responseText);
