@@ -17,10 +17,7 @@ import org.elasticsearch.common.joda.time.LocalDateTime;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.elasticsearch.index.query.BoolFilterBuilder;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.TermFilterBuilder;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.slf4j.Logger;
@@ -91,8 +88,16 @@ public class DocumentService {
         //set acl filter
         TermFilterBuilder termFilter1 = FilterBuilders.termFilter(Constant.FieldName.USER, context.getUserName());
         TermFilterBuilder termFilter2 = FilterBuilders.termFilter(Constant.FieldName.PERMISSION, Constant.Permission.read);
-        BoolFilterBuilder boolFilter = FilterBuilders.boolFilter().must(termFilter1, termFilter2);
-        FilterBuilder filter = FilterBuilders.nestedFilter(Constant.FieldName.ACL, boolFilter);
+        BoolFilterBuilder boolFilter1 = FilterBuilders.boolFilter().must(termFilter1, termFilter2);
+        BoolFilterBuilder boolFilterBuilder = FilterBuilders.boolFilter().should(boolFilter1);
+        List<String> groups = userService.getGroupsOfUser(context.getUserName());
+        for(String group : groups){
+            TermFilterBuilder termFilter3 = FilterBuilders.termFilter(Constant.FieldName.GROUP, group);
+            TermFilterBuilder termFilter4 = FilterBuilders.termFilter(Constant.FieldName.PERMISSION, Constant.Permission.read);
+            BoolFilterBuilder boolFilter2 = FilterBuilders.boolFilter().must(termFilter3, termFilter4);
+            boolFilterBuilder.should(boolFilter2);
+        }
+        FilterBuilder filter = FilterBuilders.nestedFilter(Constant.FieldName.ACL, boolFilterBuilder);
         searchRequestBuilder.setPostFilter(filter);
         //process result
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
