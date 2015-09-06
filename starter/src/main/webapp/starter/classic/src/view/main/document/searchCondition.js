@@ -49,7 +49,8 @@ Ext.define('starter.view.main.document.SearchCondition', {
                     data: [
                         { name: "range", value: "range" },
                         { name: "term", value: "term" },
-                        { name: "fuzzy", value: "fuzzy" }
+                        { name: "fuzzy", value: "fuzzy"},
+                        { name: "wildcard", value: "wildcard" }
                     ]
                 }),
                 listeners: {
