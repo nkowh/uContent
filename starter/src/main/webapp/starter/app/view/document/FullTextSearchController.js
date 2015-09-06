@@ -7,7 +7,7 @@ Ext.define('starter.view.document.FullTextSearchController', {
         var me = this;
         var keytext = me.getView().down('textfield[name=keytext]').getValue();
         Ext.Ajax.request({
-            url: '/svc/type9527',
+            url: '/svc',
             method: 'GET',
             params: {query: Ext.JSON.encode({match: {"_fullText": keytext}}), highlight: "_fullText"},
             callback: function (options, success, response) {
@@ -18,8 +18,8 @@ Ext.define('starter.view.document.FullTextSearchController', {
                     return {
                         createdBy: doc.createdBy,
                         createdOn: doc.createdOn,
-                        lastUpdatedBy: doc.lastupdatedBy,
-                        lastUpdatedOn: doc.lastupdatedOn,
+                        lastUpdatedBy: doc.lastUpdatedBy,
+                        lastUpdatedOn: doc.lastUpdatedOn,
                         name: doc.name,
                         score: doc._score,
                         highlight: doc._highlight._fullText

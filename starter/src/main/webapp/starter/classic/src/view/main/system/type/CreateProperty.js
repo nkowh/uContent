@@ -65,12 +65,12 @@ Ext.define('starter.view.main.system.type.CreateProperty', {
         xtype: 'checkcolumn',
         header: 'Index',
         dataIndex: 'isFullIndex',
-        width: 80
-        //editor: {
-        //    xtype: 'checkbox',
-        //    inputValue : 'analyzed',
-        //    uncheckedValue: 'not_analyzed'
-        //}
+        width: 80,
+        editor: {
+            xtype: 'checkbox',
+            inputValue : 'analyzed',
+            uncheckedValue: 'not_analyzed'
+        }
     },  {
         header: 'Order',
         dataIndex: 'order',

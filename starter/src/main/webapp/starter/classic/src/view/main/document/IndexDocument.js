@@ -105,26 +105,28 @@ Ext.define('starter.view.main.document.IndexDocument', {
             },
 
             items: [{
-                xtype: 'filefield',
+                xtype: 'multifile',
                 name: 'file',
                 fieldLabel: 'Files',
                 msgTarget: 'side',
                 anchor: '100%',
-                buttonText: 'Select Photo...',
-                listeners : {
-                    afterrender: function (file, eOpts) {
-                        var el = file.getEl();
-                        file.fileInputEl.set({multiple: 'multiple'});
-                    }
-                }
+                buttonText: 'Select Photo...'
+                //listeners : {
+                //    render: function (file, eOpts) {
+                //        var el = file.getEl();
+                //        file.fileInputEl.set({multiple: 'multiple'});
+                //    }
+                //}
             }]
         }];
         me.callParent();
     },
+
     buttons: [ {
         text: 'Save',
         handler : 'save'
     }],
+
     listeners: {
         beforerender: 'loadAclData'
     }
