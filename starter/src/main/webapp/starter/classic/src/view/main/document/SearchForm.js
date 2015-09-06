@@ -1,10 +1,11 @@
 Ext.define('starter.view.main.document.SearchForm', {
     extend: 'Ext.form.Panel',
     xtype: 'searchForm',
-    title: 'Search Form',
+    //title: 'Search Form',
     controller: 'advancedsearch',
     viewModel: 'advancedsearch',
     collapsible: true,
+    frame: true,
     bodyPadding: 3,
     fieldDefaults: {
         labelAlign: 'left',
@@ -20,29 +21,30 @@ Ext.define('starter.view.main.document.SearchForm', {
         allowBlank: false,
         valueField: 'name',
         bind: {
-            store :  '{types}'
+            store: '{types}'
             //value : '{tValue}'
         },
         listeners: {
-            change:"changeType"
+            change: "changeType"
         }
-    },{
+    }, {
         xtype: 'fieldset',
         title: 'Condition',
         defaults: {
             anchor: '100%'
         },
-        items: [Ext.create('starter.view.main.document.SearchCondition')]},
+        items: [Ext.create('starter.view.main.document.SearchCondition')]
+    },
         {
             fieldLabel: 'minimum_should_match',
             xtype: 'textfield',
             name: 'minimum_should_match',
-            value : '1'
+            value: '1'
         }],
-    listeners : {
+    listeners: {
         //afterrender : 'loadPropertyField'
     },
-    buttons: [ {
+    buttons: [{
         text: 'Search',
         handler: 'search'
     }]
