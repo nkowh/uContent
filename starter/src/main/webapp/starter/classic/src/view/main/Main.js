@@ -81,7 +81,7 @@ Ext.define('starter.view.main.Main', {
             xtype: 'advancedsearch'
         }]
     },{
-        title: '导入文档',
+        title: '新建文档',
         iconCls: 'fa-file-o',
         items: [{
             xtype: 'indexdocument'

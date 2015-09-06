@@ -37,9 +37,11 @@ Ext.define('starter.view.main.system.group.Modify', {
         anchor: '100%',
         delimiter:null,
         fieldLabel: 'users',
-        store : {type : 'users'},
+        store : {type : 'users',pageSize:10000},
         displayField: 'userName',
         valueField: '_id',
+        height : 400,
+        scrollable : true,
         msgTarget: 'side',
         fromTitle: 'Available',
         toTitle: 'Selected'
