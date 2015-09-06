@@ -104,23 +104,37 @@ public class GroupService {
         return builder;
     }
 
-    public XContentBuilder get(String id) throws IOException {
+    public Json get(String id){
         Client client = context.getClient();
-        XContentBuilder builder= XContentFactory.jsonBuilder();
         GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
         Map<String, Object> source = getResponse.getSource();
-        builder.startObject()
-                .field("_id", id)
-                .field(Constant.FieldName.GROUPID, source.get(Constant.FieldName.GROUPID))
-                .field(Constant.FieldName.GROUPNAME, source.get(Constant.FieldName.GROUPNAME))
-                .field(Constant.FieldName.USERS, source.get(Constant.FieldName.USERS))
-                .field(Constant.FieldName.CREATEDBY, source.get(Constant.FieldName.CREATEDBY))
-                .field(Constant.FieldName.CREATEDON, source.get(Constant.FieldName.CREATEDON))
-                .field(Constant.FieldName.LASTUPDATEDBY, source.get(Constant.FieldName.LASTUPDATEDBY))
-                .field(Constant.FieldName.LASTUPDATEDON, source.get(Constant.FieldName.LASTUPDATEDON))
-                .endObject();
-        System.out.println(builder.string());
-        return builder;
+//        builder.startObject()
+//                .field("_id", id)
+//                .field(Constant.FieldName.GROUPID, source.get(Constant.FieldName.GROUPID))
+//                .field(Constant.FieldName.GROUPNAME, source.get(Constant.FieldName.GROUPNAME))
+//                .field(Constant.FieldName.USERS, source.get(Constant.FieldName.USERS))
+//                .field(Constant.FieldName.CREATEDBY, source.get(Constant.FieldName.CREATEDBY))
+//                .field(Constant.FieldName.CREATEDON, source.get(Constant.FieldName.CREATEDON))
+//                .field(Constant.FieldName.LASTUPDATEDBY, source.get(Constant.FieldName.LASTUPDATEDBY))
+//                .field(Constant.FieldName.LASTUPDATEDON, source.get(Constant.FieldName.LASTUPDATEDON))
+//                .endObject();
+//        System.out.println(builder.string());
+//        return builder;
+
+        if (getResponse.isExists()){
+            Json json = new Json();
+            json.put(Constant.FieldName._ID, id);
+            json.put(Constant.FieldName.GROUPID, source.get(Constant.FieldName.GROUPID));
+            json.put(Constant.FieldName.GROUPNAME, source.get(Constant.FieldName.GROUPNAME));
+            json.put(Constant.FieldName.USERS, source.get(Constant.FieldName.USERS));
+            json.put(Constant.FieldName.CREATEDBY, source.get(Constant.FieldName.CREATEDBY));
+            json.put(Constant.FieldName.CREATEDON, source.get(Constant.FieldName.CREATEDON));
+            json.put(Constant.FieldName.LASTUPDATEDBY, source.get(Constant.FieldName.LASTUPDATEDBY));
+            json.put(Constant.FieldName.LASTUPDATEDON, source.get(Constant.FieldName.LASTUPDATEDON));
+            return json;
+        }else{
+            throw new uContentException("Not found", HttpStatus.NOT_FOUND);
+        }
     }
 
     public XContentBuilder getUsers(String id) throws IOException {
