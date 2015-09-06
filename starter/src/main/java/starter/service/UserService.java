@@ -243,7 +243,7 @@ public class UserService {
 
     public List<String> getGroupsOfUser(String id) throws IOException {
         Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERID, id);
+        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERS, id);
         SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
         List<String> groups = new ArrayList<String>();
         for (SearchHit searchHitFields : searchResponse.getHits()) {
