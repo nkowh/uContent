@@ -4,7 +4,7 @@ Ext.define('starter.view.document.IndexDocumentModel', {
     alias: 'viewmodel.indexdocument',
 
     data: {
-        title: '导入文档'
+        title: '新建文档'
     },
     stores: {
         types: {type: 'types'},

@@ -64,6 +64,7 @@ Ext.define('starter.view.document.IndexDocumentController', {
                 xtype: 'datefield',
                 fieldLabel: property.name,
                 anchor: '100%',
+                format : 'Y-m-d',
                 name: property.name,
                 value: property.defaultValue
             };
@@ -92,7 +93,8 @@ Ext.define('starter.view.document.IndexDocumentController', {
                     forceSelection: true
                 }, {
                     xtype: 'tagfield',
-                    store: ['READ', 'WRITE', 'UPDATE', 'DELETE'],
+                    name : 'permission',
+                    store: ['READ', 'WRITE'],
                     forceSelection: true
                 }, {
                     xtype: 'button',

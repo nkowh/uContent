@@ -86,7 +86,7 @@ Ext.define('starter.view.main.document.IndexDocument', {
                             }, {
                                 xtype: 'tagfield',
                                 name : 'permission',
-                                store: ['READ', 'WRITE','UPDATE','DELETE'],
+                                store: ['READ', 'WRITE'],
                                 forceSelection: true
                             }, {
                                 xtype: 'button',
