@@ -23,6 +23,8 @@ import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.TermFilterBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -53,6 +55,8 @@ public class DocumentService {
 
     @Autowired
     private UserService userService;
+
+    Logger logger = LoggerFactory.getLogger(DocumentService.class);
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -140,6 +144,7 @@ public class DocumentService {
                 Map<String, Object> stream = new HashMap<String, Object>();
                 String fileId = fs.write(file.getBytes());
                 if (StringUtils.isBlank(fileId)) {
+                    logger.error(String.format("The stream: %s store failed", file.getName()));
                     throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
                 stream.put(Constant.FieldName.STREAMID, fileId);
@@ -384,9 +389,11 @@ public class DocumentService {
         String[] exclude = {"_streams._fullText"};
         GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).setFetchSource(null,exclude).execute().actionGet();
         if (!getResponse.isExists()) {
+            logger.warn(String.format("The doc: %s in type %s of index %s is not exist", id, type, context.getIndex()));
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
         if (!hasPermission(user, getResponse.getSource().get(Constant.FieldName.ACL), permission)) {
+            logger.warn(String.format("The user: %s do not have the permission: %s on doc %s", user, permission, id));
             throw new uContentException("Forbidden", HttpStatus.FORBIDDEN);
         }
         return getResponse;
@@ -404,6 +411,7 @@ public class DocumentService {
                 continue;
             }
             if (!keySet.contains(key)) {//ignore undefined property
+                logger.warn(String.format("The property: %s has not defined, Ignore!", key));
                 iterator.remove();
                 continue;
             }
@@ -420,6 +428,7 @@ public class DocumentService {
                 if(v == null){
                     Object defaultValue = entry.get(Constant.FieldName.DEFAULTVALUE);
                     if (defaultValue == null || defaultValue.toString().equals("")) {
+                        logger.error(String.format("Property : %s is required", propName));
                         throw new uContentException(String.format("Property : %s is required", propName), HttpStatus.BAD_REQUEST);
                     }
                     body.put(propName, formatValue(entry.get(Constant.FieldName.TYPE).toString(), defaultValue));
@@ -457,11 +466,11 @@ public class DocumentService {
             parser.parse(in, handler, metadata);
             return handler.toString();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         } catch (SAXException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         } catch (TikaException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         } finally{
             IOUtils.closeQuietly(in);
         }

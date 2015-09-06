@@ -30,15 +30,14 @@ public class MultipartParser {
         files = new ArrayList<>();
         Map<String, MultipartFile> fileMap = request.getFileMap();
         for (String name : fileMap.keySet()) {
-            MultipartFile item = fileMap.get(name);
-            if (item.isEmpty()) continue;
-            files.add(item);
+            for(MultipartFile file : request.getFiles(name)){
+                this.files.add(file);
+            }
         }
         Map<String, String[]> parameterMap = request.getParameterMap();
         for (String key : parameterMap.keySet()) {
             body.put(key, parameterMap.get(key)[0]);
         }
-
         return this;
     }
 }

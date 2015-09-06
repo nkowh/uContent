@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import starter.service.GroupService;
+import starter.service.ReIndexService;
 import starter.service.TypeService;
 import starter.service.UserService;
 import starter.uContentException;
@@ -22,6 +23,9 @@ public class Systems {
     private UserService userService;
     @Autowired
     private GroupService groupService;
+
+    @Autowired
+    private ReIndexService reIndexService;
 
     /************************** types ******************************/
 
@@ -249,5 +253,10 @@ public class Systems {
         } catch (Exception e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @RequestMapping(value = "_reIndex", method = RequestMethod.POST)
+    public void reindex() {
+        reIndexService.reIndex();
     }
 }
