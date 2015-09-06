@@ -90,7 +90,6 @@ public class ReIndexAction extends BaseRestHandler {
                 xContentBuilder.field(typeEntry.key);
                 xContentBuilder.map(typeEntry.value.sourceAsMap());
                 CreateIndexRequest createIndexRequest = new CreateIndexRequest("");
-                createIndexRequest.settings().
             }
         }
         xContentBuilder.endObject().endObject();
