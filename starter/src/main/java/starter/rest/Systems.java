@@ -1,7 +1,10 @@
 package starter.rest;
 
+import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.threadpool.ThreadPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,6 +16,8 @@ import starter.service.UserService;
 import starter.uContentException;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @RestController
@@ -25,8 +30,8 @@ public class Systems {
     @Autowired
     private GroupService groupService;
 
-    @Autowired
-    private ReIndexService reIndexService;
+    @Inject
+    private ThreadPool threadPool;
 
     /************************** types ******************************/
 
@@ -251,8 +256,22 @@ public class Systems {
     }
 
     @RequestMapping(value = "_reIndex", method = RequestMethod.POST)
-    public void reindex() {
-        reIndexService.reIndex();
+    public void reindex(@RequestParam(defaultValue = "")String from,
+                        @RequestParam(defaultValue = "")String to) {
+        Date dateFrom = null;
+        Date dateTo = null;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            if (StringUtils.isNotBlank(from)) {
+                dateFrom = sdf.parse(from);
+            }
+            if (StringUtils.isNotBlank(to)) {
+                dateTo = sdf.parse(to);
+            }
+            threadPool.scheduler().execute(new ReIndexService(dateFrom, dateTo));
+        } catch (ParseException e) {
+            throw new uContentException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
     }
 
 

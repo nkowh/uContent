@@ -22,6 +22,9 @@ public class BlockFileSystem implements FileSystem {
         this.root = root;
         MAX_SIZE = blocksize;
         File dir = new File(this.root);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
         for (File file : dir.listFiles()) {
             if (file.getName().startsWith("LOSF_" + nodeName + "_") && file.length() < MAX_SIZE) {
                 writer = new BlockFileWriter(file.getAbsolutePath());

@@ -1,5 +1,8 @@
 package starter.service;
 
+import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
@@ -18,6 +21,7 @@ import org.elasticsearch.client.Requests;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.hppc.cursors.ObjectObjectCursor;
+import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -26,6 +30,7 @@ import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.RangeFilterBuilder;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.threadpool.ThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,36 +40,45 @@ import starter.RequestContext;
 import starter.uContentException;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 
 @Service
-public class ReIndexService {
+public class ReIndexService implements Runnable{
 
     @Autowired
     private RequestContext context;
 
+    private Date dateFrom = null;
+    private Date dateTo = null;
+
+    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
     Logger logger = LoggerFactory.getLogger(ReIndexService.class);
 
-    public void reIndex(){
+    public ReIndexService(Date dateFrom, Date dateTo) {
+        this.dateFrom = dateFrom;
+        this.dateTo = dateTo;
+    }
+
+    @Override
+    public void run() {
+        String[] indices = originalName(context.getIndex());
         try {
-            String[] indices = originalName(context.getIndex());
             for(String index : indices){
                 copyMappings(index);
-//                copyIndex(index, from, to);
+                copyIndex(index, dateFrom, dateTo);
             }
-        } catch (ExecutionException e) {//TODO 异常回滚？
-            logger.error(e.getMessage());
-            throw new uContentException("Copy mappings failed", HttpStatus.INTERNAL_SERVER_ERROR);
+            alias(indices, context.getIndex());
         } catch (InterruptedException e) {
-            logger.error(e.getMessage());
-            throw new uContentException("Copy mappings failed", HttpStatus.INTERNAL_SERVER_ERROR);
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         } catch (IOException e) {
-            logger.error(e.getMessage());
-            throw new uContentException("Copy mappings failed", HttpStatus.INTERNAL_SERVER_ERROR);
+            e.printStackTrace();
         }
     }
 
@@ -100,6 +114,9 @@ public class ReIndexService {
     }
 
     private String name(String index){
+        if (!index.contains("_v")) {
+            return index + "_v1";
+        }
         int v = index.lastIndexOf("_v");
         String prefix = index.substring(0, v + 2);
         String suffix = index.substring(v + 2);
@@ -115,32 +132,30 @@ public class ReIndexService {
                 filterBuilder = FilterBuilders.rangeFilter(Constant.FieldName.CREATEDON).from(from);
             }
             if (to != null) {
-                filterBuilder.to(to);
+                if (filterBuilder == null) {
+                    filterBuilder = FilterBuilders.rangeFilter(Constant.FieldName.CREATEDON).to(to);
+                }else{
+                    filterBuilder.to(to);
+                }
             }
-
             SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(index).setSearchType(SearchType.SCAN).setScroll("1m");
             if (filterBuilder != null) {
                 searchRequestBuilder.setPostFilter(filterBuilder);
             }
             SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
             do{
-                searchResponse = context.getClient().prepareSearchScroll(searchResponse.getScrollId()).setScroll("1m").execute().get();
+                searchResponse = context.getClient().prepareSearchScroll(searchResponse.getScrollId()).setScroll("1m").execute().actionGet();
                 for(SearchHit hit : searchResponse.getHits().getHits()){
                     String type = hit.getType();
                     Map<String, Object> source = hit.getSource();
                     bulkProcessor.add(new IndexRequest(name(index), type).source(source));
                 }
             }while(searchResponse.getHits().getHits().length > 0);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
         } finally{
             bulkProcessor.flush();
             bulkProcessor.close();
         }
     }
-
 
     private BulkProcessor initBulkProcessor(){
         return BulkProcessor.builder(context.getClient(), new BulkProcessor.Listener() {
@@ -149,7 +164,7 @@ public class ReIndexService {
             }
 
             public void afterBulk(long executionId, BulkRequest bulkRequest, BulkResponse response) {
-
+            //TODO 进度记录
 
             }
 
@@ -159,6 +174,26 @@ public class ReIndexService {
         }).setBulkActions(3000).setFlushInterval(TimeValue.timeValueSeconds(5)).setConcurrentRequests(0).build();
     }
 
+
+    private void alias(String[] indices, String alias){
+        context.getClient().admin().indices().prepareAliases().removeAlias(indices, alias).execute().actionGet();
+        List<String> newIndices = new ArrayList<String>();
+        for(String s : indices){
+            newIndices.add(name(s));
+        }
+        IndicesAliasesRequest indicesAliasesRequest = new IndicesAliasesRequest();
+        indicesAliasesRequest.removeAlias(indices, alias);
+        indicesAliasesRequest.addAlias(alias, newIndices.toArray(new String[]{}));
+        context.getClient().admin().indices().aliases(indicesAliasesRequest, new ActionListener<IndicesAliasesResponse>(){
+            public void onResponse(IndicesAliasesResponse indicesAliasesResponse) {
+                //TODO 删除原索引
+                //client.admin().indices().prepareDelete(request.param("index")).execute();
+            }
+            public void onFailure(Throwable e) {
+                //TODO
+            }
+        });
+    }
 
 
 
