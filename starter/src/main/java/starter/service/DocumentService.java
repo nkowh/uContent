@@ -1,7 +1,6 @@
 package starter.service;
 
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
@@ -19,7 +18,10 @@ import org.elasticsearch.common.joda.time.LocalDateTime;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.elasticsearch.index.query.*;
+import org.elasticsearch.index.query.BoolFilterBuilder;
+import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.TermFilterBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.slf4j.Logger;
@@ -226,12 +228,45 @@ public class DocumentService {
         Object o = body.get(Constant.FieldName.ACL);
         if (o != null) {
             ObjectMapper objectMapper = new ObjectMapper();
-            acl = objectMapper.readValue(o.toString().toLowerCase(), List.class);
+            acl = objectMapper.readValue(o.toString(), List.class);
+            validateAcl(acl);
         } else {
             acl = new ArrayList<Map<String, Object>>();
         }
         acl.add(ace);
         body.put(Constant.FieldName.ACL, acl);
+    }
+
+
+    private void validateAcl(List<Map<String, Object>> acl){
+        Iterator<Map<String, Object>> it = acl.iterator();
+        while (it.hasNext()){
+            Map<String, Object> map = it.next();
+            Iterator<Map.Entry<String, Object>> iterator = map.entrySet().iterator();
+            while (iterator.hasNext()){// ignore illegal key
+                Map.Entry<String, Object> entry = iterator.next();
+                String key = entry.getKey();
+                if (!key.equals(Constant.FieldName.USER) && !key.equals(Constant.FieldName.PERMISSION)) {
+                    iterator.remove();
+                }
+                if (map.isEmpty()) {
+                    it.remove();
+                }
+            }
+            List<String> permission = (List<String>) map.get(Constant.FieldName.PERMISSION);
+            List<String> per = new ArrayList<String>();
+            for(String s : permission){  //turn permission to lowerCase
+                per.add(s.toLowerCase());
+            }
+            Iterator<String> iterator1 = per.iterator();
+            while (iterator1.hasNext()){//  ignore illegal permission and turn permission to lowerCase
+                String p = iterator1.next();
+                if(!p.equals(Constant.Permission.read.toString()) && !p.equals(Constant.Permission.write.toString())){
+                    iterator1.remove();
+                }
+            }
+            map.put(Constant.FieldName.PERMISSION, per);
+        }
     }
 
     private Json processGet(GetResponse getResponse, boolean head, boolean allowableActions) throws IOException {
