@@ -1,6 +1,5 @@
 package starter.rest;
 
-import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
@@ -9,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import starter.RequestContext;
 import starter.service.GroupService;
 import starter.service.ReIndexService;
 import starter.service.TypeService;
@@ -29,9 +29,8 @@ public class Systems {
     private UserService userService;
     @Autowired
     private GroupService groupService;
-
-    @Inject
-    private ThreadPool threadPool;
+    @Autowired
+    private RequestContext context;
 
     /************************** types ******************************/
 
@@ -268,7 +267,7 @@ public class Systems {
             if (StringUtils.isNotBlank(to)) {
                 dateTo = sdf.parse(to);
             }
-            threadPool.scheduler().execute(new ReIndexService(dateFrom, dateTo));
+            new ThreadPool("reindex").scheduler().execute(new ReIndexService(context, dateFrom, dateTo));
         } catch (ParseException e) {
             throw new uContentException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }

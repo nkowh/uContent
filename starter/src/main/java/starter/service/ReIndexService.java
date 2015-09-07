@@ -25,7 +25,6 @@ import org.elasticsearch.index.query.RangeFilterBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import starter.RequestContext;
 
 import java.io.IOException;
@@ -34,12 +33,9 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 
-
 public class ReIndexService implements Runnable{
 
-    @Autowired
     private RequestContext context;
-
     private Date dateFrom = null;
     private Date dateTo = null;
 
@@ -47,7 +43,8 @@ public class ReIndexService implements Runnable{
 
     Logger logger = LoggerFactory.getLogger(ReIndexService.class);
 
-    public ReIndexService(Date dateFrom, Date dateTo) {
+    public ReIndexService(RequestContext context, Date dateFrom, Date dateTo) {
+        this.context = context;
         this.dateFrom = dateFrom;
         this.dateTo = dateTo;
     }
