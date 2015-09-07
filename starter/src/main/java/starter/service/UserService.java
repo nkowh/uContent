@@ -39,33 +39,6 @@ public class UserService {
     @Autowired
     private RequestContext context;
 
-//    public XContentBuilder all() throws IOException {
-//        Client client = context.getClient();
-//        //QueryBuilder queryBuilder = QueryBuilders.termQuery()
-//        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).execute().actionGet();
-//        SearchHits hits = searchResponse.getHits();
-//        XContentBuilder builder= XContentFactory.jsonBuilder();
-//        builder.startObject().field("total", searchResponse.getHits().totalHits());
-//        builder.startArray("users");
-//        for (SearchHit searchHitFields : searchResponse.getHits()) {
-//            builder.startObject()
-//                    .field("_id", searchHitFields.getId())
-//                    .field(Constant.FieldName.USERID, searchHitFields.getSource().get(Constant.FieldName.USERID))
-//                    .field(Constant.FieldName.USERNAME, searchHitFields.getSource().get(Constant.FieldName.USERNAME))
-//                    .field(Constant.FieldName.EMAIL, searchHitFields.getSource().get(Constant.FieldName.EMAIL))
-//                    .field(Constant.FieldName.PASSWORD, searchHitFields.getSource().get(Constant.FieldName.PASSWORD))
-//                    .field(Constant.FieldName.CREATEDBY, searchHitFields.getSource().get(Constant.FieldName.CREATEDBY))
-//                    .field(Constant.FieldName.CREATEDON, searchHitFields.getSource().get(Constant.FieldName.CREATEDON))
-//                    .field(Constant.FieldName.LASTUPDATEDBY, searchHitFields.getSource().get(Constant.FieldName.LASTUPDATEDBY))
-//                    .field(Constant.FieldName.LASTUPDATEDON, searchHitFields.getSource().get(Constant.FieldName.LASTUPDATEDON))
-//                    .endObject();
-//        }
-//        builder.endArray();
-//        builder.endObject();
-//        //System.out.println(builder.string());
-//        return builder;
-//    }
-
     public XContentBuilder all(String query, int start, int limit, SortBuilder[] sort) throws IOException {
         SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME);
         if (limit>0){

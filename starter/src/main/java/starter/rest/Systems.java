@@ -235,6 +235,10 @@ public class Systems {
         }
     }
 
+    @RequestMapping(value = "currentUsers/isAdmin", method = RequestMethod.GET)
+    public boolean checkUserInAdminGroup() {
+        return groupService.checkUserInAdminGroup();
+    }
 
     @RequestMapping(value = "system", method = RequestMethod.POST)
     public void systemDataInitial() {

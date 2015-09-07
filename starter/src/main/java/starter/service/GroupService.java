@@ -66,7 +66,7 @@ public class GroupService {
         builder.startArray("groups");
         for (SearchHit searchHitFields : searchResponse.getHits()) {
             builder.startObject()
-                    .field("_id", searchHitFields.getId())
+                    .field(Constant.FieldName._ID, searchHitFields.getId())
                     .field(Constant.FieldName.GROUPID, searchHitFields.getSource().get(Constant.FieldName.GROUPID))
                     .field(Constant.FieldName.GROUPNAME, searchHitFields.getSource().get(Constant.FieldName.GROUPNAME))
                     .field(Constant.FieldName.USERS, searchHitFields.getSource().get(Constant.FieldName.USERS))
@@ -110,19 +110,6 @@ public class GroupService {
         Client client = context.getClient();
         GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
         Map<String, Object> source = getResponse.getSource();
-//        builder.startObject()
-//                .field("_id", id)
-//                .field(Constant.FieldName.GROUPID, source.get(Constant.FieldName.GROUPID))
-//                .field(Constant.FieldName.GROUPNAME, source.get(Constant.FieldName.GROUPNAME))
-//                .field(Constant.FieldName.USERS, source.get(Constant.FieldName.USERS))
-//                .field(Constant.FieldName.CREATEDBY, source.get(Constant.FieldName.CREATEDBY))
-//                .field(Constant.FieldName.CREATEDON, source.get(Constant.FieldName.CREATEDON))
-//                .field(Constant.FieldName.LASTUPDATEDBY, source.get(Constant.FieldName.LASTUPDATEDBY))
-//                .field(Constant.FieldName.LASTUPDATEDON, source.get(Constant.FieldName.LASTUPDATEDON))
-//                .endObject();
-//        System.out.println(builder.string());
-//        return builder;
-
         if (getResponse.isExists()){
             Json json = new Json();
             json.put(Constant.FieldName._ID, id);
