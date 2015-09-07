@@ -11,6 +11,12 @@ Ext.define('starter.system.TypeController', {
         Ext.create('starter.view.main.system.type.Modify',{ record : record}).show();
         return ;
     },
+    refreshType: function (sender, record) {
+        var me = this;
+        var store = this.getViewModel().getStore('types');
+        store.load();
+        return ;
+    },
     loadModifyData: function() {
         var me = this;
         var record =  this.getView().record;
@@ -189,11 +195,15 @@ Ext.define('starter.system.TypeController', {
             var size = gstore.getCount();
             for(var i=0;i<size;i++){
                 var pRecord = gstore.getAt(i);
-                if(pRecord.get('isFullIndex')){
-                    pRecord.set('index','analyzed');
+                if(pRecord.get('type')!='boolean'){
+                    if(pRecord.get('isFullIndex')){
+                        pRecord.set('index','analyzed');
+                    }else{
+                        pRecord.set('index','not_analyzed');
+
+                    }
                 }else{
                     pRecord.set('index','not_analyzed');
-
                 }
                 properties.push(pRecord.getData());
             }
@@ -208,6 +218,12 @@ Ext.define('starter.system.TypeController', {
                     if (!success) {
                         return;
                     }
+                    Ext.toast({
+                        html: 'Save successful',
+                        title: 'message',
+                        width: 200,
+                        align: 't'
+                    });
                     store.load();
                     me.getView().close();
                 }
@@ -232,11 +248,15 @@ Ext.define('starter.system.TypeController', {
             var size = gstore.getCount();
             for(var i=0;i<size;i++){
                 var pRecord = gstore.getAt(i);
-                if(pRecord.get('isFullIndex')){
-                    pRecord.set('index','analyzed');
+                if(pRecord.get('type')!='boolean'){
+                    if(pRecord.get('isFullIndex')){
+                        pRecord.set('index','analyzed');
+                    }else{
+                        pRecord.set('index','not_analyzed');
+
+                    }
                 }else{
                     pRecord.set('index','not_analyzed');
-
                 }
                 properties.push(pRecord.getData());
             }
@@ -251,6 +271,12 @@ Ext.define('starter.system.TypeController', {
                     if (!success) {
                         return;
                     }
+                    Ext.toast({
+                        html: 'Save successful',
+                        title: 'message',
+                        width: 200,
+                        align: 't'
+                    });
                     store.load();
                     me.getView().close();
                 }
