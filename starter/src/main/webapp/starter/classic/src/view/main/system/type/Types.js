@@ -17,6 +17,7 @@ Ext.define('starter.view.main.system.type.Types', {
         xtype: 'toolbar',
         dock: 'top',
         items: ['->',
+            { xtype: 'button', text: 'Refresh', handler: 'refreshType' },
             { xtype: 'button', text: 'Add', handler: 'openCreateWin' },
             { xtype: 'button', text: 'Delete',handler: 'deleteType'}
         ]
