@@ -4,6 +4,7 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.search.SearchHit;
@@ -12,7 +13,6 @@ import org.elasticsearch.search.sort.SortBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import starter.RequestContext;
-import starter.rest.Json;
 
 import java.io.IOException;
 import java.util.Map;
@@ -24,7 +24,7 @@ public class LogService {
 
     private final String LOG_TYPE_NAME = "logInfo";
 
-    public XContentBuilder query(Json query, int from, int size, SortBuilder[] sorts) throws IOException {
+    public XContentBuilder query(String query, int from, int size, SortBuilder[] sorts) throws IOException {
         SearchRequestBuilder searchRequestBuilder = context.getClient()
                 .prepareSearch(context.getIndex())
                 .setTypes(LOG_TYPE_NAME)
@@ -37,7 +37,11 @@ public class LogService {
             }
         }
 
-        if (query != null && !query.isEmpty()) {
+        //因故替换参数类型:query改为String
+        //if (query != null && !query.isEmpty()) {
+        //    searchRequestBuilder.setQuery(query);
+        //}
+        if (StringUtils.isNotBlank(query)) {
             searchRequestBuilder.setQuery(query);
         }
 
