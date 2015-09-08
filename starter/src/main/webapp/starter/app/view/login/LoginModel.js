@@ -1,4 +1,4 @@
-Ext.define('starter.view.login.LoginModel', {
+Ext.define('starter.login.LoginModel', {
     extend: 'Ext.app.ViewModel',
 
     alias: 'viewmodel.login',

@@ -5,6 +5,7 @@
  */
 Ext.define('starter.Application', {
     extend: 'Ext.app.Application',
+
     name: 'starter',
 
     onAppUpdate: function () {
