@@ -1,5 +1,5 @@
 Ext.form.action.Submit.override({
-    onSuccess: function(response) {
+    onSuccess: function (response) {
         var form = this.form,
             formActive = form && !form.destroying && !form.destroyed,
             success = true,
@@ -26,18 +26,17 @@ Ext.application({
     extend: 'starter.Application',
 
     requires: [
-        'starter.view.main.Main'
+        'starter.view.main.Main',
+        'starter.view.login.LoginFrame'
     ],
 
-    // The name of the initial view to create. With the classic toolkit this class
-    // will gain a "viewport" plugin if it does not extend Ext.Viewport. With the
-    // modern toolkit, the main view will be added to the Viewport.
-    //
-    mainView: 'starter.view.main.Main'
+    launch: function () {
+        var me = this;
+        if (Ext.util.Cookies.get('userId') && Ext.util.Cookies.get('digest')) {
+            me.setMainView('starter.view.main.Main');
+        } else {
+            me.setMainView('starter.view.login.LoginFrame');
+        }
 
-    //-------------------------------------------------------------------------
-    // Most customizations should be made to starter.Application. If you need to
-    // customize this file, doing so below this section reduces the likelihood
-    // of merge conflicts when upgrading to new versions of Sencha Cmd.
-    //-------------------------------------------------------------------------
+    }
 });
