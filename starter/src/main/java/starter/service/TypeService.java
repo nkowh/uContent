@@ -65,7 +65,6 @@ public class TypeService {
         }
         builder.endArray();
         builder.endObject();
-        System.out.println(builder.string());
         return builder;
     }
 
@@ -191,8 +190,6 @@ public class TypeService {
                 builder.endObject();
             }
 
-            System.out.println(builder.string());
-
             //创建mapping
             PutMappingRequest mapping = Requests.putMappingRequest(context.getIndex()).type(typeName).source(builder);
             PutMappingResponse putMappingResponse = client.admin().indices().putMapping(mapping).actionGet();
@@ -254,7 +251,6 @@ public class TypeService {
             }
             builder.endObject(); //end of _meta
         }
-        System.out.println(builder.string());
         return builder;
     }
 
@@ -317,7 +313,6 @@ public class TypeService {
         if (mappings==null||mappings.size()==0){
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
-
         return create(body);
     }
 
@@ -346,7 +341,4 @@ public class TypeService {
         return property;
     }
 
-//    public static void main(String args[]) throws IOException {
-//        System.out.println(XContentFactory.jsonBuilder().startObject().field("aaa","AAA").field("aaa","BBB").endObject().string());
-//    }
 }

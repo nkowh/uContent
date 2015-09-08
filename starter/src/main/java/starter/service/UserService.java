@@ -102,7 +102,6 @@ public class UserService {
             //由于执行的同步问题会导致加不进去，暂时取消
             //synchronizeEveryoneGroup();
         }
-        System.out.println(builder.string());
         return builder;
     }
 
@@ -207,8 +206,6 @@ public class UserService {
                     .endObject();
         }
         builder.endObject();
-        System.out.println(builder.string());
-
         return builder;
     }
 

@@ -77,7 +77,6 @@ public class GroupService {
         }
         builder.endArray();
         builder.endObject();
-        System.out.println(builder.string());
         return builder;
     }
 
@@ -101,7 +100,6 @@ public class GroupService {
                 .field("_version", indexResponse.getVersion())
                 .field("created", indexResponse.isCreated())
                 .endObject();
-        System.out.println(builder.string());
         return builder;
     }
 
@@ -154,7 +152,6 @@ public class GroupService {
         }
         builder.endArray();
         builder.endObject();
-        System.out.println(builder.string());
         return builder;
     }
 
