@@ -71,6 +71,12 @@ Ext.define('starter.system.UserController', {
             callback: function (batch, options) {
                 view.unmask();
                 if (window)window.close();
+                Ext.toast({
+                    html: 'Successful operation',
+                    title: 'message',
+                    width: 200,
+                    align: 't'
+                });
             }
         });
 

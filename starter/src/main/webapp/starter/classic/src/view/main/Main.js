@@ -24,29 +24,12 @@ Ext.define('starter.view.main.Main', {
             align: 'stretchmax'
         },
         title: {
-            iconCls: 'fa-th-list',
             bind: {
                 text: '{name}'
             },
-            listeners: {
-                afterrender: function (cmp, eOpts) {
-
-                    var icon = cmp.getEl().down('.fa-th-list');
-                    icon.addListener('click', 'onTitleClick');
-                    icon.addListener('mouseenter', function () {
-                        icon.setStyle({color: 'black'})
-                    });
-                    icon.addListener('mouseleave', function () {
-                        icon.setStyle({color: undefined})
-                    });
-                }
-            },
             flex: 0
         },
-
-        listeners: {
-            //click: 'onTitleClick'
-        }
+        iconCls: 'fa-th-list'
     },
 
     tabBar: {
@@ -67,7 +50,7 @@ Ext.define('starter.view.main.Main', {
     },
 
     defaults: {
-        layout: 'fit',
+        layout:'fit',
         bodyPadding: 20,
         tabConfig: {
             plugins: 'responsive',
@@ -91,45 +74,20 @@ Ext.define('starter.view.main.Main', {
         items: [{
             xtype: 'fulltextsearch'
         }]
-    }, {
+    },{
         title: '高级搜索',
         iconCls: 'fa-search',
         items: [{
             xtype: 'advancedsearch'
         }]
-    }, {
+    },{
         title: '新建文档',
         iconCls: 'fa-file-o',
         items: [{
             xtype: 'indexdocument'
         }]
-    }, {
-        title: '用户',
-        iconCls: 'fa-user',
-        items: [{
-            xtype: 'users'
-        }]
-    }, {
-        title: '组',
-        iconCls: 'fa-users',
-        items: [{
-            xtype: 'groups'
-        }]
-    }, {
-        title: '监控',
-        iconCls: 'fa-cog',
-        items: [{
-            xtype: 'monitorOs'
-        }]
-    }, {
-        title: '类型',
-        iconCls: 'fa-cubes',
-        items: [{
-            xtype: 'types'
-        }]
-    }, {
-        title: '配置',
-        iconCls: 'fa-cog',
-        items: []
-    }]
+    }],
+    listeners : {
+        afterrender : 'checkIsAdmin'
+    }
 });

@@ -74,6 +74,12 @@ Ext.define('starter.system.GroupController', {
             callback: function (batch, options) {
                 view.unmask();
                 if (window)window.close();
+                Ext.toast({
+                    html: 'Successful operation',
+                    title: 'message',
+                    width: 200,
+                    align: 't'
+                });
             }
         });
     }
