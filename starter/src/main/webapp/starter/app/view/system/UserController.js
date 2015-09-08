@@ -1,4 +1,4 @@
-Ext.define('starter.system.UserController', {
+Ext.define('starter.view.system.UserController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.user',
 

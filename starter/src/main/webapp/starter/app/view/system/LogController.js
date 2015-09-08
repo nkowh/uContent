@@ -1,4 +1,4 @@
-Ext.define('starter.system.LogController', {
+Ext.define('starter.view.system.LogController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.log',
     showWin : function(grid, record, tr, rowIndex, e, eOpts){

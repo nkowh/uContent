@@ -1,4 +1,4 @@
-Ext.define('starter.system.GroupModel', {
+Ext.define('starter.view.system.GroupModel', {
     extend: 'Ext.app.ViewModel',
 
     alias: 'viewmodel.group',

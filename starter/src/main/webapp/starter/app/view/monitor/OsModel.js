@@ -1,4 +1,4 @@
-Ext.define('starter.monitor.OsModel', {
+Ext.define('starter.view.monitor.OsModel', {
     extend: 'Ext.app.ViewModel',
     alias: 'viewmodel.os',
 

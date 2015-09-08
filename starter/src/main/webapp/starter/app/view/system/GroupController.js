@@ -1,4 +1,4 @@
-Ext.define('starter.system.GroupController', {
+Ext.define('starter.view.system.GroupController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.group',
 

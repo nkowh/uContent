@@ -1,4 +1,4 @@
-Ext.define('starter.system.LogModel', {
+Ext.define('starter.view.system.LogModel', {
     extend: 'Ext.app.ViewModel',
 
     alias: 'viewmodel.log',

@@ -1,4 +1,4 @@
-Ext.define('starter.system.TypeController', {
+Ext.define('starter.view.system.TypeController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.type',
 

@@ -1,4 +1,4 @@
-Ext.define('starter.monitor.NodeModel', {
+Ext.define('starter.view.monitor.NodeModel', {
     extend: 'Ext.app.ViewModel',
     alias: 'viewmodel.node',
 
