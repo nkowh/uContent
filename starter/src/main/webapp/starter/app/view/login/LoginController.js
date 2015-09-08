@@ -1,4 +1,4 @@
-Ext.define('starter.view.login.LoginController', {
+Ext.define('starter.login.LoginController', {
     extend: 'Ext.app.ViewController',
 
     alias: 'controller.login',
@@ -13,9 +13,14 @@ Ext.define('starter.view.login.LoginController', {
             method: 'GET',
             headers: {Authorization: digest},
             url: '/svc/users/' + userId + '/groups',
-           success: function (response, options) {
-                Ext.toast('Data Saved', 'Title', 't')
+            success: function (response, options) {
+                debugger;
+                var result = Ext.JSON.decode(response.responseText);
+                var groups = Ext.Array.map(result.groups, function (g) {
+                    return g._id;
+                }).join(',');
                 Ext.util.Cookies.set('userId', userId);
+                Ext.util.Cookies.set('groups', groups);
                 Ext.util.Cookies.set('digest', digest);
                 window.location.reload();
             }, failure: function (response, options) {

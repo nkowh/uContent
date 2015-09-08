@@ -24,6 +24,11 @@ Ext.application({
     name: 'starter',
     extend: 'starter.Application',
 
+    requires: [
+        'starter.view.main.Main',
+        'starter.view.login.LoginFrame'
+    ],
+
     launch: function () {
         var me = this;
         if (Ext.util.Cookies.get('userId') && Ext.util.Cookies.get('digest')) {

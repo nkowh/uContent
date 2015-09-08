@@ -192,7 +192,7 @@ public class UserService {
         SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject().field("total", searchResponse.getHits().totalHits());
-        builder.startObject("groups");
+        builder.startArray("groups");
         for (SearchHit searchHitFields : searchResponse.getHits()) {
             builder.startObject()
                     .field(Constant.FieldName._ID, searchHitFields.getId())
@@ -205,7 +205,7 @@ public class UserService {
                     .field(Constant.FieldName.LASTUPDATEDON, searchHitFields.getSource().get(Constant.FieldName.LASTUPDATEDON))
                     .endObject();
         }
-        builder.endObject();
+        builder.endArray();
         return builder;
     }
 
