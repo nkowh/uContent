@@ -1,4 +1,4 @@
-Ext.define('starter.system.GroupController', {
+Ext.define('starter.view.system.GroupController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.group',
 
@@ -74,6 +74,12 @@ Ext.define('starter.system.GroupController', {
             callback: function (batch, options) {
                 view.unmask();
                 if (window)window.close();
+                Ext.toast({
+                    html: 'Successful operation',
+                    title: 'message',
+                    width: 200,
+                    align: 't'
+                });
             }
         });
     }

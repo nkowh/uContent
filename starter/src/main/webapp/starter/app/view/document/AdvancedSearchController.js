@@ -1,4 +1,4 @@
-Ext.define('starter.document.AdvancedSearchController', {
+Ext.define('starter.view.document.AdvancedSearchController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.advancedsearch',
     loadConditionField: function (aPanel, type, index) {

@@ -103,33 +103,8 @@ Ext.define('starter.view.main.Main', {
         items: [{
             xtype: 'indexdocument'
         }]
-    }, {
-        title: '用户',
-        iconCls: 'fa-user',
-        items: [{
-            xtype: 'users'
-        }]
-    }, {
-        title: '组',
-        iconCls: 'fa-users',
-        items: [{
-            xtype: 'groups'
-        }]
-    }, {
-        title: '监控',
-        iconCls: 'fa-cog',
-        items: [{
-            xtype: 'monitorOs'
-        }]
-    }, {
-        title: '类型',
-        iconCls: 'fa-cubes',
-        items: [{
-            xtype: 'types'
-        }]
-    }, {
-        title: '配置',
-        iconCls: 'fa-cog',
-        items: []
-    }]
+    }],
+    listeners : {
+        afterrender : 'checkIsAdmin'
+    }
 });

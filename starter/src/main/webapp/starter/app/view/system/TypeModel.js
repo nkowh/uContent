@@ -1,4 +1,4 @@
-Ext.define('starter.system.TypeModel', {
+Ext.define('starter.view.system.TypeModel', {
     extend: 'Ext.app.ViewModel',
 
     alias: 'viewmodel.type',

@@ -1,4 +1,4 @@
-Ext.define('starter.system.TypeController', {
+Ext.define('starter.view.system.TypeController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.type',
 
@@ -74,7 +74,7 @@ Ext.define('starter.system.TypeController', {
             type: 'string',
             pattern: '',
             promptMessage: '',
-            isFullIndex: false,
+            index : 'analyzed',
             defaultValue: '',
             required: false,
             order :order
@@ -110,7 +110,7 @@ Ext.define('starter.system.TypeController', {
         var defaultValue = e.record.get('defaultValue');
         var pattern = e.record.get('pattern');
         var promptMessage = e.record.get('promptMessage');
-        if(e.field=='name'||e.field=='type'){
+        if(e.field=='name'||e.field=='type'||e.field=='index'){
             if(e.grid.store.initData){
                 if(Ext.Array.contains(e.grid.store.initData, e.record.data)){
                     e.cancel = true;
@@ -169,8 +169,8 @@ Ext.define('starter.system.TypeController', {
                 type: 'string',
                 pattern: '',
                 promptMessage: '',
-                isFullIndex: false,
                 defaultValue: '',
+                index : 'analyzed',
                 required: false,
                 order :order
             });
@@ -195,14 +195,7 @@ Ext.define('starter.system.TypeController', {
             var size = gstore.getCount();
             for(var i=0;i<size;i++){
                 var pRecord = gstore.getAt(i);
-                if(pRecord.get('type')!='boolean'){
-                    if(pRecord.get('isFullIndex')){
-                        pRecord.set('index','analyzed');
-                    }else{
-                        pRecord.set('index','not_analyzed');
-
-                    }
-                }else{
+                if(pRecord.get('type')=='boolean'){
                     pRecord.set('index','not_analyzed');
                 }
                 properties.push(pRecord.getData());
@@ -248,16 +241,16 @@ Ext.define('starter.system.TypeController', {
             var size = gstore.getCount();
             for(var i=0;i<size;i++){
                 var pRecord = gstore.getAt(i);
-                if(pRecord.get('type')!='boolean'){
-                    if(pRecord.get('isFullIndex')){
-                        pRecord.set('index','analyzed');
-                    }else{
-                        pRecord.set('index','not_analyzed');
-
-                    }
-                }else{
-                    pRecord.set('index','not_analyzed');
-                }
+                //if(pRecord.get('type')!='boolean'){
+                //    if(pRecord.get('isFullIndex')){
+                //        pRecord.set('index','analyzed');
+                //    }else{
+                //        pRecord.set('index','not_analyzed');
+                //
+                //    }
+                //}else{
+                //    pRecord.set('index','not_analyzed');
+                //}
                 properties.push(pRecord.getData());
             }
             type.properties = properties;

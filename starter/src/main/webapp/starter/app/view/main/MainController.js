@@ -21,6 +21,47 @@ Ext.define('starter.view.main.MainController', {
                 window.location.reload();
             }
         });
+    },
+    checkIsAdmin : function(){
+        var me = this;
+        var groups = Ext.util.Cookies.get('groups');
+            if(groups.indexOf('adminGroup')>=0){
+                me.getView().add( {
+                    title: '用户',
+                    iconCls: 'fa-user',
+                    items: [{
+                        xtype: 'users'
+                    }]
+                }, {
+                    title: '组',
+                    iconCls: 'fa-users',
+                    items: [{
+                        xtype: 'groups'
+                    }]
+                }, {
+                    title: '监控',
+                    iconCls: 'fa-cog',
+                    items: [{
+                        xtype: 'monitorOs'
+                    }]
+                }, {
+                    title: '日志',
+                    iconCls: 'fa fa-bars',
+                    items: [{
+                        xtype: 'logs'
+                    }]
+                },{
+                    title: '类型',
+                    iconCls: 'fa-cubes',
+                    items: [{
+                        xtype: 'types'
+                    }]
+                }, {
+                    title: '配置',
+                    iconCls: 'fa-cog',
+                    items: []
+                });
+            }
     }
 
 });

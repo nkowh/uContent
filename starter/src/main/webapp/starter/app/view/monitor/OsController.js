@@ -1,4 +1,4 @@
-Ext.define('starter.monitor.OsController', {
+Ext.define('starter.view.monitor.OsController', {
     extend: 'Ext.app.ViewController',
     alias: 'controller.os',
 
