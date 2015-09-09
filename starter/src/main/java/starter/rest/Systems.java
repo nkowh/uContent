@@ -267,7 +267,7 @@ public class Systems {
             if (StringUtils.isNotBlank(to)) {
                 dateTo = sdf.parse(to);
             }
-            new ThreadPool("reindex").scheduler().execute(new ReIndexService(context, dateFrom, dateTo));
+            new Thread(new ReIndexService(context.getClient(), context.getIndex(), dateFrom, dateTo)).start();
         } catch (ParseException e) {
             throw new uContentException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }

@@ -4,6 +4,8 @@ import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
+import org.elasticsearch.action.admin.indices.exists.types.TypesExistsRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
@@ -17,15 +19,16 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.hppc.cursors.ObjectObjectCursor;
+import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.RangeFilterBuilder;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import starter.RequestContext;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -35,42 +38,57 @@ import java.util.concurrent.ExecutionException;
 
 public class ReIndexService implements Runnable{
 
-    private RequestContext context;
+    private Client client;
+    private String alias;
     private Date dateFrom = null;
     private Date dateTo = null;
-
-    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    private long finished = 0l;
 
     Logger logger = LoggerFactory.getLogger(ReIndexService.class);
 
-    public ReIndexService(RequestContext context, Date dateFrom, Date dateTo) {
-        this.context = context;
+    public ReIndexService(Client client, String alias, Date dateFrom, Date dateTo) {
+        this.client = client;
+        this.alias = alias;
         this.dateFrom = dateFrom;
         this.dateTo = dateTo;
     }
 
     @Override
     public void run() {
-        String[] indices = originalName(context.getIndex());
         try {
+            String[] indices = originalName(alias);
+            if (client.admin().indices().prepareTypesExists("$system").setTypes("$reindex").execute().actionGet().isExists()) {
+                SearchResponse $reindex = client.prepareSearch("$system").setTypes("$reindex").addSort(Constant.FieldName.CREATEDON, SortOrder.DESC).execute().actionGet();
+                SearchHit[] hits = $reindex.getHits().getHits();
+                if(hits.length > 0){
+                    SearchHit last = hits[0];
+                    long finished = Long.valueOf(last.getSource().get("finished").toString());
+                    long total = Long.valueOf(last.getSource().get("total").toString());
+                    if(finished < total){
+                        logger.error("Current reindex operation canceled, because there exist a reindex job");
+                        //TODO
+                        throw new RuntimeException("Current reindex operation canceled, because there exist a reindex job");
+                    }
+                }
+            }
             for(String index : indices){
                 copyMappings(index);
                 copyIndex(index, dateFrom, dateTo);
             }
-            alias(indices, context.getIndex());
+//            alias(indices, alias);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+           logger.error(e.getMessage());
         } catch (ExecutionException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
     }
 
 
     private String[] originalName(String alias){
-        Client client = context.getClient();
         if(!client.admin().indices().prepareExists(alias).execute().actionGet().isExists()){
+            logger.error("The index: " + alias + " which to be reIndexed is not exist");
             throw new RuntimeException("The index: " + alias + " which to be reIndexed is not exist");
         }
         GetIndexRequest getIndexRequest = new GetIndexRequest();
@@ -79,7 +97,11 @@ public class ReIndexService implements Runnable{
     }
 
     private void copyMappings(String index) throws ExecutionException, InterruptedException, IOException {
-        Client client = context.getClient();
+        String newIndex = name(index);
+        IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(newIndex).execute().actionGet();
+        if (indicesExistsResponse.isExists()) {
+            return;
+        }
         GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings(index).get();
         Iterator<ObjectObjectCursor<String, ImmutableOpenMap<String, MappingMetaData>>> iterator = getMappingsResponse.mappings().iterator();
         XContentBuilder xContentBuilder = XContentFactory.jsonBuilder();
@@ -93,7 +115,7 @@ public class ReIndexService implements Runnable{
             }
         }
         xContentBuilder.endObject().endObject();
-        CreateIndexRequest createIndexRequest = new CreateIndexRequest(name(index));
+        CreateIndexRequest createIndexRequest = new CreateIndexRequest(newIndex);
         createIndexRequest.source(xContentBuilder);
         client.admin().indices().create(createIndexRequest).actionGet();
     }
@@ -110,7 +132,7 @@ public class ReIndexService implements Runnable{
     }
 
     private void copyIndex(String index, Date from, Date to){
-        BulkProcessor bulkProcessor = initBulkProcessor();
+        BulkProcessor bulkProcessor = null;
         try {
             RangeFilterBuilder filterBuilder = null;
             if (from != null) {
@@ -123,13 +145,15 @@ public class ReIndexService implements Runnable{
                     filterBuilder.to(to);
                 }
             }
-            SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(index).setSearchType(SearchType.SCAN).setScroll("1m");
+            SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index).setSearchType(SearchType.SCAN).setScroll("1m");
             if (filterBuilder != null) {
                 searchRequestBuilder.setPostFilter(filterBuilder);
             }
             SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+            bulkProcessor = initBulkProcessor(index, sdf.format(new Date()), searchResponse.getHits().getTotalHits());
             do{
-                searchResponse = context.getClient().prepareSearchScroll(searchResponse.getScrollId()).setScroll("1m").execute().actionGet();
+                searchResponse = client.prepareSearchScroll(searchResponse.getScrollId()).setScroll("1m").execute().actionGet();
                 for(SearchHit hit : searchResponse.getHits().getHits()){
                     String type = hit.getType();
                     Map<String, Object> source = hit.getSource();
@@ -142,15 +166,31 @@ public class ReIndexService implements Runnable{
         }
     }
 
-    private BulkProcessor initBulkProcessor(){
-        return BulkProcessor.builder(context.getClient(), new BulkProcessor.Listener() {
+    private BulkProcessor initBulkProcessor(final String index, final String operationId, final long total){
+        return BulkProcessor.builder(client, new BulkProcessor.Listener() {
             public void beforeBulk(long executionId, BulkRequest request) {
-                logger.info(String.format("executionId: %s, 本次提交请求个数：%s", executionId, request.numberOfActions()));
+                logger.info(String.format("executionId:%s, numberOfActions:%s", executionId, request.numberOfActions()));
             }
 
             public void afterBulk(long executionId, BulkRequest bulkRequest, BulkResponse response) {
             //TODO 进度记录
-
+                try {
+                    String newIndex = name(index);
+                    XContentBuilder xContentBuilder = XContentFactory.jsonBuilder()
+                            .startObject()
+                            .field("operationId", operationId)
+                            .field("srcIndex", index)
+                            .field("targetIndex", newIndex)
+                            .field("finished", bulkRequest.numberOfActions() + finished)
+                            .field("total", total)
+                            .field(Constant.FieldName.CREATEDON, new DateTime().toLocalDateTime())
+                            .endObject();
+                    client.prepareIndex("$system", "$reindex").setSource(xContentBuilder).execute().actionGet();
+                    finished += bulkRequest.numberOfActions();
+                    logger.info(xContentBuilder.string());
+                } catch (IOException e) {
+                   logger.error(e.getMessage());
+                }
             }
 
             public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
@@ -161,7 +201,7 @@ public class ReIndexService implements Runnable{
 
 
     private void alias(String[] indices, String alias){
-        context.getClient().admin().indices().prepareAliases().removeAlias(indices, alias).execute().actionGet();
+        client.admin().indices().prepareAliases().removeAlias(indices, alias).execute().actionGet();
         List<String> newIndices = new ArrayList<String>();
         for(String s : indices){
             newIndices.add(name(s));
@@ -169,7 +209,7 @@ public class ReIndexService implements Runnable{
         IndicesAliasesRequest indicesAliasesRequest = new IndicesAliasesRequest();
         indicesAliasesRequest.removeAlias(indices, alias);
         indicesAliasesRequest.addAlias(alias, newIndices.toArray(new String[]{}));
-        context.getClient().admin().indices().aliases(indicesAliasesRequest, new ActionListener<IndicesAliasesResponse>(){
+        client.admin().indices().aliases(indicesAliasesRequest, new ActionListener<IndicesAliasesResponse>(){
             public void onResponse(IndicesAliasesResponse indicesAliasesResponse) {
                 //TODO 删除原索引
                 //client.admin().indices().prepareDelete(request.param("index")).execute();

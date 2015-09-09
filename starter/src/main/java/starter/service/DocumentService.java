@@ -57,7 +57,7 @@ public class DocumentService {
     @Autowired
     private UserService userService;
 
-    Logger logger = LoggerFactory.getLogger(DocumentService.class);
+    private Logger logger = LoggerFactory.getLogger(DocumentService.class);
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
