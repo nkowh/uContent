@@ -12,7 +12,13 @@ Ext.define('starter.view.system.LogController', {
         }).show();
     },
     searchLog : function(){
-
+        var store = this.getViewModel().getStore('logs');
+        var query = this.getView().down('toolbar').down('textfield[name=query]').getValue();
+        store.load({
+            params: {
+                query: query
+            }
+        });
     },
     loadData : function(){
         var me = this;

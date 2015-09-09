@@ -61,10 +61,22 @@ Ext.define('starter.view.main.system.type.ModifyProperty', {
         dataIndex: 'required',
         width: 80
     }, {
-        xtype: 'checkcolumn',
         header: 'Index',
-        dataIndex: 'isFullIndex',
-        width: 80
+        dataIndex: 'index',
+        width: 120,
+        editor: {
+            allowBlank: false,
+            xtype: 'combo',
+            displayField: 'name',
+            valueField: 'value',
+            store: Ext.create("Ext.data.Store", {
+                fields: ["name", "value"],
+                data: [
+                    { name: "analyzed", value: "analyzed" },
+                    { name: "not_analyzed", value: "not_analyzed" }
+                ]
+            })
+        }
     },  {
         header: 'Order',
         dataIndex: 'order',
