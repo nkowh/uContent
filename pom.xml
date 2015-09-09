@@ -12,6 +12,8 @@
         <module>uc8</module>
         <module>odata</module>
         <module>starter</module>
+        <module>agent</module>
+        <module>box</module>
     </modules>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -21,7 +23,7 @@
         <Olingo.version>4.0.0-beta-03</Olingo.version>
         <slf4j.version>1.7.7</slf4j.version>
         <spring-boot.version>1.2.5.RELEASE</spring-boot.version>
-        <es.version>1.5.2</es.version>
+        <es.version>1.7.1</es.version>
     </properties>
 
     <dependencyManagement>
