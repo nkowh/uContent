@@ -11,6 +11,8 @@ import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.search.sort.SortBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -24,11 +26,19 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Aspect
 @Component
 public class LogAspect {
+    Logger logger = LoggerFactory.getLogger(LogAspect.class);
+    
     private ThreadLocal<Map<String, Object>> threadLocal = new ThreadLocal();
 
     public Map<String, Object> getThreadLocal() {
@@ -308,7 +318,7 @@ public class LogAspect {
             logService.createLog(builder);
 
         } catch (IOException e) {
-            //系统内部是否要记录异常log？
+            logger.error(String.format("logService.createLog failed: %s", e));
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
