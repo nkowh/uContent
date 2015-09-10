@@ -14,7 +14,6 @@ Ext.define('starter.view.login.LoginController', {
             headers: {Authorization: digest},
             url: '/svc/users/' + userId + '/groups',
             success: function (response, options) {
-                debugger;
                 var result = Ext.JSON.decode(response.responseText);
                 var groups = Ext.Array.map(result.groups, function (g) {
                     return g._id;
