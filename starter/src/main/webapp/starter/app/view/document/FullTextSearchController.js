@@ -6,10 +6,11 @@ Ext.define('starter.view.document.FullTextSearchController', {
     search: function () {
         var me = this;
         var keytext = me.getView().down('textfield[name=keytext]').getValue();
+        var pageSize = me.getViewModel().get('pageSize');
         Ext.Ajax.request({
             url: '/svc',
             method: 'GET',
-            params: {query: Ext.JSON.encode({match: {"_fullText": keytext}}), highlight: "_fullText"},
+            params: {limit: pageSize, query: Ext.JSON.encode({match: {"_fullText": keytext}}), highlight: "_fullText"},
             callback: function (options, success, response) {
                 var result = Ext.JSON.decode(response.responseText);
                 console.log(result);

@@ -6,21 +6,8 @@ Ext.define('starter.view.document.FullTextSearchModel', {
 
     data: {
         title: '全文搜索',
-        size: 5
+        pageSize: 25
 
-    },
-    formulas: {
-        //pageSize: {
-        //    get: function (get) {
-        //        return get('size');
-        //    },
-        //
-        //    set: function (size) {
-        //        this.set('size', size);
-        //        this.getStore('documents').setPageSize(size);
-        //        this.getStore('documents').load();
-        //    }
-        //}
     },
     stores: {
         fulltext: {

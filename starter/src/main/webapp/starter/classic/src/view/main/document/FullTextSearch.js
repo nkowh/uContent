@@ -16,18 +16,15 @@ Ext.define('starter.view.main.document.FullTextSearch', {
         }, {
             text: '搜索',
             handler: 'search'
+        }, {
+            xtype: 'slider',
+            minValue: 1,
+            width: 300,
+            bind: {
+                fieldLabel: '显示数量' + '{pageSize}',
+                value: '{pageSize}'
+            }
         }
-    ],
-    bbar: [
-        //{
-        //    xtype: 'slider',
-        //    minValue: 1,
-        //    width: 300,
-        //    bind: {
-        //        fieldLabel: '显示数量' + '{pageSize}',
-        //        value: '{pageSize}'
-        //    }
-        //}
     ],
 
     initComponent: function () {
@@ -54,7 +51,14 @@ Ext.define('starter.view.main.document.FullTextSearch', {
                 {text: 'Score', dataIndex: 'score', xtype: 'numbercolumn', flex: 1, sortable: false},
                 {text: 'Name', dataIndex: 'name', flex: 1, sortable: false},
                 {text: 'CreateBy', dataIndex: 'createdBy', flex: 1, sortable: false},
-                {text: 'CreatedOn', xtype: 'datecolumn', format: 'Y-m-d H:i:s', dataIndex: 'createdOn', flex: 1, sortable: false},
+                {
+                    text: 'CreatedOn',
+                    xtype: 'datecolumn',
+                    format: 'Y-m-d H:i:s',
+                    dataIndex: 'createdOn',
+                    flex: 1,
+                    sortable: false
+                },
                 {text: 'LastUpdatedBy', dataIndex: 'lastUpdatedBy', flex: 1, sortable: false},
                 {
                     text: 'LastUpdatedOn',
