@@ -149,7 +149,9 @@ public class TypeService {
                         .startObject(Constant.FieldName.STREAMNAME).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
                         .startObject(Constant.FieldName.LENGTH).field(Constant.FieldName.TYPE, "long").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
                         .startObject(Constant.FieldName.CONTENTTYPE).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.FULLTEXT).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.FULLTEXT).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.ANALYZED).
+                                    field(Constant.FieldName.INDEXANALYZER, Constant.DEFAULT_INDEXANALYZER).
+                                    field(Constant.FieldName.SEARCHANALYZER, Constant.DEFAULT_SEARCHANALYZER).field("store", "yes").endObject()
                         .endObject()
                         .endObject();
 
