@@ -94,6 +94,9 @@ public class Constant {
         public static final String ANALYZED = "analyzed";
         public static final String NOT_ANALYZED = "not_analyzed";
 
+        public static final String INDEXANALYZER = "indexAnalyzer";
+        public static final String SEARCHANALYZER = "searchAnalyzer";
+
         public static final String _ID = "_id";
 
         //fields of user

@@ -15,6 +15,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import starter.RequestContext;
 import starter.rest.Json;
 import starter.uContentException;
@@ -122,6 +123,8 @@ public class TypeService {
                         builder.startObject().field(Constant.FieldName.NAME, pro.get(Constant.FieldName.NAME).toString())
                                 .field(Constant.FieldName.TYPE, pro.get(Constant.FieldName.TYPE).toString())
                                 .field(Constant.FieldName.INDEX, pro.get(Constant.FieldName.INDEX).toString())
+                                .field(Constant.FieldName.INDEXANALYZER, pro.get(Constant.FieldName.INDEXANALYZER).toString())
+                                .field(Constant.FieldName.SEARCHANALYZER, pro.get(Constant.FieldName.SEARCHANALYZER).toString())
                                 .field(Constant.FieldName.REQUIRED, Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()))
                                 .field(Constant.FieldName.DEFAULTVALUE, pro.get(Constant.FieldName.DEFAULTVALUE).toString())
                                 .field(Constant.FieldName.PATTERN, pro.get(Constant.FieldName.PATTERN).toString())
@@ -137,37 +140,34 @@ public class TypeService {
 
                 //组装properties
                 builder.startObject(Constant.FieldName.PROPERTIES)
-                        .startObject(Constant.FieldName.NAME).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.DESCRIPTION).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject();
+                        .startObject(Constant.FieldName.NAME).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.DESCRIPTION).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject();
 
                 //组装stream属性
                 builder.startObject(Constant.FieldName.STREAMS).startObject(Constant.FieldName.PROPERTIES)
-                        .startObject(Constant.FieldName.STREAMID).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.STREAMNAME).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.LENGTH).field(Constant.FieldName.TYPE, "long").field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.CONTENTTYPE).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.FULLTEXT).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.STREAMID).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.STREAMNAME).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.LENGTH).field(Constant.FieldName.TYPE, "long").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.CONTENTTYPE).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.FULLTEXT).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
                         .endObject()
                         .endObject();
 
                 //组装_acl属性
                 builder.startObject("_acl").field(Constant.FieldName.TYPE, "nested")
                         .startObject(Constant.FieldName.PROPERTIES)
-                        .startObject(Constant.FieldName.PERMISSION).field(Constant.FieldName.TYPE, "string").
-                            field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.USER).field(Constant.FieldName.TYPE, "string").
-                            field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.GROUP).field(Constant.FieldName.TYPE, "string").
-                            field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.PERMISSION).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.USER).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.GROUP).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
                         .endObject()
                         .endObject();
 
 
                 //组装创建信息属性
-                builder.startObject(Constant.FieldName.CREATEDBY).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.CREATEDON).field(Constant.FieldName.TYPE, "date").field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.LASTUPDATEDBY).field(Constant.FieldName.TYPE, "string").field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.LASTUPDATEDON).field(Constant.FieldName.TYPE, "date").field("store", "yes").endObject();
+                builder.startObject(Constant.FieldName.CREATEDBY).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.CREATEDON).field(Constant.FieldName.TYPE, "date").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.LASTUPDATEDBY).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.LASTUPDATEDON).field(Constant.FieldName.TYPE, "date").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject();
 
                 //组装自定义属性
                 for(Object property:properties){
@@ -178,6 +178,23 @@ public class TypeService {
                         //非bool类型的字段才做是否分词控制
                         if(!pro.get(Constant.FieldName.TYPE).toString().toUpperCase().equals("BOOLEAN")){
                             builder.field(Constant.FieldName.INDEX, pro.get(Constant.FieldName.INDEX).toString());
+                            if ((!StringUtils.isEmpty(pro.get(Constant.FieldName.INDEX)))&&(pro.get(Constant.FieldName.INDEX).equals(Constant.FieldName.ANALYZED))){
+                                Object indexAnalyzer = pro.get(Constant.FieldName.INDEXANALYZER);
+                                Object searchAnalyzer = pro.get(Constant.FieldName.SEARCHANALYZER);
+                                if (StringUtils.isEmpty(indexAnalyzer) && StringUtils.isEmpty(searchAnalyzer)){
+
+                                }else if ((!StringUtils.isEmpty(indexAnalyzer)) && StringUtils.isEmpty(searchAnalyzer)){
+                                    builder.field(Constant.FieldName.INDEXANALYZER, pro.get(Constant.FieldName.INDEXANALYZER).toString())
+                                            .field(Constant.FieldName.SEARCHANALYZER, pro.get(Constant.FieldName.INDEXANALYZER).toString());
+                                }else if (StringUtils.isEmpty(indexAnalyzer) && (!StringUtils.isEmpty(searchAnalyzer))){
+                                    builder.field(Constant.FieldName.INDEXANALYZER, pro.get(Constant.FieldName.SEARCHANALYZER).toString())
+                                            .field(Constant.FieldName.SEARCHANALYZER, pro.get(Constant.FieldName.SEARCHANALYZER).toString());
+                                }else if ((!StringUtils.isEmpty(indexAnalyzer)) && (!StringUtils.isEmpty(searchAnalyzer))){
+                                    builder.field(Constant.FieldName.INDEXANALYZER, pro.get(Constant.FieldName.INDEXANALYZER).toString())
+                                            .field(Constant.FieldName.SEARCHANALYZER, pro.get(Constant.FieldName.SEARCHANALYZER).toString());
+                                }
+                            }
+
                         }
                         builder.field("store", "yes");
                         builder.endObject();
@@ -238,6 +255,8 @@ public class TypeService {
                         builder.startObject().field(Constant.FieldName.NAME, pro.get(Constant.FieldName.NAME).toString())
                                 .field(Constant.FieldName.TYPE, pro.get(Constant.FieldName.TYPE).toString())
                                 .field(Constant.FieldName.INDEX, pro.get(Constant.FieldName.INDEX).toString())
+                                .field(Constant.FieldName.INDEXANALYZER, pro.get(Constant.FieldName.INDEXANALYZER).toString())
+                                .field(Constant.FieldName.SEARCHANALYZER, pro.get(Constant.FieldName.SEARCHANALYZER).toString())
                                 .field(Constant.FieldName.REQUIRED, Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()))
                                 .field(Constant.FieldName.DEFAULTVALUE, pro.get(Constant.FieldName.DEFAULTVALUE).toString())
                                 .field(Constant.FieldName.PATTERN, pro.get(Constant.FieldName.PATTERN).toString())
@@ -266,12 +285,12 @@ public class TypeService {
         }
 
         //填装基本属性
-        pros.put(Constant.FieldName.NAME,makeProperty(Constant.FieldName.NAME, "string", Constant.FieldName.NOT_ANALYZED,true, "", "", "", ""));
-        pros.put(Constant.FieldName.DESCRIPTION,makeProperty(Constant.FieldName.DESCRIPTION, "string", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
-        pros.put(Constant.FieldName.CREATEDBY,makeProperty(Constant.FieldName.CREATEDBY, "string", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
-        pros.put(Constant.FieldName.CREATEDON,makeProperty(Constant.FieldName.CREATEDON, "date", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
-        pros.put(Constant.FieldName.LASTUPDATEDBY,makeProperty(Constant.FieldName.LASTUPDATEDBY, "string", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
-        pros.put(Constant.FieldName.LASTUPDATEDON,makeProperty(Constant.FieldName.LASTUPDATEDON, "date", Constant.FieldName.NOT_ANALYZED, false, "", "", "", ""));
+        pros.put(Constant.FieldName.NAME,makeProperty(Constant.FieldName.NAME, "string", Constant.FieldName.NOT_ANALYZED, "", "", true, "", "", "", ""));
+        pros.put(Constant.FieldName.DESCRIPTION,makeProperty(Constant.FieldName.DESCRIPTION, "string", Constant.FieldName.NOT_ANALYZED, "", "", false, "", "", "", ""));
+        pros.put(Constant.FieldName.CREATEDBY,makeProperty(Constant.FieldName.CREATEDBY, "string", Constant.FieldName.NOT_ANALYZED, "", "", false, "", "", "", ""));
+        pros.put(Constant.FieldName.CREATEDON,makeProperty(Constant.FieldName.CREATEDON, "date", Constant.FieldName.NOT_ANALYZED, "", "", false, "", "", "", ""));
+        pros.put(Constant.FieldName.LASTUPDATEDBY,makeProperty(Constant.FieldName.LASTUPDATEDBY, "string", Constant.FieldName.NOT_ANALYZED, "", "", false, "", "", "", ""));
+        pros.put(Constant.FieldName.LASTUPDATEDON,makeProperty(Constant.FieldName.LASTUPDATEDON, "date", Constant.FieldName.NOT_ANALYZED, "", "", false, "", "", "", ""));
 
         MappingMetaData mappingMetaData = mappings.get(context.getIndex()).get(id);
         if (mappingMetaData!=null){
@@ -292,6 +311,8 @@ public class TypeService {
                                 pro.get(Constant.FieldName.NAME).toString(),
                                 pro.get(Constant.FieldName.TYPE).toString(),
                                 pro.get(Constant.FieldName.INDEX).toString(),
+                                pro.get(Constant.FieldName.INDEXANALYZER).toString(),
+                                pro.get(Constant.FieldName.SEARCHANALYZER).toString(),
                                 Boolean.valueOf(pro.get(Constant.FieldName.REQUIRED).toString()),
                                 pro.get(Constant.FieldName.DEFAULTVALUE).toString(),
                                 pro.get(Constant.FieldName.PATTERN).toString(),
@@ -326,13 +347,16 @@ public class TypeService {
     }
 
     private Map<String, Object> makeProperty(String name, String type,
-                                                String index, boolean required,
+                                                String index, String indexAnalyzer, String searchAnalyzer,
+                                                boolean required,
                                                 String defaultValue, String pattern,
                                                 String promptMessage, String order){
         Map<String, Object> property = new HashMap<String, Object>();
         property.put(Constant.FieldName.NAME, name);
         property.put(Constant.FieldName.TYPE, type);
         property.put(Constant.FieldName.INDEX, index);
+        property.put(Constant.FieldName.INDEXANALYZER, indexAnalyzer);
+        property.put(Constant.FieldName.SEARCHANALYZER, searchAnalyzer);
         property.put(Constant.FieldName.REQUIRED, required);
         property.put(Constant.FieldName.DEFAULTVALUE, defaultValue);
         property.put(Constant.FieldName.PATTERN, pattern);

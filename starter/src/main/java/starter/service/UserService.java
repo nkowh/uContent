@@ -286,7 +286,7 @@ public class UserService {
         if (!StringUtils.isEmpty(userId)){
             Client client = context.getClient();
             if (action.equals("create")){
-                QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERID, userId);
+                QueryBuilder queryBuilder = QueryBuilders.termQuery(Constant.FieldName.USERID, userId);
                 SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(queryBuilder).execute().actionGet();
                 if (searchResponse.getHits().totalHits()>0){
                     throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
