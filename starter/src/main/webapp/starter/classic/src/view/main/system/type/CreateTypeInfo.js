@@ -4,7 +4,7 @@ Ext.define('starter.view.main.system.user.CreateTypeInfo', {
     controller: 'type',
     viewModel: 'type',
     bodyPadding: 5,
-    layout: 'anchor',
+
     items: [{
         xtype: 'fieldset',
         title: 'Type Info',

@@ -102,8 +102,5 @@ Ext.define('starter.view.main.system.type.ModifyProperty', {
             { xtype: 'button', text: 'Add', handler: 'addModifyProperty' },
             { xtype: 'button', text: 'Delete',handler: 'deleteModifyProperty'}
         ]
-    }],
-    listeners:{
-        "rowdblclick" : 'modifyProperty'
-    }
+    }]
 });
