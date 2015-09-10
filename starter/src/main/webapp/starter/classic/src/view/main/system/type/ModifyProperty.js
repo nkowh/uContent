@@ -79,7 +79,7 @@ Ext.define('starter.view.main.system.type.ModifyProperty', {
                 ]
             })
         }
-    },,{
+    },{
         header: 'IndexAnalyzer',
         dataIndex: 'indexAnalyzer',
         width: 100,
