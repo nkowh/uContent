@@ -21,12 +21,11 @@ Ext.form.action.Submit.override({
 
 
 Ext.application({
-    name: 'starter',
     extend: 'starter.Application',
 
-    requires: [
-        'starter.view.main.Main',
-        'starter.view.login.LoginFrame'
+    views: [
+        'starter.view.login.LoginFrame',
+        'starter.view.main.Main'
     ],
 
     launch: function () {

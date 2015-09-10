@@ -30,14 +30,14 @@ Ext.define('starter.view.system.TypeController', {
                 }
                 if(response.responseText!=''){
                     var properties = Ext.decode(response.responseText);
-                    Ext.Array.each(properties.properties, function(property, index, countriesItSelf) {
-                        if(property.index=='analyzed'){
-                            property.isFullIndex = true;
-                        }
-                        if(property.index=='not_analyzed'){
-                            property.isFullIndex = false;
-                        }
-                    });
+                    //Ext.Array.each(properties.properties, function(property, index, countriesItSelf) {
+                    //    if(property.index=='analyzed'){
+                    //        property.isFullIndex = true;
+                    //    }
+                    //    if(property.index=='not_analyzed'){
+                    //        property.isFullIndex = false;
+                    //    }
+                    //});
                     me.getView().down('grid').bindStore(
                         Ext.create('Ext.data.Store', {
                             model: 'starter.model.Property',

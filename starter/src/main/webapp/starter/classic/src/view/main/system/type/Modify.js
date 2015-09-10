@@ -5,10 +5,6 @@ Ext.define('starter.view.main.system.type.Modify', {
     viewModel: 'type',
     title:'修改类型',
     width: 1100,
-    header: {
-        titlePosition: 2,
-        titleAlign: 'center'
-    },
     height: 600,
     layout: {
         type: 'border',

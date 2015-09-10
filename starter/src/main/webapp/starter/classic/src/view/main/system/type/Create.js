@@ -5,10 +5,6 @@ Ext.define('starter.view.main.system.type.Create', {
     viewModel: 'type',
     title:'新建类型',
     width: 1100,
-    header: {
-        titlePosition: 2,
-        titleAlign: 'center'
-    },
     height: 600,
     layout: {
         type: 'border',
