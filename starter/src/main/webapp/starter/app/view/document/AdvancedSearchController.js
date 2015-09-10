@@ -198,18 +198,18 @@ Ext.define('starter.view.document.AdvancedSearchController', {
                 if (operator == 'term') {
                     var pValue = condition.child('textfield[name="value"]').getValue();
                     queryItem.term = {};
-                    queryItem.term[property] = pValue;
+                    queryItem.term[property] = encodeURIComponent(pValue);
                 }
                 if (operator == 'wildcard') {
                     var pValue = condition.child('textfield[name="value"]').getValue();
                     queryItem.wildcard = {};
-                    queryItem.wildcard[property] = pValue;
+                    queryItem.wildcard[property] = encodeURIComponent(pValue);
                 }
                 if (operator == 'fuzzy') {
                     queryItem.fuzzy = {};
                     var pValue = condition.child('textfield[name="value"]').getValue();
                     if (pValue && pValue != '') {
-                        queryItem.fuzzy[property] = {'value': pValue};
+                        queryItem.fuzzy[property] = {'value': encodeURIComponent(pValue)};
                         var fkey = condition.child('combobox[name="setting"]').getValue();
                         var fvalue = condition.child('textfield[name="sValue"]').getValue();
                         if (fvalue && fvalue != '' && fvalue && fvalue != '') {

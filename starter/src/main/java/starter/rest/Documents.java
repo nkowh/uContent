@@ -30,6 +30,7 @@ public class Documents {
                         @RequestParam(defaultValue = "[]")SortBuilder[] sort,
                         @RequestParam(defaultValue = "false") boolean allowableActions) {
         try {
+            query = java.net.URLDecoder.decode(query,"UTF-8");
             String[] types = {type};
             XContentBuilder xContentBuilder = documentService.query(types, query, start, limit, sort, highlight, allowableActions);
             return xContentBuilder.string();
