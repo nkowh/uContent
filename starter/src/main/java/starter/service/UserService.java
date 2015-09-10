@@ -181,7 +181,7 @@ public class UserService {
         //同步everyone组数据
         if (deleteResponse.isFound()){
             //由于执行的同步问题会导致加不进去，暂时取消
-            synchronizeEveryoneGroup();
+            //synchronizeEveryoneGroup();
         }
         return builder;
     }
