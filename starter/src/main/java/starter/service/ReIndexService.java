@@ -5,7 +5,6 @@ import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
-import org.elasticsearch.action.admin.indices.exists.types.TypesExistsRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
@@ -56,21 +55,8 @@ public class ReIndexService implements Runnable{
     @Override
     public void run() {
         try {
+            check();
             String[] indices = originalName(alias);
-            if (client.admin().indices().prepareTypesExists("$system").setTypes("$reindex").execute().actionGet().isExists()) {
-                SearchResponse $reindex = client.prepareSearch("$system").setTypes("$reindex").addSort(Constant.FieldName.CREATEDON, SortOrder.DESC).execute().actionGet();
-                SearchHit[] hits = $reindex.getHits().getHits();
-                if(hits.length > 0){
-                    SearchHit last = hits[0];
-                    long finished = Long.valueOf(last.getSource().get("finished").toString());
-                    long total = Long.valueOf(last.getSource().get("total").toString());
-                    if(finished < total){
-                        logger.error("Current reindex operation canceled, because there exist a reindex job");
-                        //TODO
-                        throw new RuntimeException("Current reindex operation canceled, because there exist a reindex job");
-                    }
-                }
-            }
             for(String index : indices){
                 copyMappings(index);
                 copyIndex(index, dateFrom, dateTo);
@@ -82,6 +68,23 @@ public class ReIndexService implements Runnable{
             logger.error(e.getMessage());
         } catch (IOException e) {
             logger.error(e.getMessage());
+        }
+    }
+
+    private void check() {
+        if (client.admin().indices().prepareTypesExists("$system").setTypes("$reindex").execute().actionGet().isExists()) {
+            SearchResponse $reindex = client.prepareSearch("$system").setTypes("$reindex").addSort(Constant.FieldName.CREATEDON, SortOrder.DESC).execute().actionGet();
+            SearchHit[] hits = $reindex.getHits().getHits();
+            if(hits.length > 0){
+                SearchHit last = hits[0];
+                long finished = Long.valueOf(last.getSource().get("finished").toString());
+                long total = Long.valueOf(last.getSource().get("total").toString());
+                if(finished < total){
+                    logger.error("Current reindex operation canceled, because there exist a reindex job");
+                    //TODO
+                    throw new RuntimeException("Current reindex operation canceled, because there exist a reindex job");
+                }
+            }
         }
     }
 
