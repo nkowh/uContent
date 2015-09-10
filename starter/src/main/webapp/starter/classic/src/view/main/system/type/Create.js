@@ -4,7 +4,7 @@ Ext.define('starter.view.main.system.type.Create', {
     controller: 'type',
     viewModel: 'type',
     title:'新建类型',
-    width: 1100,
+    width: 1300,
     height: 600,
     layout: {
         type: 'border',

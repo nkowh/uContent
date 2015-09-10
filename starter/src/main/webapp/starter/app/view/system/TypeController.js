@@ -76,6 +76,8 @@ Ext.define('starter.view.system.TypeController', {
             promptMessage: '',
             index : 'not_analyzed',
             defaultValue: '',
+            indexAnalyzer:'',
+            searchAnalyzer:'',
             required: false,
             order :order
         });
@@ -110,7 +112,7 @@ Ext.define('starter.view.system.TypeController', {
         var defaultValue = e.record.get('defaultValue');
         var pattern = e.record.get('pattern');
         var promptMessage = e.record.get('promptMessage');
-        if(e.field=='name'||e.field=='type'||e.field=='index'){
+        if(e.field=='name'||e.field=='type'||e.field=='index'||e.field=='indexAnalyzer'||e.field=='searchAnalyzer'){
             if(e.grid.store.initData){
                 if(Ext.Array.contains(e.grid.store.initData, e.record.data)){
                     e.cancel = true;
@@ -171,6 +173,8 @@ Ext.define('starter.view.system.TypeController', {
                 promptMessage: '',
                 defaultValue: '',
                 index : 'not_analyzed',
+                indexAnalyzer:'',
+                searchAnalyzer:'',
                 required: false,
                 order :order
             });
@@ -197,6 +201,10 @@ Ext.define('starter.view.system.TypeController', {
                 var pRecord = gstore.getAt(i);
                 if(pRecord.get('type')=='boolean'){
                     pRecord.set('index','not_analyzed');
+                }
+                if(pRecord.get('index')=='not_analyzed'){
+                    pRecord.set('indexAnalyzer','');
+                    pRecord.set('searchAnalyzer','');
                 }
                 properties.push(pRecord.getData());
             }
