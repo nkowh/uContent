@@ -73,7 +73,9 @@ Ext.define('starter.view.main.system.type.ModifyProperty', {
                 fields: ["name", "value"],
                 data: [
                     { name: "analyzed", value: "analyzed" },
-                    { name: "not_analyzed", value: "not_analyzed" }
+                    { name: "not_analyzed", value: "not_analyzed" },
+                    { name: "indexAnalyzer", value: "ansj_index" },
+                    { name: "searchAnalyzer", value: "ansj_query" }
                 ]
             })
         }

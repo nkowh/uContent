@@ -74,7 +74,7 @@ Ext.define('starter.view.system.TypeController', {
             type: 'string',
             pattern: '',
             promptMessage: '',
-            index : 'analyzed',
+            index : 'not_analyzed',
             defaultValue: '',
             required: false,
             order :order
@@ -170,7 +170,7 @@ Ext.define('starter.view.system.TypeController', {
                 pattern: '',
                 promptMessage: '',
                 defaultValue: '',
-                index : 'analyzed',
+                index : 'not_analyzed',
                 required: false,
                 order :order
             });
