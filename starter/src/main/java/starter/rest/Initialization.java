@@ -7,6 +7,9 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.FilterClient;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.index.query.SimpleQueryParser;
 import org.elasticsearch.indices.IndicesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -71,14 +74,17 @@ public class Initialization {
         return true;
     }
 
-    @RequestMapping(value = "initial", method = RequestMethod.POST)
-    public void systemDataInitialize() {
+    @RequestMapping(value = "initial", method = RequestMethod.GET)
+    public void systemDataInitialize(@RequestParam(defaultValue = "5") int shards,
+                                     @RequestParam(defaultValue = "1") int replicas) {
         try {
             Client client = context.getClient();
             //check and create indices
             IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(context.getIndex()).execute().actionGet();
             if (!indicesExistsResponse.isExists()){
-                client.admin().indices().prepareCreate(context.getIndex()).execute().actionGet();
+                //添加分片和副本设置，默认五个主分片，一个副本
+                Settings settings = ImmutableSettings.settingsBuilder().put("number_of_shards", shards).put("number_of_replicas", replicas).build();
+                client.admin().indices().prepareCreate(context.getIndex()).setSettings(settings).execute().actionGet();
             }
 
             //check again
