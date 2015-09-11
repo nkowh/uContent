@@ -244,16 +244,6 @@ public class Systems {
         return groupService.checkUserInAdminGroup();
     }
 
-    @RequestMapping(value = "system", method = RequestMethod.POST)
-    public void systemDataInitial() {
-        try {
-            userService.initialUserData();
-            groupService.initialGroupData();
-        } catch (Exception e) {
-            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
     @RequestMapping(value = "_reIndex", method = RequestMethod.POST)
     public void reindex(@RequestParam(defaultValue = "")String from,
                         @RequestParam(defaultValue = "")String to) {
