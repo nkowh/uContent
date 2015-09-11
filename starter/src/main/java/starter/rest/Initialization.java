@@ -70,7 +70,7 @@ public class Initialization {
         return true;
     }
 
-    @RequestMapping(value = "initial", method = RequestMethod.GET)
+    @RequestMapping(value = "initial", method = RequestMethod.POST)
     public void systemDataInitialize(@RequestParam(defaultValue = "5") int shards,
                                      @RequestParam(defaultValue = "1") int replicas) {
         try {

@@ -264,7 +264,7 @@ Ext.define('starter.view.system.TypeController', {
             type.properties = properties;
             //type.set('properties',properties);
             Ext.Ajax.request({
-                method: 'PATCH',
+                method: 'PUT',
                 headers : {'Content-Type':'application/json;charset=utf-8'},
                 url: '/svc/types/' + type.name,
                 params : Ext.JSON.encode(type),
