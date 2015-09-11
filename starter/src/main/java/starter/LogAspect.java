@@ -38,7 +38,7 @@ import java.util.Map;
 @Component
 public class LogAspect {
     Logger logger = LoggerFactory.getLogger(LogAspect.class);
-    
+
     private ThreadLocal<Map<String, Object>> threadLocal = new ThreadLocal();
 
     public Map<String, Object> getThreadLocal() {
@@ -75,6 +75,7 @@ public class LogAspect {
 
     private final String EXECUTION = "execution(public * starter.rest.*.*(..)) " +
             "&& !execution(public * starter.rest.ErrorHandler.*(..)) " + //ErrorHandler里处理异常，不记录日志
+            "&& !execution(public * starter.rest.Initialization.*(..))" + //系统数据初始化，不记录日志
             "&& !execution(public * starter.rest.Logs.*(..))"; //Logs里查询日志方法，不记录日志
 
     private final String SIMPLE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
