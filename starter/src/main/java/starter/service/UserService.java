@@ -70,7 +70,6 @@ public class UserService {
         }
         builder.endArray();
         builder.endObject();
-        System.out.println(builder.string());
         return builder;
     }
 
