@@ -1,5 +1,6 @@
 package starter.rest;
 
+import org.elasticsearch.action.admin.indices.alias.Alias;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.client.Client;
@@ -16,6 +17,9 @@ import starter.service.Constant;
 import starter.service.GroupService;
 import starter.service.UserService;
 import starter.uContentException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value="initialization/",produces = MediaType.APPLICATION_JSON_VALUE)
@@ -34,8 +38,10 @@ public class Initialization {
     public boolean checkInitialized() {
         Client client = context.getClient();
 
+        String indices = context.getIndex() + Constant.INDICES_SUFFIX;
+
         //check indices
-        IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(context.getIndex()).execute().actionGet();
+        IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(indices).execute().actionGet();
         if (!indicesExistsResponse.isExists()){
             return false;
         }
@@ -76,11 +82,16 @@ public class Initialization {
         try {
             Client client = context.getClient();
             //check and create indices
-            IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(context.getIndex()).execute().actionGet();
+
+            String indices = context.getIndex() + Constant.INDICES_SUFFIX;
+
+            IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(indices).execute().actionGet();
             if (!indicesExistsResponse.isExists()){
                 //添加分片和副本设置，默认五个主分片，一个副本
                 Settings settings = ImmutableSettings.settingsBuilder().put("number_of_shards", shards).put("number_of_replicas", replicas).build();
-                client.admin().indices().prepareCreate(context.getIndex()).setSettings(settings).execute().actionGet();
+                //设置indices及Alias，indices为context.getIndex()+“_v0”,Alias为context.getIndex()
+                client.admin().indices().prepareCreate(indices).addAlias(new Alias(context.getIndex())).setSettings(settings).execute().actionGet();
+
             }
 
             //check again
@@ -89,7 +100,9 @@ public class Initialization {
                 groupService.initialGroupData();
             }
         } catch (Exception e) {
+            e.printStackTrace();
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+
         }
     }
 

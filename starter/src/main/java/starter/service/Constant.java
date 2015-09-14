@@ -56,6 +56,9 @@ public class Constant {
     public static final String DEFAULT_INDEXANALYZER = "ansj_index";
     public static final String DEFAULT_SEARCHANALYZER = "ansj_query";
 
+    public static final String INDICES_SUFFIX = "_v0";
+
+
     /**
      * ES中mapping定义相关字段名称
      */
