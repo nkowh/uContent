@@ -8,10 +8,12 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import org.springframework.web.multipart.support.MultipartFilter;
 import starter.service.fs.FileSystem;
 import starter.service.fs.FileSystemFactory;
 import starter.service.fs.FsConfig;
@@ -48,11 +50,4 @@ public class StarterApplication extends SpringBootServletInitializer {
         return client;
     }
 
-    @Bean
-    public CommonsMultipartResolver commonsMultipartResolver(UploadConfig uploadConfig) {
-        CommonsMultipartResolver commonsMultipartResolver = new CommonsMultipartResolver();
-        commonsMultipartResolver.setMaxUploadSize(uploadConfig.getMaxUploadSize());
-        commonsMultipartResolver.setMaxInMemorySize(uploadConfig.getMaxInMemorySize());
-        return commonsMultipartResolver;
-    }
 }
