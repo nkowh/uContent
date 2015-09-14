@@ -50,7 +50,6 @@ Ext.application({
 
     onSuccess: function (status) {
         var me = this;
-        debugger;
         if ('false' === status) {
             me.setMainView('starter.view.init.InitFrame');
         } else if (Ext.util.Cookies.get('userId') && Ext.util.Cookies.get('digest')) {
