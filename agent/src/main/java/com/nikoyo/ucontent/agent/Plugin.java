@@ -17,11 +17,11 @@ public class Plugin extends AbstractPlugin {
     }
 
     public String name() {
-        return "uContent";
+        return "Agent";
     }
 
     public String description() {
-        return "uContent plugin";
+        return "Agent plugin";
     }
 
 

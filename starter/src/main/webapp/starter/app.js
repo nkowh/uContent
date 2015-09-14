@@ -55,7 +55,11 @@ Ext.application({
             me.setMainView('starter.view.init.InitFrame');
         } else if (Ext.util.Cookies.get('userId') && Ext.util.Cookies.get('digest')) {
             Ext.Ajax.addListener('requestexception', function (conn, response, options, eOpts) {
-                if (response.status === 401)window.location.reload();
+                if (response.status === 401) {
+                    Ext.util.Cookies.clear(userId);
+                    Ext.util.Cookies.clear('digest')
+                    window.location.reload();
+                }
             });
             me.setMainView('starter.view.main.Main');
         } else {

@@ -1,0 +1,9 @@
+index:
+    analysis:
+        analyzer:
+            index_ansj:
+                type: ansj_index
+query_ansj:
+    type: ansj_query
+
+index.analysis.analyzer.default.type: ansj_index

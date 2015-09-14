@@ -26,7 +26,7 @@ public class RequestContext {
     HttpServletResponse response;
 
     public String getIndex() {
-        return esConfig.getIndex();
+        return esConfig.getAlias();
     }
 
     public Client getClient() {
