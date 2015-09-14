@@ -10,6 +10,7 @@ import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -19,6 +20,7 @@ import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.hppc.cursors.ObjectObjectCursor;
 import org.elasticsearch.common.joda.time.DateTime;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -28,38 +30,47 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import starter.rest.Json;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-
+@Service
 public class ReIndexService implements Runnable{
 
     private Client client;
     private String alias;
+    private String target;
     private Date dateFrom = null;
     private Date dateTo = null;
     private long finished = 0l;
 
     Logger logger = LoggerFactory.getLogger(ReIndexService.class);
 
-    public ReIndexService(Client client, String alias, Date dateFrom, Date dateTo) {
+    public ReIndexService() {
+    }
+
+    public ReIndexService(Client client, String alias, String target, Date dateFrom, Date dateTo) {
         this.client = client;
         this.alias = alias;
+        this.target = target;
         this.dateFrom = dateFrom;
         this.dateTo = dateTo;
     }
 
+
     @Override
     public void run() {
         try {
-            check();
             String[] indices = originalName(alias);
             for(String index : indices){
-                copyMappings(index);
-                copyIndex(index, dateFrom, dateTo);
+                String newIndex = StringUtils.isNotBlank(target) ? target : name(index);
+                check(newIndex);
+                copyMappings(index, newIndex);
+                copyIndex(index, newIndex, dateFrom, dateTo);
             }
 //            alias(indices, alias);
         } catch (InterruptedException e) {
@@ -71,8 +82,8 @@ public class ReIndexService implements Runnable{
         }
     }
 
-    private void check() {
-        if (client.admin().indices().prepareTypesExists("$system").setTypes("$reindex").execute().actionGet().isExists()) {
+    private void check(String index) {
+        if (client.admin().indices().prepareTypesExists(index).setTypes("$reindex").execute().actionGet().isExists()) {
             SearchResponse $reindex = client.prepareSearch("$system").setTypes("$reindex").addSort(Constant.FieldName.CREATEDON, SortOrder.DESC).execute().actionGet();
             SearchHit[] hits = $reindex.getHits().getHits();
             if(hits.length > 0){
@@ -99,9 +110,8 @@ public class ReIndexService implements Runnable{
         return client.admin().indices().prepareGetIndex().setIndices(alias).execute().actionGet().indices();
     }
 
-    private void copyMappings(String index) throws ExecutionException, InterruptedException, IOException {
-        String newIndex = name(index);
-        IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(newIndex).execute().actionGet();
+    private void copyMappings(String index, String target) throws ExecutionException, InterruptedException, IOException {
+        IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(target).execute().actionGet();
         if (indicesExistsResponse.isExists()) {
             return;
         }
@@ -118,7 +128,7 @@ public class ReIndexService implements Runnable{
             }
         }
         xContentBuilder.endObject().endObject();
-        CreateIndexRequest createIndexRequest = new CreateIndexRequest(newIndex);
+        CreateIndexRequest createIndexRequest = new CreateIndexRequest(target);
         createIndexRequest.source(xContentBuilder);
         client.admin().indices().create(createIndexRequest).actionGet();
     }
@@ -134,7 +144,7 @@ public class ReIndexService implements Runnable{
         return prefix + newSuffix;
     }
 
-    private void copyIndex(String index, Date from, Date to){
+    private void copyIndex(String index, String target, Date from, Date to){
         BulkProcessor bulkProcessor = null;
         try {
             RangeFilterBuilder filterBuilder = null;
@@ -154,13 +164,13 @@ public class ReIndexService implements Runnable{
             }
             SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-            bulkProcessor = initBulkProcessor(index, sdf.format(new Date()), searchResponse.getHits().getTotalHits());
+            bulkProcessor = initBulkProcessor(index, target, sdf.format(new Date()), searchResponse.getHits().getTotalHits());
             do{
                 searchResponse = client.prepareSearchScroll(searchResponse.getScrollId()).setScroll("1m").execute().actionGet();
                 for(SearchHit hit : searchResponse.getHits().getHits()){
                     String type = hit.getType();
                     Map<String, Object> source = hit.getSource();
-                    bulkProcessor.add(new IndexRequest(name(index), type).source(source));
+                    bulkProcessor.add(new IndexRequest(target, type).source(source));
                 }
             }while(searchResponse.getHits().getHits().length > 0);
         } finally{
@@ -169,7 +179,7 @@ public class ReIndexService implements Runnable{
         }
     }
 
-    private BulkProcessor initBulkProcessor(final String index, final String operationId, final long total){
+    private BulkProcessor initBulkProcessor(final String index, final String target, final String operationId, final long total){
         return BulkProcessor.builder(client, new BulkProcessor.Listener() {
             public void beforeBulk(long executionId, BulkRequest request) {
                 logger.info(String.format("executionId:%s, numberOfActions:%s", executionId, request.numberOfActions()));
@@ -178,17 +188,16 @@ public class ReIndexService implements Runnable{
             public void afterBulk(long executionId, BulkRequest bulkRequest, BulkResponse response) {
             //TODO 进度记录
                 try {
-                    String newIndex = name(index);
                     XContentBuilder xContentBuilder = XContentFactory.jsonBuilder()
                             .startObject()
                             .field("operationId", operationId)
                             .field("srcIndex", index)
-                            .field("targetIndex", newIndex)
+                            .field("targetIndex", target)
                             .field("finished", bulkRequest.numberOfActions() + finished)
                             .field("total", total)
                             .field(Constant.FieldName.CREATEDON, new DateTime().toLocalDateTime())
                             .endObject();
-                    client.prepareIndex("$system", "$reindex").setSource(xContentBuilder).execute().actionGet();
+                    client.prepareIndex(target, "$reindex", operationId).setSource(xContentBuilder).execute().actionGet();
                     finished += bulkRequest.numberOfActions();
                     logger.info(xContentBuilder.string());
                 } catch (IOException e) {
@@ -222,6 +231,13 @@ public class ReIndexService implements Runnable{
             }
         });
     }
+
+    public Json getLog(Client client, String alias, String operationId){
+        GetResponse getResponse = client.prepareGet(alias, "$reindex", operationId).execute().actionGet();
+        Json source = (Json) getResponse.getSource();
+        return source;
+    }
+
 
 
 

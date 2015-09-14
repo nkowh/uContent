@@ -25,7 +25,7 @@ public class RequestContext {
     @Autowired
     HttpServletResponse response;
 
-    public String getIndex() {
+    public String getAlias() {
         return esConfig.getAlias();
     }
 

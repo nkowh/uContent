@@ -26,7 +26,7 @@ public class LogService {
 
     public XContentBuilder query(String query, int from, int size, SortBuilder[] sorts) throws IOException {
         SearchRequestBuilder searchRequestBuilder = context.getClient()
-                .prepareSearch(context.getIndex())
+                .prepareSearch(context.getAlias())
                 .setTypes(LOG_TYPE_NAME)
                 .setFrom(from)
                 .setSize(size);
@@ -104,7 +104,7 @@ public class LogService {
 
     public XContentBuilder createLog(XContentBuilder builder_in) throws IOException {
         Client client = context.getClient();
-        IndexResponse indexResponse = client.prepareIndex(context.getIndex(), LOG_TYPE_NAME)
+        IndexResponse indexResponse = client.prepareIndex(context.getAlias(), LOG_TYPE_NAME)
                 .setSource(builder_in).execute().actionGet();
 
         XContentBuilder builder_out = XContentFactory.jsonBuilder();

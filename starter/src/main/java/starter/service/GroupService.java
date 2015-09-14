@@ -43,7 +43,7 @@ public class GroupService {
         Client client = context.getClient();
         SearchResponse searchResponse = null;
         if (limit>0){
-            SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex())
+            SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getAlias())
                     .setTypes(Constant.FieldName.GROUPTYPENAME).setFrom(start).setSize(limit);
             if (query != null && !query.isEmpty()) {
                 searchRequestBuilder.setQuery(query);
@@ -55,7 +55,7 @@ public class GroupService {
             }
             searchResponse = searchRequestBuilder.execute().actionGet();
         }else{
-            searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(query).execute().actionGet();
+            searchResponse = client.prepareSearch(context.getAlias()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(query).execute().actionGet();
         }
 
         SearchHits hits = searchResponse.getHits();
@@ -90,7 +90,7 @@ public class GroupService {
         body.put(Constant.FieldName.CREATEDON, new Date());
         body.put(Constant.FieldName.LASTUPDATEDBY, null);
         body.put(Constant.FieldName.LASTUPDATEDON, null);
-        IndexResponse indexResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.GROUPTYPENAME).
+        IndexResponse indexResponse = client.prepareIndex(context.getAlias(), Constant.FieldName.GROUPTYPENAME).
                 setId(body.get(Constant.FieldName.GROUPID).toString()).setSource(body).execute().actionGet();
         builder.startObject()
                 .field("_index", indexResponse.getIndex())
@@ -104,7 +104,7 @@ public class GroupService {
 
     public Json get(String id){
         Client client = context.getClient();
-        GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
+        GetResponse getResponse = client.prepareGet(context.getAlias(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
         Map<String, Object> source = getResponse.getSource();
         if (getResponse.isExists()){
             Json json = new Json();
@@ -125,14 +125,14 @@ public class GroupService {
     public XContentBuilder getUsers(String id) throws IOException {
         Client client = context.getClient();
         XContentBuilder builder= XContentFactory.jsonBuilder();
-        GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
+        GetResponse getResponse = client.prepareGet(context.getAlias(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
         Map<String, Object> source = getResponse.getSource();
         builder.startObject();
         builder.startArray(Constant.FieldName.USERS);
         ArrayList<Object> users = (ArrayList<Object>)source.get(Constant.FieldName.USERS);
         if (users!=null){
             for (Object user:users){
-                GetResponse getUserResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, user.toString()).execute().actionGet();
+                GetResponse getUserResponse = client.prepareGet(context.getAlias(), Constant.FieldName.USERTYPENAME, user.toString()).execute().actionGet();
                 if (getUserResponse.isExists()){
                     Map<String, Object> userSource = getUserResponse.getSource();
                     builder.startObject()
@@ -156,7 +156,7 @@ public class GroupService {
 
     public XContentBuilder update(String id, Json body) throws IOException {
         Client client = context.getClient();
-        GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
+        GetResponse getResponse = client.prepareGet(context.getAlias(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }else{
@@ -172,10 +172,10 @@ public class GroupService {
         body.remove(Constant.FieldName.CREATEDON);
         body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
         body.put(Constant.FieldName.LASTUPDATEDON, new Date());
-        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).setDoc(body).execute().actionGet();
+        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getAlias(), Constant.FieldName.GROUPTYPENAME, id).setDoc(body).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject()
-                .field("_index", context.getIndex())
+                .field("_index", context.getAlias())
                 .field("_type", Constant.FieldName.GROUPTYPENAME)
                 .field("_id", id)
                 .field("_version", updateResponse.getVersion())
@@ -186,7 +186,7 @@ public class GroupService {
 
     public XContentBuilder delete(String id) throws IOException {
         Client client = context.getClient();
-        GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
+        GetResponse getResponse = client.prepareGet(context.getAlias(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }else{
@@ -195,10 +195,10 @@ public class GroupService {
             }
         }
 
-        DeleteResponse deleteResponse = client.prepareDelete(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
+        DeleteResponse deleteResponse = client.prepareDelete(context.getAlias(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject()
-                .field("_index", context.getIndex())
+                .field("_index", context.getAlias())
                 .field("_type", Constant.FieldName.GROUPTYPENAME)
                 .field("_id", id)
                 .field("_version", deleteResponse.getVersion())
@@ -209,7 +209,7 @@ public class GroupService {
 
     public XContentBuilder refUsers(String id, Json userIds) throws IOException {
         Client client = context.getClient();
-        GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
+        GetResponse getResponse = client.prepareGet(context.getAlias(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
@@ -230,10 +230,10 @@ public class GroupService {
         source.put(Constant.FieldName.USERS, users);
         source.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
         source.put(Constant.FieldName.LASTUPDATEDON, new Date());
-        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).setDoc(source).execute().actionGet();
+        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getAlias(), Constant.FieldName.GROUPTYPENAME, id).setDoc(source).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject()
-                .field("_index", context.getIndex())
+                .field("_index", context.getAlias())
                 .field("_type", Constant.FieldName.GROUPTYPENAME)
                 .field("_id", id)
                 .field("_version", updateResponse.getVersion())
@@ -247,7 +247,7 @@ public class GroupService {
         QueryBuilder qbUser = QueryBuilders.termQuery(Constant.FieldName.USERS, context.getUserName());
         QueryBuilder qbGroup = QueryBuilders.termQuery(Constant.FieldName.GROUPID, Constant.ADMINGROUP);
         BoolQueryBuilder must = QueryBuilders.boolQuery().must(qbUser).must(qbGroup);
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(must).execute().actionGet();
+        SearchResponse searchResponse = client.prepareSearch(context.getAlias()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(must).execute().actionGet();
         return searchResponse.getHits().totalHits()>0;
     }
 
@@ -255,7 +255,7 @@ public class GroupService {
         Client client = context.getClient();
 
         //创建group Mapping
-        GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).addTypes(Constant.FieldName.GROUPTYPENAME).get();
+        GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getAlias()).addTypes(Constant.FieldName.GROUPTYPENAME).get();
         ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getMappingsResponse.getMappings();
         if(mappings.size()==0){
             //冇得，那就搞一个吧。。。
@@ -273,7 +273,7 @@ public class GroupService {
             builder.endObject();//end of typeName
             builder.endObject();
             //创建mapping
-            PutMappingRequest mapping = Requests.putMappingRequest(context.getIndex()).type(Constant.FieldName.GROUPTYPENAME).source(builder);
+            PutMappingRequest mapping = Requests.putMappingRequest(context.getAlias()).type(Constant.FieldName.GROUPTYPENAME).source(builder);
             PutMappingResponse putMappingResponse = client.admin().indices().putMapping(mapping).actionGet();
         }else{
             //艹，居然有！！！！！
@@ -281,7 +281,7 @@ public class GroupService {
 
 
         //创建ADMINGROUP
-        if (!client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, Constant.ADMINGROUP).execute().actionGet().isExists()) {
+        if (!client.prepareGet(context.getAlias(), Constant.FieldName.GROUPTYPENAME, Constant.ADMINGROUP).execute().actionGet().isExists()) {
             Map<String, Object> adminGroup = new HashMap<String, Object>();
             adminGroup.put(Constant.FieldName.GROUPID, Constant.ADMINGROUP);
             adminGroup.put(Constant.FieldName.GROUPNAME, Constant.ADMINGROUP);
@@ -293,14 +293,14 @@ public class GroupService {
             adminGroup.put(Constant.FieldName.LASTUPDATEDBY, null);
             adminGroup.put(Constant.FieldName.LASTUPDATEDON, null);
 
-            IndexResponse adminGroupResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.GROUPTYPENAME
+            IndexResponse adminGroupResponse = client.prepareIndex(context.getAlias(), Constant.FieldName.GROUPTYPENAME
             ).setId(Constant.ADMINGROUP).setSource(adminGroup).execute().actionGet();
         }else{
 
         }
 
         //创建EVERYONE
-        if (!client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, Constant.EVERYONE).execute().actionGet().isExists()) {
+        if (!client.prepareGet(context.getAlias(), Constant.FieldName.GROUPTYPENAME, Constant.EVERYONE).execute().actionGet().isExists()) {
             Map<String, Object> everyone = new HashMap<String, Object>();
             everyone.put(Constant.FieldName.GROUPID, Constant.EVERYONE);
             everyone.put(Constant.FieldName.GROUPNAME, Constant.EVERYONE);
@@ -310,7 +310,7 @@ public class GroupService {
             everyone.put(Constant.FieldName.LASTUPDATEDBY, null);
             everyone.put(Constant.FieldName.LASTUPDATEDON, null);
 
-            IndexResponse everyOneResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.GROUPTYPENAME
+            IndexResponse everyOneResponse = client.prepareIndex(context.getAlias(), Constant.FieldName.GROUPTYPENAME
             ).setId(Constant.EVERYONE).setSource(everyone).execute().actionGet();
         }else{
 
@@ -335,7 +335,7 @@ public class GroupService {
         //校验groupId是否存在
         if (!StringUtils.isEmpty(groupId)){
             QueryBuilder queryBuilder = QueryBuilders.termQuery(Constant.FieldName.GROUPID, groupId);
-            SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
+            SearchResponse searchResponse = client.prepareSearch(context.getAlias()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
             SearchHits searchHits = searchResponse.getHits();
             if (action.equals("create")){
                 if (searchHits.totalHits()>0){
@@ -350,7 +350,7 @@ public class GroupService {
 //                    }
 //                }
                 //修改时groupId不可被修改
-                GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
+                GetResponse getResponse = client.prepareGet(context.getAlias(), Constant.FieldName.GROUPTYPENAME, id).execute().actionGet();
                 Map<String, Object> source = getResponse.getSource();
                 if(!groupId.equals(source.get(Constant.FieldName.GROUPID))){
                     throw new uContentException("groupId can't be modified", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -361,7 +361,7 @@ public class GroupService {
         //校验groupName是否存在
         if (!StringUtils.isEmpty(groupName)){
             QueryBuilder queryBuilder = QueryBuilders.termQuery(Constant.FieldName.GROUPNAME, groupName);
-            SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
+            SearchResponse searchResponse = client.prepareSearch(context.getAlias()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
             SearchHits searchHits = searchResponse.getHits();
             if (action.equals("create")){
                 if (searchHits.totalHits()>0){
