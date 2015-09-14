@@ -64,7 +64,7 @@ public class Systems {
         }
     }
 
-    @RequestMapping(value = "types/{id}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "types/{id}", method = RequestMethod.PUT)
     public String updateType(@PathVariable String id,@RequestBody Json body) {
         try {
             XContentBuilder result = typeService.update(id, body);
@@ -242,16 +242,6 @@ public class Systems {
     @RequestMapping(value = "currentUsers/isAdmin", method = RequestMethod.GET)
     public boolean checkUserInAdminGroup() {
         return groupService.checkUserInAdminGroup();
-    }
-
-    @RequestMapping(value = "system", method = RequestMethod.POST)
-    public void systemDataInitial() {
-        try {
-            userService.initialUserData();
-            groupService.initialGroupData();
-        } catch (Exception e) {
-            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 
     @RequestMapping(value = "_reIndex", method = RequestMethod.POST)

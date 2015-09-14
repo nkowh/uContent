@@ -78,6 +78,36 @@ Ext.define('starter.view.main.system.type.CreateProperty', {
                 ]
             })
         }
+    },{
+        header: 'IndexAnalyzer',
+        dataIndex: 'indexAnalyzer',
+        width: 100,
+        editor: {
+            xtype: 'combo',
+            displayField: 'name',
+            valueField: 'value',
+            store: Ext.create("Ext.data.Store", {
+                fields: ["name", "value"],
+                data: [
+                    { name: "ansj_index", value: "ansj_index" }
+                ]
+            })
+        }
+    },{
+        header: 'SearchAnalyzer',
+        dataIndex: 'searchAnalyzer',
+        width: 100,
+        editor: {
+            xtype: 'combo',
+            displayField: 'name',
+            valueField: 'value',
+            store: Ext.create("Ext.data.Store", {
+                fields: ["name", "value"],
+                data: [
+                    { name: "ansj_query", value: "ansj_query" }
+                ]
+            })
+        }
     },  {
         header: 'Order',
         dataIndex: 'order',

@@ -29,6 +29,7 @@ Ext.define('starter.view.monitor.OsController', {
     },
 
     onTimeChartDestroy: function () {
+        alert(1)
         if (this.timeChartTask) {
             Ext.TaskManager.stop(this.timeChartTask);
         }

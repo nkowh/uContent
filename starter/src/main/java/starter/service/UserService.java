@@ -70,7 +70,6 @@ public class UserService {
         }
         builder.endArray();
         builder.endObject();
-        System.out.println(builder.string());
         return builder;
     }
 
@@ -181,14 +180,14 @@ public class UserService {
         //同步everyone组数据
         if (deleteResponse.isFound()){
             //由于执行的同步问题会导致加不进去，暂时取消
-            synchronizeEveryoneGroup();
+            //synchronizeEveryoneGroup();
         }
         return builder;
     }
 
     public XContentBuilder getGroups(String id) throws IOException {
         Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERS, id);
+        QueryBuilder queryBuilder = QueryBuilders.termQuery(Constant.FieldName.USERS, id);
         SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject().field("total", searchResponse.getHits().totalHits());
@@ -211,7 +210,7 @@ public class UserService {
 
     public List<String> getGroupsOfUser(String id) throws IOException {
         Client client = context.getClient();
-        QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERS, id);
+        QueryBuilder queryBuilder = QueryBuilders.termQuery(Constant.FieldName.USERS, id);
         SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
         List<String> groups = new ArrayList<String>();
         for (SearchHit searchHitFields : searchResponse.getHits()) {
@@ -232,14 +231,14 @@ public class UserService {
             builder.startObject();
             builder.startObject(Constant.FieldName.USERTYPENAME);
             builder.startObject("properties")
-                    .startObject(Constant.FieldName.USERID).field("type", "string").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.USERNAME).field("type", "string").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.EMAIL).field("type", "string").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.PASSWORD).field("type", "string").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.CREATEDBY).field("type", "string").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.CREATEDON).field("type", "date").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.LASTUPDATEDBY).field("type", "string").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.LASTUPDATEDON).field("type", "date").field("store", "yes").endObject();
+                    .startObject(Constant.FieldName.USERID).field("type", "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.USERNAME).field("type", "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.EMAIL).field("type", "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.PASSWORD).field("type", "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.CREATEDBY).field("type", "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.CREATEDON).field("type", "date").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.LASTUPDATEDBY).field("type", "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.LASTUPDATEDON).field("type", "date").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject();
             builder.endObject();//end of typeName
             builder.endObject();
             //创建mapping
@@ -286,7 +285,7 @@ public class UserService {
         if (!StringUtils.isEmpty(userId)){
             Client client = context.getClient();
             if (action.equals("create")){
-                QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.USERID, userId);
+                QueryBuilder queryBuilder = QueryBuilders.termQuery(Constant.FieldName.USERID, userId);
                 SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(queryBuilder).execute().actionGet();
                 if (searchResponse.getHits().totalHits()>0){
                     throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);

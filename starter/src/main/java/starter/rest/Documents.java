@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import starter.service.DocumentService;
 import starter.uContentException;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
 
@@ -30,6 +31,7 @@ public class Documents {
                         @RequestParam(defaultValue = "[]")SortBuilder[] sort,
                         @RequestParam(defaultValue = "false") boolean allowableActions) {
         try {
+            query = java.net.URLDecoder.decode(query,"UTF-8");
             String[] types = {type};
             XContentBuilder xContentBuilder = documentService.query(types, query, start, limit, sort, highlight, allowableActions);
             return xContentBuilder.string();
@@ -75,16 +77,6 @@ public class Documents {
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (ParseException e) {
-            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    @RequestMapping(value = "/{type}/{id}", method = RequestMethod.HEAD)
-    public String head(@PathVariable String type, @PathVariable String id) {
-        try {
-            Json json = documentService.head(type, id);
-            return json.toXContentBuilder().string();
-        } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

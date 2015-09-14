@@ -14,7 +14,7 @@ public class EsConfig {
 
     private String cluster;
 
-    private String index;
+    private String alias;
 
     public String getCluster() {
         return cluster;
@@ -28,11 +28,11 @@ public class EsConfig {
         return hosts;
     }
 
-    public String getIndex() {
-        return index;
+    public String getAlias() {
+        return alias;
     }
 
-    public void setIndex(String index) {
-        this.index = index;
+    public void setAlias(String index) {
+        this.alias = index;
     }
 }

@@ -73,7 +73,41 @@ Ext.define('starter.view.main.system.type.ModifyProperty', {
                 fields: ["name", "value"],
                 data: [
                     { name: "analyzed", value: "analyzed" },
-                    { name: "not_analyzed", value: "not_analyzed" }
+                    { name: "not_analyzed", value: "not_analyzed" },
+                    { name: "indexAnalyzer", value: "ansj_index" },
+                    { name: "searchAnalyzer", value: "ansj_query" }
+                ]
+            })
+        }
+    },{
+        header: 'IndexAnalyzer',
+        dataIndex: 'indexAnalyzer',
+        width: 100,
+        editor: {
+            allowBlank: false,
+            xtype: 'combo',
+            displayField: 'name',
+            valueField: 'value',
+            store: Ext.create("Ext.data.Store", {
+                fields: ["name", "value"],
+                data: [
+                    { name: "ansj_index", value: "ansj_index" }
+                ]
+            })
+        }
+    },{
+        header: 'SearchAnalyzer',
+        dataIndex: 'searchAnalyzer',
+        width: 100,
+        editor: {
+            allowBlank: false,
+            xtype: 'combo',
+            displayField: 'name',
+            valueField: 'value',
+            store: Ext.create("Ext.data.Store", {
+                fields: ["name", "value"],
+                data: [
+                    { name: "ansj_query", value: "ansj_query" }
                 ]
             })
         }

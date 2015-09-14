@@ -17,7 +17,6 @@ import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -245,8 +244,8 @@ public class GroupService {
 
     public boolean checkUserInAdminGroup(){
         Client client = context.getClient();
-        QueryBuilder qbUser = QueryBuilders.matchQuery(Constant.FieldName.USERS, context.getUserName());
-        MatchQueryBuilder qbGroup = QueryBuilders.matchQuery(Constant.FieldName.GROUPID, Constant.ADMINGROUP);
+        QueryBuilder qbUser = QueryBuilders.termQuery(Constant.FieldName.USERS, context.getUserName());
+        QueryBuilder qbGroup = QueryBuilders.termQuery(Constant.FieldName.GROUPID, Constant.ADMINGROUP);
         BoolQueryBuilder must = QueryBuilders.boolQuery().must(qbUser).must(qbGroup);
         SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(must).execute().actionGet();
         return searchResponse.getHits().totalHits()>0;
@@ -264,13 +263,13 @@ public class GroupService {
             builder.startObject();
             builder.startObject(Constant.FieldName.GROUPTYPENAME);
             builder.startObject("properties")
-                    .startObject(Constant.FieldName.GROUPID).field("type", "string").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.GROUPNAME).field("type", "string").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.USERS).field("type", "string").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.CREATEDBY).field("type", "string").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.CREATEDON).field("type", "date").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.LASTUPDATEDBY).field("type", "string").field("store", "yes").endObject()
-                    .startObject(Constant.FieldName.LASTUPDATEDON).field("type", "date").field("store", "yes").endObject();
+                    .startObject(Constant.FieldName.GROUPID).field("type", "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.GROUPNAME).field("type", "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.USERS).field("type", "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.CREATEDBY).field("type", "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.CREATEDON).field("type", "date").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.LASTUPDATEDBY).field("type", "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                    .startObject(Constant.FieldName.LASTUPDATEDON).field("type", "date").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject();
             builder.endObject();//end of typeName
             builder.endObject();
             //创建mapping
@@ -335,7 +334,7 @@ public class GroupService {
         Client client = context.getClient();
         //校验groupId是否存在
         if (!StringUtils.isEmpty(groupId)){
-            QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.GROUPID, groupId);
+            QueryBuilder queryBuilder = QueryBuilders.termQuery(Constant.FieldName.GROUPID, groupId);
             SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
             SearchHits searchHits = searchResponse.getHits();
             if (action.equals("create")){
@@ -361,7 +360,7 @@ public class GroupService {
 
         //校验groupName是否存在
         if (!StringUtils.isEmpty(groupName)){
-            QueryBuilder queryBuilder = QueryBuilders.matchQuery(Constant.FieldName.GROUPNAME, groupName);
+            QueryBuilder queryBuilder = QueryBuilders.termQuery(Constant.FieldName.GROUPNAME, groupName);
             SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
             SearchHits searchHits = searchResponse.getHits();
             if (action.equals("create")){

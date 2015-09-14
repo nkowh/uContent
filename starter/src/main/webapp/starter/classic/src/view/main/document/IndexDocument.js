@@ -9,7 +9,6 @@ Ext.define('starter.view.main.document.IndexDocument', {
             text: '{title}'
         }
     },
-    height: 600,
     scrollable : 'y',
     fieldDefaults: {
         labelAlign: 'right',

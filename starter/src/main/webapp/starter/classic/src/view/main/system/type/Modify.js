@@ -4,7 +4,7 @@ Ext.define('starter.view.main.system.type.Modify', {
     controller: 'type',
     viewModel: 'type',
     title:'修改类型',
-    width: 1100,
+    width: 1300,
     height: 600,
     layout: {
         type: 'border',

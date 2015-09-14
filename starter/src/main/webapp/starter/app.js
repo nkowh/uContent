@@ -25,16 +25,45 @@ Ext.application({
 
     views: [
         'starter.view.login.LoginFrame',
-        'starter.view.main.Main'
+        'starter.view.main.Main',
+        'starter.view.init.InitFrame'
     ],
 
     launch: function () {
         var me = this;
-        if (Ext.util.Cookies.get('userId') && Ext.util.Cookies.get('digest')) {
+        Ext.Ajax.clearListeners();
+        Ext.Ajax.request({
+            url: '/initialization/status',
+            success: function (response, opts) {
+                me.onSuccess(response.responseText);
+            }, failure: function (response, opts) {
+                Ext.Msg.show({
+                    title: '错误',
+                    message: '网络通信失败!',
+                    buttons: Ext.Msg.OK,
+                    icon: Ext.Msg.ERROR
+                });
+            }
+        });
+
+    },
+
+    onSuccess: function (status) {
+        var me = this;
+        debugger;
+        if ('false' === status) {
+            me.setMainView('starter.view.init.InitFrame');
+        } else if (Ext.util.Cookies.get('userId') && Ext.util.Cookies.get('digest')) {
+            Ext.Ajax.addListener('requestexception', function (conn, response, options, eOpts) {
+                if (response.status === 401) {
+                    Ext.util.Cookies.clear(userId);
+                    Ext.util.Cookies.clear('digest')
+                    window.location.reload();
+                }
+            });
             me.setMainView('starter.view.main.Main');
         } else {
             me.setMainView('starter.view.login.LoginFrame');
         }
-
     }
 });

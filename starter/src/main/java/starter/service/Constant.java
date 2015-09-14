@@ -53,6 +53,9 @@ public class Constant {
     public static final String EVERYONE = "everyone";
     public static final String DEFAULTPASSWORD = "123456";
 
+    public static final String DEFAULT_INDEXANALYZER = "ansj_index";
+    public static final String DEFAULT_SEARCHANALYZER = "ansj_query";
+
     /**
      * ES中mapping定义相关字段名称
      */
@@ -93,6 +96,9 @@ public class Constant {
         public static final String INDEX = "index";
         public static final String ANALYZED = "analyzed";
         public static final String NOT_ANALYZED = "not_analyzed";
+
+        public static final String INDEXANALYZER = "indexAnalyzer";
+        public static final String SEARCHANALYZER = "searchAnalyzer";
 
         public static final String _ID = "_id";
 
