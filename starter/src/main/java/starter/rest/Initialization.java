@@ -18,9 +18,6 @@ import starter.service.GroupService;
 import starter.service.UserService;
 import starter.uContentException;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 @RequestMapping(value="initialization/",produces = MediaType.APPLICATION_JSON_VALUE)
 public class Initialization {
@@ -38,10 +35,8 @@ public class Initialization {
     public boolean checkInitialized() {
         Client client = context.getClient();
 
-        String indices = context.getAlias() + Constant.INDICES_SUFFIX;
-
         //check indices
-        IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(indices).execute().actionGet();
+        IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(context.getAlias()).execute().actionGet();
         if (!indicesExistsResponse.isExists()){
             return false;
         }
@@ -95,7 +90,7 @@ public class Initialization {
             }
 
             //check again
-            if (client.admin().indices().prepareExists(context.getAlias()).execute().actionGet().isExists()){
+            if (client.admin().indices().prepareExists(context.getIndex()).execute().actionGet().isExists()){
                 userService.initialUserData();
                 groupService.initialGroupData();
             }

@@ -96,7 +96,7 @@ public class StreamService {
         GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.write);
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
         xContentBuilder.startObject()
-                .field("_index", context.getAlias())
+                .field("_index", context.getIndex())
                 .field("_type", type)
                 .field("_id", id);
         Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
@@ -115,7 +115,7 @@ public class StreamService {
             if (found) {
                 Map<String, Object> map = new HashMap<String, Object>();
                 map.put(Constant.FieldName.STREAMS, _streams);
-                UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getAlias(), type, id).setDoc(map).execute().actionGet();
+                UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(map).execute().actionGet();
                 version = updateResponse.getVersion();
             }
         }
@@ -153,9 +153,9 @@ public class StreamService {
         }
         Map<String, Object> streamsMap = new HashMap<String, Object>();
         streamsMap.put(Constant.FieldName.STREAMS, _streams);
-        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getAlias(), type, id).setDoc(streamsMap).execute().actionGet();
+        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(streamsMap).execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
-        xContentBuilder.field("_index", context.getAlias())
+        xContentBuilder.field("_index", context.getIndex())
                     .field("_type", type)
                     .field("_id", id)
                     .field("_version", updateResponse.getVersion());

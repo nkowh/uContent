@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value="svc/",produces = MediaType.APPLICATION_JSON_VALUE)
@@ -266,15 +267,16 @@ public class Systems {
         }
     }
 
-    @RequestMapping(value = "/_reIndex/{operationId}", method = RequestMethod.GET)
-    public String get(@PathVariable String operationId) {
+    @RequestMapping(value = "/_reIndex", method = RequestMethod.GET)
+    public String queryReIndexLog(@RequestParam(defaultValue = "")String query) {
         try {
-            XContentBuilder xContentBuilder = reIndexService.getLog(context.getClient(), context.getAlias(), operationId).toXContentBuilder();
+            XContentBuilder xContentBuilder = reIndexService.getAllReIndexLog(context.getClient(), context.getAlias());
             return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
 
     private void checkAuthorize(){

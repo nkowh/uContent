@@ -13,6 +13,9 @@ import java.util.Iterator;
 
 public class Json extends HashMap<String, Object> {
 
+    public Json() {
+    }
+
     public static Json parse(String jsonString) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
@@ -22,8 +25,6 @@ public class Json extends HashMap<String, Object> {
         }
     }
 
-    public Json() {
-    }
 
     public XContentBuilder toXContentBuilder() throws IOException {
         if (this == null) {

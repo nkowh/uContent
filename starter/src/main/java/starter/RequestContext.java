@@ -44,4 +44,10 @@ public class RequestContext {
     public String getUserName() {
         return this.request.getUserPrincipal().getName();
     }
+
+
+    public String getIndex(){
+        String[] indices = client.admin().indices().prepareGetIndex().setIndices(getAlias()).execute().actionGet().indices();
+        return indices.length > 0 ? indices[0] : "";
+    }
 }

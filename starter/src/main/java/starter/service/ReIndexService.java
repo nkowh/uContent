@@ -24,6 +24,7 @@ import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.RangeFilterBuilder;
 import org.elasticsearch.search.SearchHit;
@@ -31,11 +32,12 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import starter.rest.Json;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -66,13 +68,14 @@ public class ReIndexService implements Runnable{
     public void run() {
         try {
             String[] indices = originalName(alias);
-            for(String index : indices){
-                String newIndex = StringUtils.isNotBlank(target) ? target : name(index);
-                check(newIndex);
-                copyMappings(index, newIndex);
-                copyIndex(index, newIndex, dateFrom, dateTo);
+            if (indices.length < 0) {
+                return;
             }
-//            alias(indices, alias);
+            String newIndex = StringUtils.isNotBlank(target) ? target : name(indices[0]);
+            check(newIndex);
+            copyMappings(indices[0], newIndex);
+            copyIndex(indices[0], newIndex, dateFrom, dateTo);
+            alias(indices, newIndex, alias);
         } catch (InterruptedException e) {
            logger.error(e.getMessage());
         } catch (ExecutionException e) {
@@ -83,17 +86,20 @@ public class ReIndexService implements Runnable{
     }
 
     private void check(String index) {
-        if (client.admin().indices().prepareTypesExists(index).setTypes("$reindex").execute().actionGet().isExists()) {
-            SearchResponse $reindex = client.prepareSearch("$system").setTypes("$reindex").addSort(Constant.FieldName.CREATEDON, SortOrder.DESC).execute().actionGet();
-            SearchHit[] hits = $reindex.getHits().getHits();
-            if(hits.length > 0){
-                SearchHit last = hits[0];
-                long finished = Long.valueOf(last.getSource().get("finished").toString());
-                long total = Long.valueOf(last.getSource().get("total").toString());
-                if(finished < total){
-                    logger.error("Current reindex operation canceled, because there exist a reindex job");
-                    //TODO
-                    throw new RuntimeException("Current reindex operation canceled, because there exist a reindex job");
+        IndicesExistsResponse existsResponse = client.admin().indices().prepareExists(index).execute().actionGet();
+        if (existsResponse.isExists()) {
+            if (client.admin().indices().prepareTypesExists(index).setTypes("$reindex").execute().actionGet().isExists()) {
+                SearchResponse $reindex = client.prepareSearch("$system").setTypes("$reindex").addSort(Constant.FieldName.CREATEDON, SortOrder.DESC).execute().actionGet();
+                SearchHit[] hits = $reindex.getHits().getHits();
+                if(hits.length > 0){
+                    SearchHit last = hits[0];
+                    long finished = Long.valueOf(last.getSource().get("finished").toString());
+                    long total = Long.valueOf(last.getSource().get("total").toString());
+                    if(finished < total){
+                        logger.error("Current reindex operation canceled, because there exist a reindex job which has not finished yet");
+                        //TODO
+                        throw new RuntimeException("Current reindex operation canceled, because there exist a reindex job which has not finished yet");
+                    }
                 }
             }
         }
@@ -170,7 +176,7 @@ public class ReIndexService implements Runnable{
                 for(SearchHit hit : searchResponse.getHits().getHits()){
                     String type = hit.getType();
                     Map<String, Object> source = hit.getSource();
-                    bulkProcessor.add(new IndexRequest(target, type).source(source));
+                    bulkProcessor.add(new IndexRequest(target, type, hit.getId()).source(source));
                 }
             }while(searchResponse.getHits().getHits().length > 0);
         } finally{
@@ -197,7 +203,7 @@ public class ReIndexService implements Runnable{
                             .field("total", total)
                             .field(Constant.FieldName.CREATEDON, new DateTime().toLocalDateTime())
                             .endObject();
-                    client.prepareIndex(target, "$reindex", operationId).setSource(xContentBuilder).execute().actionGet();
+                    client.prepareIndex(target, "$reindex").setSource(xContentBuilder).execute().actionGet();
                     finished += bulkRequest.numberOfActions();
                     logger.info(xContentBuilder.string());
                 } catch (IOException e) {
@@ -212,15 +218,10 @@ public class ReIndexService implements Runnable{
     }
 
 
-    private void alias(String[] indices, String alias){
-        client.admin().indices().prepareAliases().removeAlias(indices, alias).execute().actionGet();
-        List<String> newIndices = new ArrayList<String>();
-        for(String s : indices){
-            newIndices.add(name(s));
-        }
+    private void alias(String[] indices, String newIndex, String alias){
         IndicesAliasesRequest indicesAliasesRequest = new IndicesAliasesRequest();
         indicesAliasesRequest.removeAlias(indices, alias);
-        indicesAliasesRequest.addAlias(alias, newIndices.toArray(new String[]{}));
+        indicesAliasesRequest.addAlias(alias, newIndex);
         client.admin().indices().aliases(indicesAliasesRequest, new ActionListener<IndicesAliasesResponse>(){
             public void onResponse(IndicesAliasesResponse indicesAliasesResponse) {
                 //TODO 删除原索引
@@ -232,11 +233,49 @@ public class ReIndexService implements Runnable{
         });
     }
 
-    public Json getLog(Client client, String alias, String operationId){
-        GetResponse getResponse = client.prepareGet(alias, "$reindex", operationId).execute().actionGet();
-        Json source = (Json) getResponse.getSource();
-        return source;
+
+    public XContentBuilder getAllReIndexLog(Client client, String alias) throws IOException {
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(alias).setTypes("$reindex");
+        searchRequestBuilder.addSort(Constant.FieldName.CREATEDON, SortOrder.DESC);
+
+//        //set acl filter
+//        TermFilterBuilder termFilter1 = FilterBuilders.termFilter(Constant.FieldName.USER, context.getUserName());
+//        TermFilterBuilder termFilter2 = FilterBuilders.termFilter(Constant.FieldName.PERMISSION, Constant.Permission.read);
+//        BoolFilterBuilder boolFilter1 = FilterBuilders.boolFilter().must(termFilter1, termFilter2);
+//        BoolFilterBuilder boolFilterBuilder = FilterBuilders.boolFilter().should(boolFilter1);
+//        List<String> groups = userService.getGroupsOfUser(context.getUserName());
+//        for (String group : groups) {
+//            TermFilterBuilder termFilter3 = FilterBuilders.termFilter(Constant.FieldName.GROUP, group);
+//            TermFilterBuilder termFilter4 = FilterBuilders.termFilter(Constant.FieldName.PERMISSION, Constant.Permission.read);
+//            BoolFilterBuilder boolFilter2 = FilterBuilders.boolFilter().must(termFilter3, termFilter4);
+//            boolFilterBuilder.should(boolFilter2);
+//        }
+//        FilterBuilder filter = FilterBuilders.nestedFilter(Constant.FieldName.ACL, boolFilterBuilder);
+//        searchRequestBuilder.setPostFilter(filter);
+        //process result
+        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+        XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
+        xContentBuilder.field("total", searchResponse.getHits().getTotalHits());
+        xContentBuilder.startArray("logs");
+        for (SearchHit hit : searchResponse.getHits().getHits()) {
+            xContentBuilder.startObject();
+            xContentBuilder.field("_index", hit.getIndex())
+                    .field("_type", hit.getType())
+                    .field("_id", hit.getId())
+                    .field("_version", hit.getVersion());
+            Map<String, Object> source = hit.getSource();
+            Iterator<Map.Entry<String, Object>> iterator = source.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, Object> entry = iterator.next();
+                xContentBuilder.field(entry.getKey(), entry.getValue());
+            }
+            xContentBuilder.endObject();
+        }
+        xContentBuilder.endArray().endObject();
+        return xContentBuilder;
     }
+
+
 
 
 

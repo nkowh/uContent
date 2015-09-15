@@ -63,7 +63,7 @@ public class DocumentService {
 
 
     public XContentBuilder query(String[] types, String query, int start, int limit, SortBuilder[] sort, String highlight, boolean allowableActions) throws IOException {
-        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getAlias()).setFrom(start).setSize(limit);
+        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setFrom(start).setSize(limit);
         //set types
         if (types != null && types.length > 0) {
             searchRequestBuilder.setTypes(types);
@@ -134,7 +134,7 @@ public class DocumentService {
     public XContentBuilder create(String type, Json body) throws IOException, ParseException {
         validate(body, type);
         beforeCreate(body);
-        IndexResponse indexResponse = context.getClient().prepareIndex(context.getAlias(), type).setSource(body).execute().actionGet();
+        IndexResponse indexResponse = context.getClient().prepareIndex(context.getIndex(), type).setSource(body).execute().actionGet();
         XContentBuilder builder = JsonXContent.contentBuilder();
         builder.startObject()
                 .field("_index", indexResponse.getIndex())
@@ -182,10 +182,10 @@ public class DocumentService {
         processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
         validate(body, type);
         beforeUpdate(body);
-        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getAlias(), type, id).setDoc(body).execute().actionGet();
+        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
         xContentBuilder.startObject()
-                .field("_index", context.getAlias())
+                .field("_index", context.getIndex())
                 .field("_type", type)
                 .field("_id", id)
                 .field("_version", updateResponse.getVersion());
@@ -201,10 +201,10 @@ public class DocumentService {
         checkPermission(type, id, context.getUserName(), Constant.Permission.write);
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
         xContentBuilder.startObject()
-                .field("_index", context.getAlias())
+                .field("_index", context.getIndex())
                 .field("_type", type)
                 .field("_id", id);
-        DeleteResponse deleteResponse = context.getClient().prepareDelete(context.getAlias(), type, id).execute().actionGet();
+        DeleteResponse deleteResponse = context.getClient().prepareDelete(context.getIndex(), type, id).execute().actionGet();
         xContentBuilder.field("_version", deleteResponse.getVersion());
         xContentBuilder.field("_found", deleteResponse.isFound());
         xContentBuilder.endObject();
@@ -436,9 +436,9 @@ public class DocumentService {
 
     public GetResponse checkPermission(String type, String id, String user, Constant.Permission permission) throws IOException {
         String[] exclude = {"_streams._fullText"};
-        GetResponse getResponse = context.getClient().prepareGet(context.getAlias(), type, id).setFetchSource(null, exclude).execute().actionGet();
+        GetResponse getResponse = context.getClient().prepareGet(context.getIndex(), type, id).setFetchSource(null, exclude).execute().actionGet();
         if (!getResponse.isExists()) {
-            logger.warn(String.format("The doc: %s in type %s of index %s is not exist", id, type, context.getAlias()));
+            logger.warn(String.format("The doc: %s in type %s of index %s is not exist", id, type, context.getIndex()));
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }
         if (!hasPermission(user, getResponse.getSource().get(Constant.FieldName.ACL), permission)) {
