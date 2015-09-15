@@ -277,6 +277,11 @@ public class Systems {
         }
     }
 
+    @RequestMapping(value = "/_reIndex/_status", method = RequestMethod.GET)
+    public String reIndexStatus(@RequestParam(defaultValue = "")String query) {
+        return "";
+    }
+
 
 
     private void checkAuthorize(){
