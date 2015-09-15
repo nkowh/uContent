@@ -72,7 +72,6 @@ public class ReIndexService implements Runnable{
                 return;
             }
             String newIndex = StringUtils.isNotBlank(target) ? target : name(indices[0]);
-            check(newIndex);
             copyMappings(indices[0], newIndex);
             copyIndex(indices[0], newIndex, dateFrom, dateTo);
             alias(indices, newIndex, alias);
@@ -85,25 +84,25 @@ public class ReIndexService implements Runnable{
         }
     }
 
-    private void check(String index) {
-        IndicesExistsResponse existsResponse = client.admin().indices().prepareExists(index).execute().actionGet();
-        if (existsResponse.isExists()) {
-            if (client.admin().indices().prepareTypesExists(index).setTypes("$reindex").execute().actionGet().isExists()) {
-                SearchResponse $reindex = client.prepareSearch("$system").setTypes("$reindex").addSort(Constant.FieldName.CREATEDON, SortOrder.DESC).execute().actionGet();
-                SearchHit[] hits = $reindex.getHits().getHits();
-                if(hits.length > 0){
-                    SearchHit last = hits[0];
-                    long finished = Long.valueOf(last.getSource().get("finished").toString());
-                    long total = Long.valueOf(last.getSource().get("total").toString());
-                    if(finished < total){
-                        logger.error("Current reindex operation canceled, because there exist a reindex job which has not finished yet");
-                        //TODO
-                        throw new RuntimeException("Current reindex operation canceled, because there exist a reindex job which has not finished yet");
-                    }
-                }
-            }
-        }
-    }
+//    private void check(String alias) {
+//        IndicesExistsResponse existsResponse = client.admin().indices().prepareExists(index).execute().actionGet();
+//        if (existsResponse.isExists()) {
+//            if (client.admin().indices().prepareTypesExists(index).setTypes("$reindex").execute().actionGet().isExists()) {
+//                SearchResponse $reindex = client.prepareSearch("$system").setTypes("$reindex").addSort(Constant.FieldName.CREATEDON, SortOrder.DESC).execute().actionGet();
+//                SearchHit[] hits = $reindex.getHits().getHits();
+//                if(hits.length > 0){
+//                    SearchHit last = hits[0];
+//                    long finished = Long.valueOf(last.getSource().get("finished").toString());
+//                    long total = Long.valueOf(last.getSource().get("total").toString());
+//                    if(finished < total){
+//                        logger.error("Current reindex operation canceled, because there exist a reindex job which has not finished yet");
+//                        //TODO
+//                        throw new RuntimeException("Current reindex operation canceled, because there exist a reindex job which has not finished yet");
+//                    }
+//                }
+//            }
+//        }
+//    }
 
 
     private String[] originalName(String alias){
@@ -199,11 +198,12 @@ public class ReIndexService implements Runnable{
                             .field("operationId", operationId)
                             .field("srcIndex", index)
                             .field("targetIndex", target)
+                            .field("numberOfActions", bulkRequest.numberOfActions())
                             .field("finished", bulkRequest.numberOfActions() + finished)
                             .field("total", total)
                             .field(Constant.FieldName.CREATEDON, new DateTime().toLocalDateTime())
                             .endObject();
-                    client.prepareIndex(target, "$reindex").setSource(xContentBuilder).execute().actionGet();
+                    client.prepareIndex("$system", "$reindex").setSource(xContentBuilder).execute().actionGet();
                     finished += bulkRequest.numberOfActions();
                     logger.info(xContentBuilder.string());
                 } catch (IOException e) {
@@ -234,9 +234,12 @@ public class ReIndexService implements Runnable{
     }
 
 
-    public XContentBuilder getAllReIndexLog(Client client, String alias) throws IOException {
+    public XContentBuilder getAllReIndexLog(Client client, String alias, String query) throws IOException {
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch(alias).setTypes("$reindex");
         searchRequestBuilder.addSort(Constant.FieldName.CREATEDON, SortOrder.DESC);
+        if (StringUtils.isNotBlank(query)) {
+            searchRequestBuilder.setQuery(query);
+        }
 
 //        //set acl filter
 //        TermFilterBuilder termFilter1 = FilterBuilders.termFilter(Constant.FieldName.USER, context.getUserName());
