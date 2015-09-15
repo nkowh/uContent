@@ -234,9 +234,12 @@ public class ReIndexService implements Runnable{
     }
 
 
-    public XContentBuilder getAllReIndexLog(Client client, String alias) throws IOException {
+    public XContentBuilder getAllReIndexLog(Client client, String alias, String query) throws IOException {
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch(alias).setTypes("$reindex");
         searchRequestBuilder.addSort(Constant.FieldName.CREATEDON, SortOrder.DESC);
+        if (StringUtils.isNotBlank(query)) {
+            searchRequestBuilder.setQuery(query);
+        }
 
 //        //set acl filter
 //        TermFilterBuilder termFilter1 = FilterBuilders.termFilter(Constant.FieldName.USER, context.getUserName());

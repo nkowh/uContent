@@ -270,7 +270,7 @@ public class Systems {
     @RequestMapping(value = "/_reIndex", method = RequestMethod.GET)
     public String queryReIndexLog(@RequestParam(defaultValue = "")String query) {
         try {
-            XContentBuilder xContentBuilder = reIndexService.getAllReIndexLog(context.getClient(), context.getAlias());
+            XContentBuilder xContentBuilder = reIndexService.getAllReIndexLog(context.getClient(), context.getAlias(),query);
             return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
