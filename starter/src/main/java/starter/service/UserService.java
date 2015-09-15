@@ -38,7 +38,7 @@ public class UserService {
     private RequestContext context;
 
     public XContentBuilder all(String query, int start, int limit, SortBuilder[] sort) throws IOException {
-        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME);
+        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getAlias()).setTypes(Constant.FieldName.USERTYPENAME);
         if (limit>0){
             searchRequestBuilder.setFrom(start).setSize(limit);
             if (query != null && !query.isEmpty()) {
@@ -84,7 +84,7 @@ public class UserService {
         body.put(Constant.FieldName.CREATEDON, new Date());
         body.put(Constant.FieldName.LASTUPDATEDBY, null);
         body.put(Constant.FieldName.LASTUPDATEDON, null);
-        IndexResponse indexResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.USERTYPENAME).
+        IndexResponse indexResponse = client.prepareIndex(context.getAlias(), Constant.FieldName.USERTYPENAME).
                 //默认设置_id为userId
                 setId(body.get(Constant.FieldName.USERID).toString()).
                 setSource(body).execute().actionGet();
@@ -106,7 +106,7 @@ public class UserService {
 
     public Json get(String id) {
         Client client = context.getClient();
-        GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
+        GetResponse getResponse = client.prepareGet(context.getAlias(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
         Map<String, Object> source = getResponse.getSource();
         if (getResponse.isExists()){
             Json json = new Json();
@@ -129,7 +129,7 @@ public class UserService {
 
     public XContentBuilder update(String id, Json body) throws IOException {
         Client client = context.getClient();
-        GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
+        GetResponse getResponse = client.prepareGet(context.getAlias(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }else{
@@ -145,10 +145,10 @@ public class UserService {
         body.remove(Constant.FieldName.CREATEDON);
         body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
         body.put(Constant.FieldName.LASTUPDATEDON, new Date());
-        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), Constant.FieldName.USERTYPENAME, id).setDoc(body).execute().actionGet();
+        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getAlias(), Constant.FieldName.USERTYPENAME, id).setDoc(body).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject()
-                .field("_index", context.getIndex())
+                .field("_index", context.getAlias())
                 .field("_type", Constant.FieldName.USERTYPENAME)
                 .field("_id", id)
                 .field("_version", updateResponse.getVersion())
@@ -159,7 +159,7 @@ public class UserService {
 
     public XContentBuilder delete(String id) throws IOException {
         Client client = context.getClient();
-        GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
+        GetResponse getResponse = client.prepareGet(context.getAlias(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
         if (!getResponse.isExists()) {
             throw new uContentException("Not found", HttpStatus.NOT_FOUND);
         }else{
@@ -167,10 +167,10 @@ public class UserService {
                 throw new uContentException("Can't Be Deleted", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-        DeleteResponse deleteResponse = client.prepareDelete(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
+        DeleteResponse deleteResponse = client.prepareDelete(context.getAlias(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject()
-                .field("_index", context.getIndex())
+                .field("_index", context.getAlias())
                 .field("_type", Constant.FieldName.USERTYPENAME)
                 .field("_id", id)
                 .field("_version", deleteResponse.getVersion())
@@ -188,7 +188,7 @@ public class UserService {
     public XContentBuilder getGroups(String id) throws IOException {
         Client client = context.getClient();
         QueryBuilder queryBuilder = QueryBuilders.termQuery(Constant.FieldName.USERS, id);
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
+        SearchResponse searchResponse = client.prepareSearch(context.getAlias()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject().field("total", searchResponse.getHits().totalHits());
         builder.startArray("groups");
@@ -211,7 +211,7 @@ public class UserService {
     public List<String> getGroupsOfUser(String id) throws IOException {
         Client client = context.getClient();
         QueryBuilder queryBuilder = QueryBuilders.termQuery(Constant.FieldName.USERS, id);
-        SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
+        SearchResponse searchResponse = client.prepareSearch(context.getAlias()).setTypes(Constant.FieldName.GROUPTYPENAME).setQuery(queryBuilder).execute().actionGet();
         List<String> groups = new ArrayList<String>();
         for (SearchHit searchHitFields : searchResponse.getHits()) {
             groups.add(searchHitFields.getId());
@@ -223,7 +223,7 @@ public class UserService {
         Client client = context.getClient();
 
         //创建user Mapping
-        GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).addTypes(Constant.FieldName.USERTYPENAME).get();
+        GetMappingsResponse getMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getAlias()).addTypes(Constant.FieldName.USERTYPENAME).get();
         ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getMappingsResponse.getMappings();
         if(mappings.size()==0){
             //冇得，那就搞一个吧。。。
@@ -242,14 +242,14 @@ public class UserService {
             builder.endObject();//end of typeName
             builder.endObject();
             //创建mapping
-            PutMappingRequest mapping = Requests.putMappingRequest(context.getIndex()).type(Constant.FieldName.USERTYPENAME).source(builder);
+            PutMappingRequest mapping = Requests.putMappingRequest(context.getAlias()).type(Constant.FieldName.USERTYPENAME).source(builder);
             PutMappingResponse putMappingResponse = client.admin().indices().putMapping(mapping).actionGet();
         }else{
             //艹，居然有！！！！！
         }
 
         //创建ADMIN
-        if (!client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, Constant.ADMIN).execute().actionGet().isExists()) {
+        if (!client.prepareGet(context.getAlias(), Constant.FieldName.USERTYPENAME, Constant.ADMIN).execute().actionGet().isExists()) {
             Map<String, Object> adminGroup = new HashMap<String, Object>();
             adminGroup.put(Constant.FieldName.USERID, Constant.ADMIN);
             adminGroup.put(Constant.FieldName.USERNAME, Constant.ADMIN);
@@ -260,7 +260,7 @@ public class UserService {
             adminGroup.put(Constant.FieldName.LASTUPDATEDBY, null);
             adminGroup.put(Constant.FieldName.LASTUPDATEDON, null);
 
-            IndexResponse adminGroupResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.USERTYPENAME
+            IndexResponse adminGroupResponse = client.prepareIndex(context.getAlias(), Constant.FieldName.USERTYPENAME
             ).setId(Constant.ADMIN).setSource(adminGroup).execute().actionGet();
         }else{
 
@@ -286,13 +286,13 @@ public class UserService {
             Client client = context.getClient();
             if (action.equals("create")){
                 QueryBuilder queryBuilder = QueryBuilders.termQuery(Constant.FieldName.USERID, userId);
-                SearchResponse searchResponse = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(queryBuilder).execute().actionGet();
+                SearchResponse searchResponse = client.prepareSearch(context.getAlias()).setTypes(Constant.FieldName.USERTYPENAME).setQuery(queryBuilder).execute().actionGet();
                 if (searchResponse.getHits().totalHits()>0){
                     throw new uContentException("Exist", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
             }else if(action.equals("update")){
                 //修改时userId不可被修改
-                GetResponse getResponse = client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
+                GetResponse getResponse = client.prepareGet(context.getAlias(), Constant.FieldName.USERTYPENAME, id).execute().actionGet();
                 Map<String, Object> source = getResponse.getSource();
                 if(!userId.equals(source.get(Constant.FieldName.USERID))){
                     throw new uContentException("userId can't be modified", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -319,7 +319,7 @@ public class UserService {
     private void synchronizeEveryoneGroup(){
         Client client = context.getClient();
         //首先获取所有user
-        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(context.getIndex()).setTypes(Constant.FieldName.USERTYPENAME);
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(context.getAlias()).setTypes(Constant.FieldName.USERTYPENAME);
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         List<String> users = new ArrayList<String>();
         for (SearchHit searchHitFields : searchResponse.getHits()) {
@@ -331,7 +331,7 @@ public class UserService {
         source.put(Constant.FieldName.USERS, users);
         source.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
         source.put(Constant.FieldName.LASTUPDATEDON, new Date());
-        UpdateResponse updateResponse = client.prepareUpdate(context.getIndex(), Constant.FieldName.GROUPTYPENAME, Constant.EVERYONE)
+        UpdateResponse updateResponse = client.prepareUpdate(context.getAlias(), Constant.FieldName.GROUPTYPENAME, Constant.EVERYONE)
                 .setDoc(source).execute().actionGet();
     }
 

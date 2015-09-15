@@ -47,10 +47,10 @@ public class AclService {
         documentService.processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
         Map<String, Object> acl = new HashMap<String, Object>();
         acl.put(Constant.FieldName.ACL, getResponse.getSource().get(Constant.FieldName.ACL));
-        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(acl).execute().actionGet();
+        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getAlias(), type, id).setDoc(acl).execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
         xContentBuilder.startObject()
-                .field("_index", context.getIndex())
+                .field("_index", context.getAlias())
                 .field("_type", type)
                 .field("_id", id)
                 .field("_version", updateResponse.getVersion())

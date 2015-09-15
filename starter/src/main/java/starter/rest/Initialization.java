@@ -38,7 +38,7 @@ public class Initialization {
     public boolean checkInitialized() {
         Client client = context.getClient();
 
-        String indices = context.getIndex() + Constant.INDICES_SUFFIX;
+        String indices = context.getAlias() + Constant.INDICES_SUFFIX;
 
         //check indices
         IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(indices).execute().actionGet();
@@ -47,29 +47,29 @@ public class Initialization {
         }
 
         //check user mapping
-        GetMappingsResponse getUserMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).addTypes(Constant.FieldName.USERTYPENAME).get();
+        GetMappingsResponse getUserMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getAlias()).addTypes(Constant.FieldName.USERTYPENAME).get();
         ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> userMappings = getUserMappingsResponse.getMappings();
         if(userMappings.size()==0){
             return false;
         }
 
         //check admin user
-        if (!client.prepareGet(context.getIndex(), Constant.FieldName.USERTYPENAME, Constant.ADMIN).execute().actionGet().isExists()) {
+        if (!client.prepareGet(context.getAlias(), Constant.FieldName.USERTYPENAME, Constant.ADMIN).execute().actionGet().isExists()) {
             return false;
         }
 
         //check group mapping
-        GetMappingsResponse getGroupMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getIndex()).addTypes(Constant.FieldName.GROUPTYPENAME).get();
+        GetMappingsResponse getGroupMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getAlias()).addTypes(Constant.FieldName.GROUPTYPENAME).get();
         ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> groupMappings = getGroupMappingsResponse.getMappings();
         if(groupMappings.size()==0){
             return false;
         }
 
         //check everyone adminGroup
-        if (!client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, Constant.EVERYONE).execute().actionGet().isExists()) {
+        if (!client.prepareGet(context.getAlias(), Constant.FieldName.GROUPTYPENAME, Constant.EVERYONE).execute().actionGet().isExists()) {
             return false;
         }
-        if (!client.prepareGet(context.getIndex(), Constant.FieldName.GROUPTYPENAME, Constant.ADMINGROUP).execute().actionGet().isExists()) {
+        if (!client.prepareGet(context.getAlias(), Constant.FieldName.GROUPTYPENAME, Constant.ADMINGROUP).execute().actionGet().isExists()) {
             return false;
         }
 
@@ -83,19 +83,19 @@ public class Initialization {
             Client client = context.getClient();
             //check and create indices
 
-            String indices = context.getIndex() + Constant.INDICES_SUFFIX;
+            String indices = context.getAlias() + Constant.INDICES_SUFFIX;
 
             IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(indices).execute().actionGet();
             if (!indicesExistsResponse.isExists()){
                 //添加分片和副本设置，默认五个主分片，一个副本
                 Settings settings = ImmutableSettings.settingsBuilder().put("number_of_shards", shards).put("number_of_replicas", replicas).build();
                 //设置indices及Alias，indices为context.getIndex()+“_v0”,Alias为context.getIndex()
-                client.admin().indices().prepareCreate(indices).addAlias(new Alias(context.getIndex())).setSettings(settings).execute().actionGet();
+                client.admin().indices().prepareCreate(indices).addAlias(new Alias(context.getAlias())).setSettings(settings).execute().actionGet();
 
             }
 
             //check again
-            if (client.admin().indices().prepareExists(context.getIndex()).execute().actionGet().isExists()){
+            if (client.admin().indices().prepareExists(context.getAlias()).execute().actionGet().isExists()){
                 userService.initialUserData();
                 groupService.initialGroupData();
             }

@@ -3,7 +3,6 @@ package starter.rest;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
-import org.elasticsearch.threadpool.ThreadPool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,6 +30,9 @@ public class Systems {
     private GroupService groupService;
     @Autowired
     private RequestContext context;
+
+    @Autowired
+    private ReIndexService reIndexService;
 
     /************************** types ******************************/
 
@@ -245,7 +247,8 @@ public class Systems {
     }
 
     @RequestMapping(value = "_reIndex", method = RequestMethod.POST)
-    public void reindex(@RequestParam(defaultValue = "")String from,
+    public void reindex(@RequestParam(defaultValue = "")String target,
+                        @RequestParam(defaultValue = "")String from,
                         @RequestParam(defaultValue = "")String to) {
         Date dateFrom = null;
         Date dateTo = null;
@@ -257,9 +260,19 @@ public class Systems {
             if (StringUtils.isNotBlank(to)) {
                 dateTo = sdf.parse(to);
             }
-            new ThreadPool("reindex").scheduler().execute(new ReIndexService(context, dateFrom, dateTo));
+            new Thread(new ReIndexService(context.getClient(), context.getAlias(), target, dateFrom, dateTo)).start();
         } catch (ParseException e) {
             throw new uContentException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @RequestMapping(value = "/_reIndex/{operationId}", method = RequestMethod.GET)
+    public String get(@PathVariable String operationId) {
+        try {
+            XContentBuilder xContentBuilder = reIndexService.getLog(context.getClient(), context.getAlias(), operationId).toXContentBuilder();
+            return xContentBuilder.string();
+        } catch (IOException e) {
+            throw new uContentException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
