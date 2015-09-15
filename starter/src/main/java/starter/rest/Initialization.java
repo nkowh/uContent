@@ -76,10 +76,9 @@ public class Initialization {
                                      @RequestParam(defaultValue = "1") int replicas) {
         try {
             Client client = context.getClient();
+
             //check and create indices
-
             String indices = context.getAlias() + Constant.INDICES_SUFFIX;
-
             IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(indices).execute().actionGet();
             if (!indicesExistsResponse.isExists()){
                 //添加分片和副本设置，默认五个主分片，一个副本
@@ -90,7 +89,7 @@ public class Initialization {
             }
 
             //check again
-            if (client.admin().indices().prepareExists(context.getIndex()).execute().actionGet().isExists()){
+            if (client.admin().indices().prepareExists(indices).execute().actionGet().isExists()){
                 userService.initialUserData();
                 groupService.initialGroupData();
             }
