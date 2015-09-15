@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.text.ParseException;
 
 @RestController
-@RequestMapping(value="/svc",produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/svc", produces = MediaType.APPLICATION_JSON_VALUE)
 public class Documents {
 
     @Autowired
@@ -24,16 +24,16 @@ public class Documents {
 
     @RequestMapping(value = "/{type}", method = {RequestMethod.GET})
     public String query(@PathVariable String type,
-                        @RequestParam(defaultValue = "")String query,
-                        @RequestParam(defaultValue = "_fullText") String highlight,
+                        @RequestParam(defaultValue = "") String query,
+                        @RequestParam(defaultValue = "false") boolean highlight,
                         @RequestParam(defaultValue = "0") int start,
                         @RequestParam(defaultValue = "10") int limit,
-                        @RequestParam(defaultValue = "[]")SortBuilder[] sort,
+                        @RequestParam(defaultValue = "[]") SortBuilder[] sort,
                         @RequestParam(defaultValue = "false") boolean allowableActions) {
         try {
-            query = java.net.URLDecoder.decode(query,"UTF-8");
+            query = java.net.URLDecoder.decode(query, "UTF-8");
             String[] types = {type};
-            XContentBuilder xContentBuilder = documentService.query(types, query, start, limit, sort, highlight, allowableActions);
+            XContentBuilder xContentBuilder = documentService.query(types, query, start, limit, sort, allowableActions, highlight);
             return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -42,14 +42,14 @@ public class Documents {
 
     @RequestMapping(value = "", method = {RequestMethod.GET})
     public String all(@RequestParam(defaultValue = "") String[] types,
-                        @RequestParam(defaultValue = "") String query,
-                        @RequestParam(defaultValue = "_fullText") String highlight,
-                        @RequestParam(defaultValue = "0") int start,
-                        @RequestParam(defaultValue = "10") int limit,
-                        @RequestParam(defaultValue = "[]")SortBuilder[] sort,
-                        @RequestParam(defaultValue = "false") boolean allowableActions) {
+                      @RequestParam(defaultValue = "") String query,
+                      @RequestParam(defaultValue = "false") boolean highlight,
+                      @RequestParam(defaultValue = "0") int start,
+                      @RequestParam(defaultValue = "10") int limit,
+                      @RequestParam(defaultValue = "[]") SortBuilder[] sort,
+                      @RequestParam(defaultValue = "false") boolean allowableActions) {
         try {
-            XContentBuilder xContentBuilder = documentService.query(types, query, start, limit, sort, highlight, allowableActions);
+            XContentBuilder xContentBuilder = documentService.query(types, query, start, limit, sort, allowableActions, highlight);
             return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -37,8 +37,12 @@ Ext.define('starter.view.main.document.FullTextSearch', {
                 setupRowData: function (record, rowIndex, rowValues) {
                     var headerCt = this.view.headerCt,
                         colspan = headerCt.getColumnCount();
+                   var html=''
+                    Ext.Object.each(record.get("highlight"), function (key, value) {
+                        html+='<div style="padding: 1em">' + value + '</div>'
+                    });
                     Ext.apply(rowValues, {
-                        rowBody: '<div style="padding: 1em">' + record.get("highlight") + '</div>',
+                        rowBody: html,
                         rowBodyColspan: colspan
                     });
                 }
@@ -47,6 +51,7 @@ Ext.define('starter.view.main.document.FullTextSearch', {
                 trackOver: false,
                 stripeRows: false
             },
+
             columns: [
                 {text: 'Score', dataIndex: 'score', xtype: 'numbercolumn', flex: 1, sortable: false},
                 {text: 'Name', dataIndex: 'name', flex: 1, sortable: false},
@@ -74,7 +79,7 @@ Ext.define('starter.view.main.document.FullTextSearch', {
     },
 
     listeners: {
-        // select: 'onDocumentSelected'
+        itemdblclick: 'showImage'
     }
 
     //afterRender: function(){

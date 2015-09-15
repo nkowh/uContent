@@ -84,7 +84,7 @@ Ext.define('starter.view.monitor.Node', {
         }],
         listeners: {
             afterrender: 'onTimeChartRendered',
-            destroy: 'onTimeChartDestroy'
+            deactivate: 'onTimeChartDestroy'
         }
     }]
 

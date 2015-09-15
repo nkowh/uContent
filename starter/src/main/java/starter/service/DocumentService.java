@@ -7,21 +7,22 @@ import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.sax.BodyContentHandler;
+import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateResponse;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
+import org.elasticsearch.common.collect.ImmutableOpenMap;
+import org.elasticsearch.common.hppc.cursors.ObjectCursor;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.joda.time.LocalDateTime;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.elasticsearch.index.query.BoolFilterBuilder;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.index.query.TermFilterBuilder;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.slf4j.Logger;
@@ -61,19 +62,48 @@ public class DocumentService {
 
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
+    private Set<String> getFulltextProperties(String[] types) throws IOException {
+        Set<String> keys = new HashSet<>();
+        GetMappingsResponse response = context.getClient().admin().indices().prepareGetMappings(context.getIndex()).setTypes(types).execute().actionGet();
+        ImmutableOpenMap<String, MappingMetaData> map = response.getMappings().get(context.getIndex());
+        for (ObjectCursor<String> key : map.keys()) {
+            //keys.addAll(((Map) map.get(key.value).getSourceAsMap().get("properties")).keySet());
+            Map properties = (Map) map.get(key.value).getSourceAsMap().get("properties");
+            for (Object name : properties.keySet()) {
+                Map attribute = (Map) properties.get(name);
+                if ("string".equals(attribute.get("type"))) {
+                    keys.add(name.toString());
+                }
+            }
 
-    public XContentBuilder query(String[] types, String query, int start, int limit, SortBuilder[] sort, String highlight, boolean allowableActions) throws IOException {
+        }
+
+        keys.add("_fullText");
+        return keys;
+    }
+
+
+    public XContentBuilder query(String[] types, String query, int start, int limit, SortBuilder[] sort, boolean allowableActions, boolean fulltext) throws IOException {
+
         SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setFrom(start).setSize(limit);
         //set types
-        if (types != null && types.length > 0) {
-            searchRequestBuilder.setTypes(types);
-        } else {
-            List<String> allTypes = typeService.getAllTypes();
-            searchRequestBuilder.setTypes(allTypes.toArray(new String[]{}));
+        if (types == null || types.length == 0) {
+            types = typeService.getAllTypes().toArray(new String[]{});
         }
+        searchRequestBuilder.setTypes(types);
+        Set<String> keys = getFulltextProperties(types);
         //set query
         if (StringUtils.isNotBlank(query)) {
-            searchRequestBuilder.setQuery(query);
+            if (fulltext) {
+                BoolQueryBuilder booleanBuilder = QueryBuilders.boolQuery();
+                for (String key : keys) {
+                    searchRequestBuilder.addHighlightedField(key);
+                    booleanBuilder.should(QueryBuilders.matchQuery(key, query));
+                }
+
+                searchRequestBuilder.setQuery(booleanBuilder);
+            } else
+                searchRequestBuilder.setQuery(query);
         }
         //set sort
         if (sort != null && sort.length > 0) {
@@ -81,10 +111,7 @@ public class DocumentService {
                 searchRequestBuilder.addSort(sortBuilder);
             }
         }
-        //set highlight
-        if (StringUtils.isNotBlank(highlight)) {
-            searchRequestBuilder.addHighlightedField(highlight);
-        }
+
         //_fullText field not return
         String[] exclude = {"_streams._fullText"};
         searchRequestBuilder.setFetchSource(null, exclude);
@@ -238,12 +265,12 @@ public class DocumentService {
     }
 
 
-    private void validateAcl(List<Map<String, Object>> acl){
+    private void validateAcl(List<Map<String, Object>> acl) {
         Iterator<Map<String, Object>> it = acl.iterator();
-        while (it.hasNext()){
+        while (it.hasNext()) {
             Map<String, Object> map = it.next();
             Iterator<Map.Entry<String, Object>> iterator = map.entrySet().iterator();
-            while (iterator.hasNext()){// ignore illegal key
+            while (iterator.hasNext()) {// ignore illegal key
                 Map.Entry<String, Object> entry = iterator.next();
                 String key = entry.getKey();
                 if (!key.equals(Constant.FieldName.USER) && !key.equals(Constant.FieldName.PERMISSION)) {
@@ -255,13 +282,13 @@ public class DocumentService {
             }
             List<String> permission = (List<String>) map.get(Constant.FieldName.PERMISSION);
             List<String> per = new ArrayList<String>();
-            for(String s : permission){  //turn permission to lowerCase
+            for (String s : permission) {  //turn permission to lowerCase
                 per.add(s.toLowerCase());
             }
             Iterator<String> iterator1 = per.iterator();
-            while (iterator1.hasNext()){//  ignore illegal permission and turn permission to lowerCase
+            while (iterator1.hasNext()) {//  ignore illegal permission and turn permission to lowerCase
                 String p = iterator1.next();
-                if(!p.equals(Constant.Permission.read.toString()) && !p.equals(Constant.Permission.write.toString())){
+                if (!p.equals(Constant.Permission.read.toString()) && !p.equals(Constant.Permission.write.toString())) {
                     iterator1.remove();
                 }
             }
@@ -459,8 +486,8 @@ public class DocumentService {
             if (key.equals(Constant.FieldName.STREAMS) || key.equals(Constant.FieldName.ACL)) {
                 continue;
             }
-            if (!keySet.contains(key)) {//ignore undefined property
-                logger.warn(String.format("The property: %s has not defined, Ignore!", key));
+            if (!keySet.contains(key)) {//ignore undefined getFulltextProperties
+                logger.warn(String.format("The getFulltextProperties: %s has not defined, Ignore!", key));
                 iterator.remove();
                 continue;
             }

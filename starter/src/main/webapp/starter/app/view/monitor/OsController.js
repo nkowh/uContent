@@ -23,7 +23,6 @@ Ext.define('starter.view.monitor.OsController', {
         this.timeChartTask = Ext.TaskManager.start({
             run: this.refresh,
             interval: 5000,
-            repeat: 120,
             scope: this
         });
     },
