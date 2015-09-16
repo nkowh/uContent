@@ -55,7 +55,7 @@ public class ReIndexService {
         searchRequestBuilder.setQuery(query);
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
-        xContentBuilder.startArray();
+        xContentBuilder.startArray("logs");
         for (SearchHit hit : searchResponse.getHits().getHits()) {
             xContentBuilder.startObject();
             Iterator<Map.Entry<String, Object>> iterator = hit.getSource().entrySet().iterator();
