@@ -42,18 +42,13 @@ Ext.define('starter.view.main.Main', {
                 }
             },
             flex: 0
-        },
-
-        listeners: {
-            //click: 'onTitleClick'
         }
     },
 
     tabBar: {
         flex: 1,
         layout: {
-            align: 'stretch',
-            overflowHandler: 'none'
+            align: 'stretch'
         }
     },
 
