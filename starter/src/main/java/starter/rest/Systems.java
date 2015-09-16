@@ -266,8 +266,8 @@ public class Systems {
         }
     }
 
-    @RequestMapping(value = "/_reindex/{operationId}", method = RequestMethod.GET)
-    public String getReindexLog(@PathVariable String operationId,
+    @RequestMapping(value = "/_reindex", method = RequestMethod.GET)
+    public String getReindexLog(@RequestParam String operationId,
                                 @RequestParam(defaultValue = "30") int size) {
         try {
             return reIndexService.getReindexLog(operationId, size).string();
@@ -278,7 +278,11 @@ public class Systems {
 
     @RequestMapping(value = "/_reindex/_status", method = RequestMethod.GET)
     public String reindexStatus() {
-        return "";
+        try {
+            return reIndexService.check();
+        } catch (IOException e) {
+            throw new uContentException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 

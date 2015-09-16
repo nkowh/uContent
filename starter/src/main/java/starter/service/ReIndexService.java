@@ -5,12 +5,13 @@ import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
+import org.elasticsearch.action.admin.indices.exists.types.TypesExistsRequest;
+import org.elasticsearch.action.admin.indices.exists.types.TypesExistsResponse;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -19,7 +20,6 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.hppc.cursors.ObjectObjectCursor;
-import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -43,15 +43,15 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @Service
-public class ReIndexService{
+public class ReIndexService {
 
     @Autowired
     private RequestContext context;
 
 
     public XContentBuilder getReindexLog(String operationId, int size) throws IOException {
-        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch("$system").setTypes("$reindex").setSize(size).addSort("timestamp", SortOrder.DESC);
-        String query = "{\"term\":{\"operationId\":" + operationId +"}}";
+        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch("$system").setTypes("reindexLog").setSize(size).addSort("timestamp", SortOrder.DESC);
+        String query = "{\"term\":{\"operationId\":" + operationId + "}}";
         searchRequestBuilder.setQuery(query);
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
@@ -69,7 +69,40 @@ public class ReIndexService{
         return xContentBuilder;
     }
 
-    public static class ReindexJob implements Runnable{
+
+    public XContentBuilder check() throws IOException {
+        String index = context.getIndex();
+//        String[] indices = new String[];
+//        indices[0] = "$system";
+//        TypesExistsRequest typesExistsRequest = new TypesExistsRequest(indices, "reindexSummary");
+//        TypesExistsResponse typesExistsResponse = context.getClient().admin().indices().typesExists(typesExistsRequest).actionGet();
+//        if (!typesExistsResponse.isExists()) {
+//            return "";
+//        }
+        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch("$system").setTypes("reindexSummary").addSort("operationId", SortOrder.DESC);
+        String query = "{\"term\":{\"srcIndex\":\"" + index + "\"}}";
+        searchRequestBuilder.setQuery(query);
+        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+        SearchHit[] hits = searchResponse.getHits().getHits();
+        XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
+        if (hits.length > 0) {
+            SearchHit hit = hits[0];
+            boolean isFinished = Boolean.valueOf(hit.getSource().get("isFinished").toString());
+            xContentBuilder.field("isFinished", isFinished);
+            if (!isFinished) {
+                xContentBuilder.field("operationId", hit.getSource().get("operationId").toString())
+                .field("srcIndex", hit.getSource().get("srcIndex").toString())
+                .field("targetIndex", hit.getSource().get("targetIndex").toString())
+                .field("dateFrom", hit.getSource().get("dateFrom"))
+                .field("dateTo", hit.getSource().get("dateTo"))
+                .field("total", hit.getSource().get("total"));
+            }
+            xContentBuilder.endObject();
+        }
+        return xContentBuilder;
+    }
+
+    public static class ReindexJob implements Runnable {
 
         private Client client;
         private String alias;
@@ -108,8 +141,8 @@ public class ReIndexService{
             }
         }
 
-        private String[] originalName(String alias){
-            if(!client.admin().indices().prepareExists(alias).execute().actionGet().isExists()){
+        private String[] originalName(String alias) {
+            if (!client.admin().indices().prepareExists(alias).execute().actionGet().isExists()) {
                 logger.error("The index: " + alias + " which to be reIndexed is not exist");
                 throw new RuntimeException("The index: " + alias + " which to be reIndexed is not exist");
             }
@@ -119,6 +152,7 @@ public class ReIndexService{
         }
 
         private void copyMappings(String index, String target) throws ExecutionException, InterruptedException, IOException {
+            logger.info(String.format("copy mappings from %s to %s start......", index, target));
             IndicesExistsResponse indicesExistsResponse = client.admin().indices().prepareExists(target).execute().actionGet();
             if (indicesExistsResponse.isExists()) {
                 return;
@@ -128,9 +162,9 @@ public class ReIndexService{
             XContentBuilder xContentBuilder = XContentFactory.jsonBuilder();
             xContentBuilder.startObject();
             xContentBuilder.startObject("mappings");
-            while(iterator.hasNext()){
+            while (iterator.hasNext()) {
                 ObjectObjectCursor<String, ImmutableOpenMap<String, MappingMetaData>> entry = iterator.next();
-                for(ObjectObjectCursor<String, MappingMetaData> typeEntry : entry.value){
+                for (ObjectObjectCursor<String, MappingMetaData> typeEntry : entry.value) {
                     xContentBuilder.field(typeEntry.key);
                     xContentBuilder.map(typeEntry.value.sourceAsMap());
                 }
@@ -139,9 +173,10 @@ public class ReIndexService{
             CreateIndexRequest createIndexRequest = new CreateIndexRequest(target);
             createIndexRequest.source(xContentBuilder);
             client.admin().indices().create(createIndexRequest).actionGet();
+            logger.info(String.format("copy mappings from %s to %s end.", index, target));
         }
 
-        private String name(String index){
+        private String name(String index) {
             if (!index.contains("_v")) {
                 return index + "_v1";
             }
@@ -152,7 +187,7 @@ public class ReIndexService{
             return prefix + newSuffix;
         }
 
-        private void copyIndex(String index, String target, Date from, Date to){
+        private void copyIndex(String index, String target, Date from, Date to) throws IOException {
             BulkProcessor bulkProcessor = null;
             try {
                 RangeFilterBuilder filterBuilder = null;
@@ -162,7 +197,7 @@ public class ReIndexService{
                 if (to != null) {
                     if (filterBuilder == null) {
                         filterBuilder = FilterBuilders.rangeFilter(Constant.FieldName.CREATEDON).to(to);
-                    }else{
+                    } else {
                         filterBuilder.to(to);
                     }
                 }
@@ -171,37 +206,54 @@ public class ReIndexService{
                     searchRequestBuilder.setPostFilter(filterBuilder);
                 }
                 SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-                bulkProcessor = initBulkProcessor(index, target, sdf.format(new Date()), searchResponse.getHits().getTotalHits());
-                do{
+                String operationId = new Date().getTime() + "";
+                long total = searchResponse.getHits().getTotalHits();
+                summary(operationId, index, target, dateFrom, dateTo, total);//记录此次reindex的总述信息
+                bulkProcessor = initBulkProcessor(operationId, total);
+                logger.info(String.format("copy index from %s to %s start......", index, target));
+                do {
                     searchResponse = client.prepareSearchScroll(searchResponse.getScrollId()).setScroll("1m").execute().actionGet();
-                    for(SearchHit hit : searchResponse.getHits().getHits()){
+                    for (SearchHit hit : searchResponse.getHits().getHits()) {
                         String type = hit.getType();
                         Map<String, Object> source = hit.getSource();
                         bulkProcessor.add(new IndexRequest(target, type, hit.getId()).source(source));
                     }
-                }while(searchResponse.getHits().getHits().length > 0);
-            } finally{
+                } while (searchResponse.getHits().getHits().length > 0);
+            } finally {
                 bulkProcessor.flush();
                 bulkProcessor.close();
+                logger.info(String.format("copy index from %s to %s end.", index, target));
             }
         }
 
-        private BulkProcessor initBulkProcessor(final String index, final String target, final String operationId, final long total){
+        private void summary(String operationId, String srcIndex, String target, Date dateFrom, Date dateTo, long total) throws IOException {
+            XContentBuilder xContentBuilder = XContentFactory.jsonBuilder()
+                    .startObject()
+                    .field("operationId", operationId)
+                    .field("srcIndex", srcIndex)
+                    .field("targetIndex", target)
+                    .field("dateFrom", dateFrom)
+                    .field("dateTo", dateTo)
+                    .field("total", total)
+                    .field("isFinished", false)
+                    .endObject();
+            client.prepareIndex("$system", "reindexSummary", operationId).setSource(xContentBuilder).execute().actionGet();
+            logger.info(String.format("log reindexSummary, operationId=%s", operationId));
+
+        }
+
+        private BulkProcessor initBulkProcessor(final String operationId, final long total) {
             return BulkProcessor.builder(client, new BulkProcessor.Listener() {
                 public void beforeBulk(long executionId, BulkRequest request) {
                     logger.info(String.format("executionId:%s, numberOfActions:%s", executionId, request.numberOfActions()));
                 }
 
                 public void afterBulk(long executionId, BulkRequest bulkRequest, BulkResponse response) {
-                    //TODO 进度记录
                     try {
                         double rate = ((bulkRequest.numberOfActions() + finished) / total) * 100;
                         XContentBuilder xContentBuilder = XContentFactory.jsonBuilder()
                                 .startObject()
                                 .field("operationId", operationId)
-                                .field("srcIndex", index)
-                                .field("targetIndex", target)
                                 .field("numberOfActions", bulkRequest.numberOfActions())
                                 .field("finished", bulkRequest.numberOfActions() + finished)
                                 .field("total", total)
@@ -209,9 +261,12 @@ public class ReIndexService{
                                 .field("timestamp", new Date().getTime())
                                 .field("executionId", executionId)
                                 .endObject();
-                        client.prepareIndex("$system", "$reindex").setSource(xContentBuilder).execute().actionGet();
+                        client.prepareIndex("$system", "reindexLog").setSource(xContentBuilder).execute().actionGet();
                         finished += bulkRequest.numberOfActions();
                         logger.info(xContentBuilder.string());
+                        if (bulkRequest.numberOfActions() + finished == total) {
+                            client.prepareUpdate("$system", "reindexSummary", operationId).setDoc("isFinished", true).execute().actionGet();
+                        }
                     } catch (IOException e) {
                         logger.error(e.getMessage());
                     }
@@ -224,54 +279,21 @@ public class ReIndexService{
         }
 
 
-        private void alias(String[] indices, String newIndex, String alias){
+        private void alias(String[] indices, String newIndex, String alias) {
             IndicesAliasesRequest indicesAliasesRequest = new IndicesAliasesRequest();
             indicesAliasesRequest.removeAlias(indices, alias);
             indicesAliasesRequest.addAlias(alias, newIndex);
-            client.admin().indices().aliases(indicesAliasesRequest, new ActionListener<IndicesAliasesResponse>(){
+            client.admin().indices().aliases(indicesAliasesRequest, new ActionListener<IndicesAliasesResponse>() {
                 public void onResponse(IndicesAliasesResponse indicesAliasesResponse) {
                     //TODO 删除原索引
                     //client.admin().indices().prepareDelete(request.param("index")).execute();
                 }
+
                 public void onFailure(Throwable e) {
                     //TODO
                 }
             });
         }
     }
-
-
-
-//    private void check(String alias) {
-//        IndicesExistsResponse existsResponse = client.admin().indices().prepareExists(index).execute().actionGet();
-//        if (existsResponse.isExists()) {
-//            if (client.admin().indices().prepareTypesExists(index).setTypes("$reindex").execute().actionGet().isExists()) {
-//                SearchResponse $reindex = client.prepareSearch("$system").setTypes("$reindex").addSort(Constant.FieldName.CREATEDON, SortOrder.DESC).execute().actionGet();
-//                SearchHit[] hits = $reindex.getHits().getHits();
-//                if(hits.length > 0){
-//                    SearchHit last = hits[0];
-//                    long finished = Long.valueOf(last.getSource().get("finished").toString());
-//                    long total = Long.valueOf(last.getSource().get("total").toString());
-//                    if(finished < total){
-//                        logger.error("Current reindex operation canceled, because there exist a reindex job which has not finished yet");
-//                        //TODO
-//                        throw new RuntimeException("Current reindex operation canceled, because there exist a reindex job which has not finished yet");
-//                    }
-//                }
-//            }
-//        }
-//    }
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
