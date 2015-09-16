@@ -14,6 +14,8 @@ import starter.RequestContext;
 import starter.service.fs.FileSystem;
 import starter.uContentException;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import java.io.IOException;
 import java.util.*;
 
@@ -33,12 +35,12 @@ public class StreamService {
         GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.read);
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startArray();
         Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
-        if(streams != null){
+        if (streams != null) {
             List<Map<String, Object>> _streams = (List<Map<String, Object>>) streams;
-            for(Map<String, Object> map : _streams){
+            for (Map<String, Object> map : _streams) {
                 xContentBuilder.startObject();
                 Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
-                while (it.hasNext()){
+                while (it.hasNext()) {
                     Map.Entry<String, Object> entry = it.next();
                     xContentBuilder.field(entry.getKey(), entry.getValue());
                 }
@@ -54,12 +56,12 @@ public class StreamService {
         GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.read);
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
         Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
-        if(streams != null){
+        if (streams != null) {
             List<Map<String, Object>> _streams = (List<Map<String, Object>>) streams;
-            for(Map<String, Object> map : _streams){
+            for (Map<String, Object> map : _streams) {
                 if (map.get(Constant.FieldName.STREAMID).toString().equals(streamId)) {
                     Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
-                    while (it.hasNext()){
+                    while (it.hasNext()) {
                         Map.Entry<String, Object> entry = it.next();
                         xContentBuilder.field(entry.getKey(), entry.getValue());
                     }
@@ -77,7 +79,7 @@ public class StreamService {
         Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
         if (streams != null) {
             List<Map<String, Object>> _streams = (List<Map<String, Object>>) streams;
-            for(Map<String, Object> map : _streams){
+            for (Map<String, Object> map : _streams) {
                 if (map.get(Constant.FieldName.STREAMID).toString().equals(streamId)) {
                     byte[] bytes = fs.read(map.get(Constant.FieldName.STREAMID).toString());
                     if (bytes == null) {
@@ -105,7 +107,7 @@ public class StreamService {
             List<Map<String, Object>> _streams = (List<Map<String, Object>>) streams;
             Iterator<Map<String, Object>> it = _streams.iterator();
             boolean found = false;
-            while (it.hasNext()){
+            while (it.hasNext()) {
                 Map<String, Object> entry = it.next();
                 if (streamIds.contains(entry.get(Constant.FieldName.STREAMID).toString())) {
                     it.remove();
@@ -127,7 +129,7 @@ public class StreamService {
     public XContentBuilder add(String type, String id, Integer order, List<MultipartFile> files) throws IOException {
         GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.write);
         List<Map<String, Object>> newStreams = new ArrayList<Map<String, Object>>();
-        for(MultipartFile file : files){
+        for (MultipartFile file : files) {
             Map<String, Object> stream = new HashMap<String, Object>();
             String fileId = fs.write(file.getBytes());
             if (StringUtils.isBlank(fileId)) {
@@ -138,6 +140,13 @@ public class StreamService {
             stream.put(Constant.FieldName.LENGTH, file.getSize());
             stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
             stream.put(Constant.FieldName.FULLTEXT, documentService.parse(file.getInputStream()));
+
+            if ("image/tiff".equalsIgnoreCase(file.getContentType())) {
+                ImageReader reader = ImageIO.getImageReadersByFormatName("tif").next();
+                reader.setInput(ImageIO.createImageInputStream(file.getInputStream()));
+                int pageCount = reader.getNumImages(true);
+                stream.put(Constant.FieldName.PAGECOUNT, pageCount);
+            }
             newStreams.add(stream);
         }
         Object streams = getResponse.getSource().get(Constant.FieldName.STREAMS);
@@ -148,7 +157,7 @@ public class StreamService {
                 order = _streams.size();
             }
             _streams.addAll(order, newStreams);
-        }else{
+        } else {
             _streams = newStreams;
         }
         Map<String, Object> streamsMap = new HashMap<String, Object>();
@@ -156,9 +165,9 @@ public class StreamService {
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(streamsMap).execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
         xContentBuilder.field("_index", context.getIndex())
-                    .field("_type", type)
-                    .field("_id", id)
-                    .field("_version", updateResponse.getVersion());
+                .field("_type", type)
+                .field("_id", id)
+                .field("_version", updateResponse.getVersion());
         xContentBuilder.endObject();
         return xContentBuilder;
     }

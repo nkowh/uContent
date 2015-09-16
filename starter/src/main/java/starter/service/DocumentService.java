@@ -37,6 +37,8 @@ import starter.rest.Json;
 import starter.service.fs.FileSystem;
 import starter.uContentException;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -188,6 +190,12 @@ public class DocumentService {
                 stream.put(Constant.FieldName.LENGTH, file.getSize());
                 stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
                 stream.put(Constant.FieldName.FULLTEXT, parse(file.getInputStream()));
+                if ("image/tiff".equalsIgnoreCase(file.getContentType())) {
+                    ImageReader reader = ImageIO.getImageReadersByFormatName("tif").next();
+                    reader.setInput(ImageIO.createImageInputStream(file.getInputStream()));
+                    int pageCount = reader.getNumImages(true);
+                    stream.put(Constant.FieldName.PAGECOUNT, pageCount);
+                }
                 streams.add(stream);
             }
             body.put(Constant.FieldName.STREAMS, streams);

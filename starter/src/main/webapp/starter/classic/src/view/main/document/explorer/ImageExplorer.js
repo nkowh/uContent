@@ -36,7 +36,7 @@ Ext.define('starter.view.main.document.explorer.ImageExplorer', {
                     '<ol>',
                     '<tpl for=".">',
                     '<li>',
-                    '<img style="width:150px" src="/svc/' + me.record.get('_type') + '/' + me.record.get('_id') + '/_streams/{streamId}?accept={contentType}" />',
+                    '<img style="width:150px" src="/svc/' + me.record.get('_type') + '/' + me.record.get('_id') + '/_streams/{streamId}?accept={contentType}&pageIndex={pageIndex}" />',
                     '</li>',
                     '</tpl>',
                     '</ol>'

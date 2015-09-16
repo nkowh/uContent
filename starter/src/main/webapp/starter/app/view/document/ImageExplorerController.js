@@ -12,7 +12,19 @@ Ext.define('starter.view.document.ImageExplorerController', {
             callback: function (opts, success, response) {
                 if (!success)return;
                 var obj = Ext.decode(response.responseText);
-                images.setData(obj._streams);
+                var data = [];
+                Ext.Array.each(obj._streams, function (stream) {
+                    if (!stream.pageCount || stream.pageCount == 0) {
+                        data.push(stream)
+                    } else {
+                        for (var i = 0; i < stream.pageCount; i++) {
+                            data.push(Ext.Object.merge({pageIndex: i}, stream))
+                        }
+                    }
+                });
+                images.setData(data);
+
+
                 var source = {};
                 Ext.Array.each(Ext.Object.getAllKeys(obj), function (key) {
                     if (Ext.String.startsWith(key, '_'))return;
@@ -44,7 +56,7 @@ Ext.define('starter.view.document.ImageExplorerController', {
 
         var big = explorer.getComponent('big');
         var image = big.down('image');
-        image.setSrc('/svc/' + explorer.record.get('_type') + '/' + explorer.record.get('_id') + '/_streams/' + selected[0].get('streamId') + '?accept=' + selected[0].get('contentType'))
+        image.setSrc('/svc/' + explorer.record.get('_type') + '/' + explorer.record.get('_id') + '/_streams/' + selected[0].get('streamId') + '?accept=' + selected[0].get('contentType') + '&pageIndex=' + selected[0].get('pageIndex'))
         var node = thumbnails.getNode(selected[0]);
         //node.style['background-color'] = '#2a3f5d';
         node.style.border = '3px solid #2a3f5d';

@@ -6,7 +6,7 @@ Ext.define('starter.view.document.ImageExplorerModel', {
     data: {},
     stores: {
         images: {
-            fields:['streamId','size','contentType']
+            fields: ['streamId', 'size', 'contentType', 'pageIndex']
         }
     }
 

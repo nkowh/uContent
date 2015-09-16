@@ -11,8 +11,12 @@ import starter.service.Constant;
 import starter.service.StreamService;
 import starter.uContentException;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -56,6 +60,35 @@ public class Streams {
         getStream(type, id, streamId, response);
     }
 
+    @RequestMapping(value = "{type}/{id}/_streams/{streamId}", method = RequestMethod.GET, params = "accept=image/tiff")
+    public void getTiff(@PathVariable String type, @PathVariable String id, @PathVariable String streamId, @RequestParam(defaultValue = "0") int pageIndex, HttpServletResponse response) {
+        InputStream stream = null;
+        try {
+            Map<String, Object> result = streamService.getStream(type, id, streamId);
+            stream = new ByteArrayInputStream((byte[]) result.get("bytes"));
+            ImageReader reader = ImageIO.getImageReadersByFormatName("tif").next();
+            reader.setInput(ImageIO.createImageInputStream(stream));
+            int pageCount = reader.getNumImages(true);
+            BufferedImage image = reader.read(pageIndex);
+            if (image.getColorModel().getPixelSize() > 8) {
+                response.setContentType("image/jpeg");
+                ImageIO.write(image, "jpeg", response.getOutputStream());
+            } else {
+                response.setContentType("image/png");
+                ImageIO.write(image, "png", response.getOutputStream());
+            }
+
+            // response.setContentLength(Integer.valueOf(result.get(Constant.FieldName.LENGTH).toString()));
+            //stream = new ByteArrayInputStream((byte[]) result.get("bytes"));
+            //IOUtils.copy(stream, response.getOutputStream());
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        } finally {
+            IOUtils.closeQuietly(stream);
+
+        }
+    }
+
     @RequestMapping(value = "{type}/{id}/_streams/{streamId}", method = RequestMethod.GET, produces = "image/*")
     public void getStream(@PathVariable String type, @PathVariable String id, @PathVariable String streamId, HttpServletResponse response) {
         InputStream stream = null;
@@ -72,6 +105,7 @@ public class Streams {
 
         }
     }
+
 
     @RequestMapping(value = "{type}/{id}/_streams", method = RequestMethod.DELETE, consumes = "application/json")
     public Object delete(@PathVariable String type, @PathVariable String id, @RequestBody List<String> streamIds) {
