@@ -266,7 +266,7 @@ public class Systems {
         }
     }
 
-    @RequestMapping(value = "/_reindex", method = RequestMethod.GET)
+    @RequestMapping(value = "_reindex", method = RequestMethod.GET)
     public String getReindexLog(@RequestParam String operationId,
                                 @RequestParam(defaultValue = "30") int size) {
         try {
@@ -276,7 +276,7 @@ public class Systems {
         }
     }
 
-    @RequestMapping(value = "/_reindex/_status", method = RequestMethod.GET)
+    @RequestMapping(value = "_reindex/_status", method = RequestMethod.GET)
     public String reindexStatus() {
         try {
             return reIndexService.check().string();
