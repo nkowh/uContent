@@ -264,11 +264,11 @@ public class ReIndexService {
                                 .field("executionId", executionId)
                                 .endObject();
                         client.prepareIndex("$system", "reindexLog").setSource(xContentBuilder).execute().actionGet();
-                        finished += bulkRequest.numberOfActions();
-                        logger.info(xContentBuilder.string());
                         if (bulkRequest.numberOfActions() + finished == total) {
                             client.prepareUpdate("$system", "reindexSummary", operationId).setDoc("isFinished", true).execute().actionGet();
                         }
+                        finished += bulkRequest.numberOfActions();
+                        logger.info(xContentBuilder.string());
                     } catch (IOException e) {
                         logger.error(e.getMessage());
                     }
