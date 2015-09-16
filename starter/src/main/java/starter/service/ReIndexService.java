@@ -71,20 +71,21 @@ public class ReIndexService {
 
 
     public XContentBuilder check() throws IOException {
+        XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
         String index = context.getIndex();
-//        String[] indices = new String[];
-//        indices[0] = "$system";
-//        TypesExistsRequest typesExistsRequest = new TypesExistsRequest(indices, "reindexSummary");
-//        TypesExistsResponse typesExistsResponse = context.getClient().admin().indices().typesExists(typesExistsRequest).actionGet();
-//        if (!typesExistsResponse.isExists()) {
-//            return "";
-//        }
+        String[] indices = new String[1];
+        indices[0] = "$system";
+        TypesExistsRequest typesExistsRequest = new TypesExistsRequest(indices, "reindexSummary");
+        TypesExistsResponse typesExistsResponse = context.getClient().admin().indices().typesExists(typesExistsRequest).actionGet();
+        if (!typesExistsResponse.isExists()) {
+            xContentBuilder.field("isFinished", true).endObject();
+            return xContentBuilder;
+        }
         SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch("$system").setTypes("reindexSummary").addSort("operationId", SortOrder.DESC);
         String query = "{\"term\":{\"srcIndex\":\"" + index + "\"}}";
         searchRequestBuilder.setQuery(query);
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         SearchHit[] hits = searchResponse.getHits().getHits();
-        XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
         if (hits.length > 0) {
             SearchHit hit = hits[0];
             boolean isFinished = Boolean.valueOf(hit.getSource().get("isFinished").toString());
@@ -99,7 +100,7 @@ public class ReIndexService {
             }
             xContentBuilder.endObject();
         }else{
-            xContentBuilder.field("isFinished", true);
+            xContentBuilder.field("isFinished", true).endObject();
         }
         return xContentBuilder;
     }
