@@ -53,6 +53,7 @@ Ext.application({
         if ('false' === status) {
             me.setMainView('starter.view.init.InitFrame');
         } else if (Ext.util.Cookies.get('userId') && Ext.util.Cookies.get('digest')) {
+            Ext.Ajax.setDefaultHeaders({Authorization: Ext.util.Cookies.get('digest')})
             Ext.Ajax.addListener('requestexception', function (conn, response, options, eOpts) {
                 if (response.status === 401) {
                     Ext.util.Cookies.clear('userId');
