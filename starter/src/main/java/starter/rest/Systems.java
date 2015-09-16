@@ -279,7 +279,7 @@ public class Systems {
     @RequestMapping(value = "/_reindex/_status", method = RequestMethod.GET)
     public String reindexStatus() {
         try {
-            return reIndexService.check();
+            return reIndexService.check().string();
         } catch (IOException e) {
             throw new uContentException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
