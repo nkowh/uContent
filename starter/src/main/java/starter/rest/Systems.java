@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
 
 @RestController
 @RequestMapping(value="svc/",produces = MediaType.APPLICATION_JSON_VALUE)
@@ -247,7 +246,7 @@ public class Systems {
         return groupService.checkUserInAdminGroup();
     }
 
-    @RequestMapping(value = "_reIndex", method = RequestMethod.POST)
+    @RequestMapping(value = "_reindex", method = RequestMethod.POST)
     public void reindex(@RequestParam(defaultValue = "")String target,
                         @RequestParam(defaultValue = "")String from,
                         @RequestParam(defaultValue = "")String to) {
@@ -261,24 +260,24 @@ public class Systems {
             if (StringUtils.isNotBlank(to)) {
                 dateTo = sdf.parse(to);
             }
-            new Thread(new ReIndexService(context.getClient(), context.getAlias(), target, dateFrom, dateTo)).start();
+            new Thread(new ReIndexService.ReindexJob(context.getClient(), context.getAlias(), target, dateFrom, dateTo)).start();
         } catch (ParseException e) {
             throw new uContentException(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
 
-    @RequestMapping(value = "/_reIndex", method = RequestMethod.GET)
-    public String queryReIndexLog(@RequestParam(defaultValue = "")String query) {
+    @RequestMapping(value = "/_reindex/{operationId}", method = RequestMethod.GET)
+    public String getReindexLog(@PathVariable String operationId,
+                                @RequestParam(defaultValue = "30") int size) {
         try {
-            XContentBuilder xContentBuilder = reIndexService.getAllReIndexLog(context.getClient(), context.getAlias(),query);
-            return xContentBuilder.string();
+            return reIndexService.getReindexLog(operationId, size).string();
         } catch (IOException e) {
             throw new uContentException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @RequestMapping(value = "/_reIndex/_status", method = RequestMethod.GET)
-    public String reIndexStatus(@RequestParam(defaultValue = "")String query) {
+    @RequestMapping(value = "/_reindex/_status", method = RequestMethod.GET)
+    public String reindexStatus() {
         return "";
     }
 
