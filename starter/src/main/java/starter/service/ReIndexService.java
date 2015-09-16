@@ -98,6 +98,8 @@ public class ReIndexService {
                 .field("total", hit.getSource().get("total"));
             }
             xContentBuilder.endObject();
+        }else{
+            xContentBuilder.field("isFinished", true);
         }
         return xContentBuilder;
     }
