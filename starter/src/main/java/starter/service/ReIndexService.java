@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 import starter.RequestContext;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -253,7 +254,9 @@ public class ReIndexService {
 
                 public void afterBulk(long executionId, BulkRequest bulkRequest, BulkResponse response) {
                     try {
-                        double rate = ((bulkRequest.numberOfActions() + finished) / total) * 100;
+                        Long _total = Long.valueOf(total);
+                        final BigDecimal b = new BigDecimal((bulkRequest.numberOfActions() + finished) / _total);
+                        double rate = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
                         XContentBuilder xContentBuilder = XContentFactory.jsonBuilder()
                                 .startObject()
                                 .field("operationId", operationId)
