@@ -81,27 +81,25 @@ public class ReIndexService {
             xContentBuilder.field("isFinished", true).endObject();
             return xContentBuilder;
         }
-        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch("$system").setTypes("reindexSummary").addSort("operationId", SortOrder.DESC);
-        String query = "{\"term\":{\"srcIndex\":\"" + index + "\"}}";
-        searchRequestBuilder.setQuery(query);
+        SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch("$system").setTypes("reindexSummary").addSort("operationId", SortOrder.DESC).setSize(1);
+//        String query = "{\"term\":{\"srcIndex\":\"" + index + "\"}}";
+//        searchRequestBuilder.setQuery(query);
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         SearchHit[] hits = searchResponse.getHits().getHits();
         if (hits.length > 0) {
             SearchHit hit = hits[0];
             boolean isFinished = Boolean.valueOf(hit.getSource().get("isFinished").toString());
-            xContentBuilder.field("isFinished", isFinished);
-            if (!isFinished) {
-                xContentBuilder.field("operationId", hit.getSource().get("operationId").toString())
-                .field("srcIndex", hit.getSource().get("srcIndex").toString())
-                .field("targetIndex", hit.getSource().get("targetIndex").toString())
-                .field("dateFrom", hit.getSource().get("dateFrom"))
-                .field("dateTo", hit.getSource().get("dateTo"))
-                .field("total", hit.getSource().get("total"));
-            }
-            xContentBuilder.endObject();
+            xContentBuilder.field("isFinished", isFinished)
+                    .field("operationId", hit.getSource().get("operationId").toString())
+                    .field("srcIndex", hit.getSource().get("srcIndex").toString())
+                    .field("targetIndex", hit.getSource().get("targetIndex").toString())
+                    .field("dateFrom", hit.getSource().get("dateFrom"))
+                    .field("dateTo", hit.getSource().get("dateTo"))
+                    .field("total", hit.getSource().get("total"));
         }else{
-            xContentBuilder.field("isFinished", true).endObject();
+            xContentBuilder.field("isFinished", true);
         }
+        xContentBuilder.endObject();
         return xContentBuilder;
     }
 
