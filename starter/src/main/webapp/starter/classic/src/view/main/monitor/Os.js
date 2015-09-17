@@ -5,7 +5,10 @@ Ext.define('starter.view.monitor.Os', {
     viewModel: 'os',
 
     listeners: {
-        afterrender: 'onAfterrender'
+        afterrender: 'onAfterrender',
+        activate: 'onActivate',
+        deactivate: 'onDeactivate'
+
     }
 
 });

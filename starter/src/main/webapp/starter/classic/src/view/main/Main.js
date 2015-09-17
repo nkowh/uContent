@@ -100,6 +100,7 @@ Ext.define('starter.view.main.Main', {
         }]
     }],
     listeners : {
-        afterrender : 'checkIsAdmin'
+        afterrender : 'checkIsAdmin',
+        tabchange:'onTabchange'
     }
 });

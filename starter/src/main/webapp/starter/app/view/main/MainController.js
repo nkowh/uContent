@@ -64,6 +64,13 @@ Ext.define('starter.view.main.MainController', {
                 }]
             });
         }
+    },
+
+    onTabchange: function (tabPanel, newCard, oldCard, eOpts) {
+        if (oldCard && oldCard.items.getAt(0))
+            oldCard.items.getAt(0).fireEvent('deactivate', {})
+        if (newCard && newCard.items.getAt(0))
+            newCard.items.getAt(0).fireEvent('activate', {})
     }
 
 });

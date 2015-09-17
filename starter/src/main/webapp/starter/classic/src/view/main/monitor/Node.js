@@ -83,8 +83,7 @@ Ext.define('starter.view.monitor.Node', {
             yField: 'jvm_mem_usage'
         }],
         listeners: {
-            afterrender: 'onTimeChartRendered',
-            deactivate: 'onTimeChartDestroy'
+            afterrender: 'startTimeChart'
         }
     }]
 
