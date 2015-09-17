@@ -36,7 +36,7 @@ import org.springframework.stereotype.Service;
 import starter.RequestContext;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
@@ -55,7 +55,7 @@ public class ReIndexService {
         searchRequestBuilder.setQuery(query);
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
-        xContentBuilder.startArray();
+        xContentBuilder.startArray("logs");
         for (SearchHit hit : searchResponse.getHits().getHits()) {
             xContentBuilder.startObject();
             Iterator<Map.Entry<String, Object>> iterator = hit.getSource().entrySet().iterator();
@@ -253,7 +253,8 @@ public class ReIndexService {
 
                 public void afterBulk(long executionId, BulkRequest bulkRequest, BulkResponse response) {
                     try {
-                        double rate = ((bulkRequest.numberOfActions() + finished) / total) * 100;
+                        Double _total = Double.valueOf(total);
+                        double rate = new BigDecimal((bulkRequest.numberOfActions() + finished) / _total).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
                         XContentBuilder xContentBuilder = XContentFactory.jsonBuilder()
                                 .startObject()
                                 .field("operationId", operationId)
@@ -278,7 +279,7 @@ public class ReIndexService {
                 public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
                     logger.info(String.format("executionId: %s failed\r\n, %s", executionId, failure.getMessage()));
                 }
-            }).setBulkActions(3000).setFlushInterval(TimeValue.timeValueSeconds(5)).setConcurrentRequests(0).build();
+            }).setBulkActions(5000).setFlushInterval(TimeValue.timeValueSeconds(5)).setConcurrentRequests(0).build();
         }
 
 
@@ -298,5 +299,6 @@ public class ReIndexService {
             });
         }
     }
+
 
 }
