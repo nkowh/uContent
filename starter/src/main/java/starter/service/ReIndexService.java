@@ -255,7 +255,7 @@ public class ReIndexService {
                 public void afterBulk(long executionId, BulkRequest bulkRequest, BulkResponse response) {
                     try {
                         Double _total = Double.valueOf(total);
-                        double rate = new BigDecimal((bulkRequest.numberOfActions() + finished) / _total).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
+                        double rate = new BigDecimal((bulkRequest.numberOfActions() + finished) / _total).setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
                         XContentBuilder xContentBuilder = XContentFactory.jsonBuilder()
                                 .startObject()
                                 .field("operationId", operationId)
