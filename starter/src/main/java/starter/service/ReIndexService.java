@@ -254,9 +254,8 @@ public class ReIndexService {
 
                 public void afterBulk(long executionId, BulkRequest bulkRequest, BulkResponse response) {
                     try {
-                        Long _total = Long.valueOf(total);
-                        final BigDecimal b = new BigDecimal((bulkRequest.numberOfActions() + finished) / _total);
-                        double rate = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
+                        Double _total = Double.valueOf(total);
+                        double rate = new BigDecimal((bulkRequest.numberOfActions() + finished) / _total).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
                         XContentBuilder xContentBuilder = XContentFactory.jsonBuilder()
                                 .startObject()
                                 .field("operationId", operationId)
@@ -281,7 +280,7 @@ public class ReIndexService {
                 public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
                     logger.info(String.format("executionId: %s failed\r\n, %s", executionId, failure.getMessage()));
                 }
-            }).setBulkActions(3000).setFlushInterval(TimeValue.timeValueSeconds(5)).setConcurrentRequests(0).build();
+            }).setBulkActions(5000).setFlushInterval(TimeValue.timeValueSeconds(5)).setConcurrentRequests(0).build();
         }
 
 
@@ -300,6 +299,23 @@ public class ReIndexService {
                 }
             });
         }
+    }
+
+
+    public static void main(String[] args) {
+
+//        final BigDecimal b = new BigDecimal((bulkRequest.numberOfActions() + finished) / _total);
+//        double rate = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
+
+        int intValue = 300000;
+        long total = 12345678;
+        Double doubleValue = Double.valueOf(total);
+        System.out.println(intValue / total);
+        System.out.println(intValue / doubleValue);
+        double v = new BigDecimal(intValue / doubleValue).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
+        System.out.println(v);
+
+
     }
 
 }
