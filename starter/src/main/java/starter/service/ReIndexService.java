@@ -112,12 +112,14 @@ public class ReIndexService {
         private String target;
         private Date dateFrom = null;
         private Date dateTo = null;
+        private String operationId;
         private long finished = 0l;
 
         private Logger logger = LoggerFactory.getLogger(ReindexJob.class);
 
-        public ReindexJob(Client client, String alias, String target, Date dateFrom, Date dateTo) {
+        public ReindexJob(Client client, String operationId, String alias, String target, Date dateFrom, Date dateTo) {
             this.client = client;
+            this.operationId = operationId;
             this.alias = alias;
             this.target = target;
             this.dateFrom = dateFrom;
@@ -179,7 +181,7 @@ public class ReIndexService {
             logger.info(String.format("copy mappings from %s to %s end.", index, target));
         }
 
-        private String name(String index) {
+        public static String name(String index) {
             if (!index.contains("_v")) {
                 return index + "_v1";
             }
@@ -209,10 +211,9 @@ public class ReIndexService {
                     searchRequestBuilder.setPostFilter(filterBuilder);
                 }
                 SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
-                String operationId = new Date().getTime() + "";
                 long total = searchResponse.getHits().getTotalHits();
-                summary(operationId, index, target, dateFrom, dateTo, total);//记录此次reindex的总述信息
-                bulkProcessor = initBulkProcessor(operationId, total);
+                summary(index, target, dateFrom, dateTo, total);//记录此次reindex的总述信息
+                bulkProcessor = initBulkProcessor(total);
                 logger.info(String.format("copy index from %s to %s start......", index, target));
                 do {
                     searchResponse = client.prepareSearchScroll(searchResponse.getScrollId()).setScroll("1m").execute().actionGet();
@@ -229,7 +230,7 @@ public class ReIndexService {
             }
         }
 
-        private void summary(String operationId, String srcIndex, String target, Date dateFrom, Date dateTo, long total) throws IOException {
+        private void summary(String srcIndex, String target, Date dateFrom, Date dateTo, long total) throws IOException {
             XContentBuilder xContentBuilder = XContentFactory.jsonBuilder()
                     .startObject()
                     .field("operationId", operationId)
@@ -245,7 +246,7 @@ public class ReIndexService {
 
         }
 
-        private BulkProcessor initBulkProcessor(final String operationId, final long total) {
+        private BulkProcessor initBulkProcessor(final long total) {
             return BulkProcessor.builder(client, new BulkProcessor.Listener() {
                 public void beforeBulk(long executionId, BulkRequest request) {
                     logger.info(String.format("executionId:%s, numberOfActions:%s", executionId, request.numberOfActions()));

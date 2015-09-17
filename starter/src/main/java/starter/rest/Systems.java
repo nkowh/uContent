@@ -2,6 +2,7 @@ package starter.rest;
 
 import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -247,7 +248,7 @@ public class Systems {
     }
 
     @RequestMapping(value = "_reindex", method = RequestMethod.POST)
-    public void reindex(@RequestParam(defaultValue = "")String target,
+    public String reindex(@RequestParam(defaultValue = "")String target,
                         @RequestParam(defaultValue = "")String from,
                         @RequestParam(defaultValue = "")String to) {
         Date dateFrom = null;
@@ -260,9 +261,18 @@ public class Systems {
             if (StringUtils.isNotBlank(to)) {
                 dateTo = sdf.parse(to);
             }
-            new Thread(new ReIndexService.ReindexJob(context.getClient(), context.getAlias(), target, dateFrom, dateTo)).start();
+            String operationId = new Date().getTime() + "";
+            new Thread(new ReIndexService.ReindexJob(context.getClient(), operationId, context.getAlias(), target, dateFrom, dateTo)).start();
+            XContentBuilder xContentBuilder = XContentFactory.jsonBuilder().startObject();
+            xContentBuilder.field("operationId", operationId)
+                    .field("srcIndex", context.getIndex())
+                    .field("targetIndex", StringUtils.isNotBlank(target) ? target : ReIndexService.ReindexJob.name(context.getIndex()));
+            xContentBuilder.endObject();
+            return xContentBuilder.string();
         } catch (ParseException e) {
             throw new uContentException(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (IOException e) {
+            throw new uContentException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
