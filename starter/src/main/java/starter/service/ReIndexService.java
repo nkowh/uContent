@@ -302,20 +302,4 @@ public class ReIndexService {
     }
 
 
-    public static void main(String[] args) {
-
-//        final BigDecimal b = new BigDecimal((bulkRequest.numberOfActions() + finished) / _total);
-//        double rate = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
-
-        int intValue = 300000;
-        long total = 12345678;
-        Double doubleValue = Double.valueOf(total);
-        System.out.println(intValue / total);
-        System.out.println(intValue / doubleValue);
-        double v = new BigDecimal(intValue / doubleValue).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue() * 100;
-        System.out.println(v);
-
-
-    }
-
 }
