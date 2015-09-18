@@ -91,8 +91,8 @@ public class ReIndexService {
             json.put("operationId", hit.getSource().get("operationId").toString());
             json.put("srcIndex", hit.getSource().get("srcIndex").toString());
             json.put("targetIndex", hit.getSource().get("targetIndex").toString());
-            json.put("dateFrom", hit.getSource().get("dateFrom").toString());
-            json.put("dateTo", hit.getSource().get("dateTo").toString());
+            json.put("dateFrom", hit.getSource().get("dateFrom"));
+            json.put("dateTo", hit.getSource().get("dateTo"));
             json.put("total", hit.getSource().get("total").toString());
         }else{
             json.put("isFinished", true);
