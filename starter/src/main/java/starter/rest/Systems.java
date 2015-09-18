@@ -251,10 +251,14 @@ public class Systems {
     public String reindex(@RequestParam(defaultValue = "")String target,
                         @RequestParam(defaultValue = "")String from,
                         @RequestParam(defaultValue = "")String to) {
-        Date dateFrom = null;
-        Date dateTo = null;
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         try {
+            Json json = reIndexService.check();
+            if (!((Boolean)json.get("isFinished"))) {
+                throw new uContentException("There exist a reindex job which has not finished yet", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            Date dateFrom = null;
+            Date dateTo = null;
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             if (StringUtils.isNotBlank(from)) {
                 dateFrom = sdf.parse(from);
             }
@@ -289,7 +293,7 @@ public class Systems {
     @RequestMapping(value = "_reindex/_status", method = RequestMethod.GET)
     public String reindexStatus() {
         try {
-            return reIndexService.check().string();
+            return reIndexService.check().toXContentBuilder().string();
         } catch (IOException e) {
             throw new uContentException(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

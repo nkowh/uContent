@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import starter.RequestContext;
+import starter.rest.Json;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -70,37 +71,33 @@ public class ReIndexService {
     }
 
 
-    public XContentBuilder check() throws IOException {
-        XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
-        String index = context.getIndex();
+    public Json check() throws IOException {
+        Json json = new Json();
         String[] indices = new String[1];
         indices[0] = "$system";
         TypesExistsRequest typesExistsRequest = new TypesExistsRequest(indices, "reindexSummary");
         TypesExistsResponse typesExistsResponse = context.getClient().admin().indices().typesExists(typesExistsRequest).actionGet();
         if (!typesExistsResponse.isExists()) {
-            xContentBuilder.field("isFinished", true).endObject();
-            return xContentBuilder;
+            json.put("isFinished", true);
+            return json;
         }
         SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch("$system").setTypes("reindexSummary").addSort("operationId", SortOrder.DESC).setSize(1);
-//        String query = "{\"term\":{\"srcIndex\":\"" + index + "\"}}";
-//        searchRequestBuilder.setQuery(query);
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         SearchHit[] hits = searchResponse.getHits().getHits();
         if (hits.length > 0) {
             SearchHit hit = hits[0];
             boolean isFinished = Boolean.valueOf(hit.getSource().get("isFinished").toString());
-            xContentBuilder.field("isFinished", isFinished)
-                    .field("operationId", hit.getSource().get("operationId").toString())
-                    .field("srcIndex", hit.getSource().get("srcIndex").toString())
-                    .field("targetIndex", hit.getSource().get("targetIndex").toString())
-                    .field("dateFrom", hit.getSource().get("dateFrom"))
-                    .field("dateTo", hit.getSource().get("dateTo"))
-                    .field("total", hit.getSource().get("total"));
+            json.put("isFinished", isFinished);
+            json.put("operationId", hit.getSource().get("operationId").toString());
+            json.put("srcIndex", hit.getSource().get("srcIndex").toString());
+            json.put("targetIndex", hit.getSource().get("targetIndex").toString());
+            json.put("dateFrom", hit.getSource().get("dateFrom").toString());
+            json.put("dateTo", hit.getSource().get("dateTo").toString());
+            json.put("total", hit.getSource().get("total").toString());
         }else{
-            xContentBuilder.field("isFinished", true);
+            json.put("isFinished", true);
         }
-        xContentBuilder.endObject();
-        return xContentBuilder;
+        return json;
     }
 
     public static class ReindexJob implements Runnable {
