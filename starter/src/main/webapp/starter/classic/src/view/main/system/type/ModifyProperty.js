@@ -116,7 +116,7 @@ Ext.define('starter.view.main.system.type.ModifyProperty', {
         dataIndex: 'order',
         width: 80,
         editor: {
-            allowBlank: true
+            allowBlank: false
         }
     }],
     selModel: 'cellmodel',

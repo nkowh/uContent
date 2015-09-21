@@ -56,7 +56,7 @@ public class ReIndexService {
         searchRequestBuilder.setQuery(query);
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
-        xContentBuilder.startArray("logs");
+        xContentBuilder.startArray("log");
         for (SearchHit hit : searchResponse.getHits().getHits()) {
             xContentBuilder.startObject();
             Iterator<Map.Entry<String, Object>> iterator = hit.getSource().entrySet().iterator();
@@ -275,7 +275,7 @@ public class ReIndexService {
                 public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
                     logger.info(String.format("executionId: %s failed\r\n, %s", executionId, failure.getMessage()));
                 }
-            }).setBulkActions(5000).setFlushInterval(TimeValue.timeValueSeconds(5)).setConcurrentRequests(0).build();
+            }).setBulkActions(1500).setFlushInterval(TimeValue.timeValueSeconds(5)).setConcurrentRequests(0).build();
         }
 
 

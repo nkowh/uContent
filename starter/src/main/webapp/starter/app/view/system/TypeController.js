@@ -8,27 +8,27 @@ Ext.define('starter.view.system.TypeController', {
     },
     openModifyWin: function (grid, record, tr, rowIndex, e, eOpts) {
         var me = this;
-        Ext.create('starter.view.main.system.type.Modify',{ record : record}).show();
-        return ;
+        Ext.create('starter.view.main.system.type.Modify', {record: record}).show();
+        return;
     },
     refreshType: function (sender, record) {
         var me = this;
         var store = this.getViewModel().getStore('types');
         store.load();
-        return ;
+        return;
     },
-    loadModifyData: function() {
+    loadModifyData: function () {
         var me = this;
-        var record =  this.getView().record;
+        var record = this.getView().record;
         this.getView().down('form').loadRecord(record);
         var type = record.get('name');
         Ext.Ajax.request({
-            url: '/svc/types/'+type,
+            url: '/svc/types/' + type,
             callback: function (options, success, response) {
-                if(!success){
-                    return ;
+                if (!success) {
+                    return;
                 }
-                if(response.responseText!=''){
+                if (response.responseText != '') {
                     var properties = Ext.decode(response.responseText);
                     //Ext.Array.each(properties.properties, function(property, index, countriesItSelf) {
                     //    if(property.index=='analyzed'){
@@ -41,85 +41,86 @@ Ext.define('starter.view.system.TypeController', {
                     me.getView().down('grid').bindStore(
                         Ext.create('Ext.data.Store', {
                             model: 'starter.model.Property',
-                            data : properties.properties,
-                            initData : properties.properties
+                            data: properties.properties,
+                            initData: properties.properties
                         }));
 
                 }
             }
         });
     },
-    deleteType : function(e){
+    deleteType: function (e) {
         var me = this;
         var record = this.getView().getSelectionModel().getSelection();
         var name = record[0].get('name');
-        if(record&&record.length>0){
-            Ext.Msg.confirm("Title","Are you sure to delete this Type？",function(r) {
+        if (record && record.length > 0) {
+            Ext.Msg.confirm("Title", "Are you sure to delete this Type？", function (r) {
                 me.getViewModel().getStore('types').remove(record[0]);
             });
 
-        }else{
+        } else {
             Ext.Msg.alert('message', 'Please select one item at least.');
-            return ;
+            return;
         }
     },
-    addProperty : function(e){
+    addProperty: function (e) {
         var store = this.getViewModel().getStore('properties');
-        var order = store.data.length+1;
+        var order = store.data.length + 1;
         var record = store.getAt(0);
         // Create a model instance
-        if(store.getCount()==0||record.isValid()){
-        var r = Ext.create('starter.model.Property', {
-            name: '',
-            type: 'string',
-            pattern: '',
-            promptMessage: '',
-            index : 'not_analyzed',
-            defaultValue: '',
-            indexAnalyzer:'',
-            searchAnalyzer:'',
-            required: false,
-            order :order
-        });
+        if (store.getCount() == 0 || record.isValid()) {
+            var r = Ext.create('starter.model.Property', {
+                name: '',
+                type: 'string',
+                pattern: '',
+                promptMessage: '',
+                index: 'not_analyzed',
+                defaultValue: '',
+                indexAnalyzer: '',
+                searchAnalyzer: '',
+                required: false,
+                order: order
+            });
 
-        store.insert(0, r);
+            store.insert(0, r);
         }
     },
-    validateByType :function(type,obj){
-        if(type=='integer'){
-            obj.regex =/^\d+$/;
+    validateByType: function (type, obj) {
+        if (type == 'integer') {
+            obj.regex = /^\d+$/;
             obj.regexText = '请输入整形';
         }
-        if(type=='string'){
-            obj.regex ='';
+        if (type == 'string') {
+            obj.regex = '';
             obj.regexText = '';
         }
-        if(type=='float'){
-            obj.regex =/^(-?\d+)(\.\d+)?$/;
+        if (type == 'float') {
+            obj.regex = /^(-?\d+)(\.\d+)?$/;
             obj.regexText = '请输入浮点型';
         }
-        if(type=='boolean'){
-            obj.regex = /0|1/;;
+        if (type == 'boolean') {
+            obj.regex = /0|1/;
+            ;
             obj.regexText = '请输入布尔型';
         }
-        if(type=='date'){
-            obj.regex =/^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30)))$/;
+        if (type == 'date') {
+            obj.regex = /^[0-9]{4}-(((0[13578]|(10|12))-(0[1-9]|[1-2][0-9]|3[0-1]))|(02-(0[1-9]|[1-2][0-9]))|((0[469]|11)-(0[1-9]|[1-2][0-9]|30)))$/;
             obj.regexText = '请输入日期型，例如（2004-04-31）';
-        }
+        }0
     },
-    validateProperty : function(editor, e){
+    validateProperty: function (editor, e) {
         var type = e.record.get('type');
         var defaultValue = e.record.get('defaultValue');
         var pattern = e.record.get('pattern');
         var promptMessage = e.record.get('promptMessage');
-        if(e.field=='name'||e.field=='type'||e.field=='index'||e.field=='indexAnalyzer'||e.field=='searchAnalyzer'){
-            if(e.grid.store.initData){
-                if(Ext.Array.contains(e.grid.store.initData, e.record.data)){
+        if (e.field == 'name' || e.field == 'type' || e.field == 'index' || e.field == 'indexAnalyzer' || e.field == 'searchAnalyzer') {
+            if (e.grid.store.initData) {
+                if (Ext.Array.contains(e.grid.store.initData, e.record.data)) {
                     e.cancel = true;
                 }
             }
         }
-        if(e.field=='defaultValue') {
+        if (e.field == 'defaultValue') {
             if (type != '') {
                 this.validateByType(type, e.column.field);
             }
@@ -132,8 +133,8 @@ Ext.define('starter.view.system.TypeController', {
         }
 
     },
-    deleteProperty : function(e){
-        var grid =  this.getView();
+    deleteProperty: function (e) {
+        var grid = this.getView();
         var store = this.getViewModel().getStore('properties');
         var sm = grid.getSelectionModel();
         store.remove(sm.getSelection());
@@ -141,80 +142,88 @@ Ext.define('starter.view.system.TypeController', {
             sm.select(0);
         }
     },
-    deleteModifyProperty : function(e){
-        var grid =  this.getView();
+    deleteModifyProperty: function (e) {
+        var grid = this.getView();
         var store = grid.store;
         var sm = grid.getSelectionModel();
         var record = sm.getSelection()[0];
 
-        if(record){
+        if (record) {
             var isOld = Ext.Array.contains(store.initData, record.data);
-            if(isOld){
+            if (isOld) {
                 Ext.Msg.alert('message', 'You cannot delete the property.');
-                return ;
-            }else
-            store.remove(record);
+                return;
+            } else
+                store.remove(record);
         }
         if (store.getCount() > 0) {
             sm.select(0);
         }
     },
-    addModifyProperty : function(e){
-        var grid =  this.getView();
+    addModifyProperty: function (e) {
+        var grid = this.getView();
         var store = grid.store;
-        var order = store.data.length+1;
+        var order = store.data.length + 1;
         var record = store.getAt(0);
         // Create a model instance
-        if(store.getCount()==0||record.isValid()){
+        if (store.getCount() == 0 || record.isValid()) {
             var r = Ext.create('starter.model.Property', {
                 name: '',
                 type: 'string',
                 pattern: '',
                 promptMessage: '',
                 defaultValue: '',
-                index : 'not_analyzed',
-                indexAnalyzer:'',
-                searchAnalyzer:'',
+                index: 'not_analyzed',
+                indexAnalyzer: '',
+                searchAnalyzer: '',
                 required: false,
-                order :order
+                order: order
             });
 
             store.insert(0, r);
         }
     },
 
-    createSave : function(e){
+    createSave: function (e) {
         var me = this;
         var form = e.up('window').down('form');
-        var grid =  e.up('window').down('grid');
+        var grid = e.up('window').down('grid');
         var store = me.getViewModel().getStore('types');
         if (form.isValid()) {
             var type = form.getValues();
             var gstore = grid.store;
             var record = gstore.getAt(0);
-            if(record&&!record.isValid()&&record.get('name')!=''){
+            if (record && !record.isValid() && record.get('name') != '') {
                 return;
             }
             var properties = []
             var size = gstore.getCount();
-            for(var i=0;i<size;i++){
+            for (var i = 0; i < size; i++) {
                 var pRecord = gstore.getAt(i);
-                if(pRecord.get('type')=='boolean'){
-                    pRecord.set('index','not_analyzed');
+                if (pRecord.get('type') == 'boolean') {
+                    pRecord.set('index', 'not_analyzed');
                 }
-                if(pRecord.get('index')=='not_analyzed'){
-                    pRecord.set('indexAnalyzer','');
-                    pRecord.set('searchAnalyzer','');
+                if (pRecord.get('index') == 'not_analyzed') {
+                    pRecord.set('indexAnalyzer', '');
+                    pRecord.set('searchAnalyzer', '');
                 }
                 properties.push(pRecord.getData());
             }
+            properties = Ext.Array.sort(properties, function (a, b) {
+                if (a.order < b.order)
+                    return -1;
+                if (a.order > b.order)
+                    return 1;
+                if (a.order == b.order)
+                    return 0;
+            });
             type.properties = properties;
             //type.set('properties',properties);
             Ext.Ajax.request({
                 method: 'POST',
-                headers : {'Content-Type':'application/json;charset=utf-8'},
+                headers: {'Content-Type': 'application/json;charset=utf-8'},
                 url: '/svc/types',
-                params : Ext.JSON.encode(type),
+                params: Ext.JSON.encode(type),
                 callback: function (options, success, response) {
                     if (!success) {
                         return;
@@ -233,21 +242,21 @@ Ext.define('starter.view.system.TypeController', {
 
     },
 
-    modifySave : function(e){
+    modifySave: function (e) {
         var me = this;
         var form = e.up('window').down('form');
-        var grid =  e.up('window').down('grid');
+        var grid = e.up('window').down('grid');
         var store = me.getViewModel().getStore('types');
         if (form.isValid()) {
             var type = form.getValues();
             var gstore = grid.store;
             var record = gstore.getAt(0);
-            if(record&&!record.isValid()&&record.get('name')!=''){
+            if (record && !record.isValid() && record.get('name') != '') {
                 return;
             }
             var properties = []
             var size = gstore.getCount();
-            for(var i=0;i<size;i++){
+            for (var i = 0; i < size; i++) {
                 var pRecord = gstore.getAt(i);
                 //if(pRecord.get('type')!='boolean'){
                 //    if(pRecord.get('isFullIndex')){
@@ -261,13 +270,21 @@ Ext.define('starter.view.system.TypeController', {
                 //}
                 properties.push(pRecord.getData());
             }
+            properties = Ext.Array.sort(properties, function (a, b) {
+                if (a.order < b.order)
+                    return -1;
+                if (a.order > b.order)
+                    return 1;
+                if (a.order == b.order)
+                    return 0;
+            });
             type.properties = properties;
             //type.set('properties',properties);
             Ext.Ajax.request({
                 method: 'PUT',
-                headers : {'Content-Type':'application/json;charset=utf-8'},
+                headers: {'Content-Type': 'application/json;charset=utf-8'},
                 url: '/svc/types/' + type.name,
-                params : Ext.JSON.encode(type),
+                params: Ext.JSON.encode(type),
                 callback: function (options, success, response) {
                     if (!success) {
                         return;

@@ -45,6 +45,12 @@ Ext.define('starter.view.main.MainController', {
                     xtype: 'monitorOs'
                 }]
             }, {
+                title: '重建索引',
+                iconCls: 'fa-cog',
+                items: [{
+                    xtype: 'reIndex'
+                }]
+            }, {
                 title: '日志',
                 iconCls: 'fa fa-bars',
                 items: [{
