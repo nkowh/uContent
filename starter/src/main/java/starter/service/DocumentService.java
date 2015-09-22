@@ -533,7 +533,7 @@ public class DocumentService {
             case Constant.Type.FLOAT:
                 return Float.valueOf(StringValue);
             case Constant.Type.DATE:
-                return sdf.parse(StringValue);
+                return DateTime.parse(StringValue).toLocalDateTime();
             case Constant.Type.BOOLEAN:
                 return Boolean.valueOf(StringValue);
             default:
