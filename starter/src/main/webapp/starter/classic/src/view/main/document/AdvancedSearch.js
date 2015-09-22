@@ -8,7 +8,7 @@ Ext.define('starter.view.main.document.AdvancedSearch', {
         pack: 'start',
         align: 'stretch'
     },
-
+    scrollable : 'y',
     items: [
         {xtype: 'searchForm', title: '高级搜索'},
         {
