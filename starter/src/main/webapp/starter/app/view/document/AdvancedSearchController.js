@@ -184,15 +184,21 @@ Ext.define('starter.view.document.AdvancedSearchController', {
                     queryItem.range = {};
                     var startValue = condition.child('textfield[name="startValue"]').getValue();
                     var endValue = condition.child('textfield[name="endValue"]').getValue();
+                    var startOperator = condition.child('textfield[name="startOperator"]').getValue();
+                    var endOperator = condition.child('textfield[name="endOperator"]').getValue();
+                    queryItem.range[property] = {};
                     if (startValue && startValue != '') {
-                        queryItem.range[property] = {'from': startValue};
+                        if(!startOperator){
+                            startOperator = 'from';
+                        }
+                        queryItem.range[property][startOperator] =startValue;
                     }
                     if (endValue && endValue != '') {
-                        if (queryItem.range[property]) {
-                            queryItem.range[property].to = endValue;
-                        } else {
-                            queryItem.range[property] = {'to': endValue};
+                        if(!endOperator){
+                            endOperator = 'to';
                         }
+                            queryItem.range[property][endOperator] = endValue;
+
                     }
                 }
                 if (operator == 'term') {
