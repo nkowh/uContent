@@ -57,7 +57,7 @@ Ext.application({
             Ext.Ajax.addListener('requestexception', function (conn, response, options, eOpts) {
                 if (response.status === 401) {
                     Ext.util.Cookies.clear('userId');
-                    Ext.util.Cookies.clear('digest')
+                    Ext.util.Cookies.clear('digest');
                     window.location.reload();
                 }
             });
