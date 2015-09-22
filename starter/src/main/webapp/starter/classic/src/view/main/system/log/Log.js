@@ -75,7 +75,7 @@ Ext.define('starter.view.main.system.log.Log', {
         xtype     : 'textareafield',
         grow      : true,
         name      : 'requestInfo.header',
-        fieldLabel: 'Response Header',
+        fieldLabel: 'Request Header',
         scrollable : 'y',
         maxHeight : 100,
         anchor    : '100%'
