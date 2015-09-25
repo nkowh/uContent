@@ -1,5 +1,7 @@
 package starter.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -45,6 +47,13 @@ public class Constant {
                 default:
                     throw new RuntimeException("permission [" + permission + "] not allowed, either [read] or [write] are allowed");
             }
+        }
+
+        public static List<String> getPermissionDeclaration(){
+            List<String> declaration = new ArrayList<>();
+            declaration.add("read");
+            declaration.add("write");
+            return declaration;
         }
     }
 
