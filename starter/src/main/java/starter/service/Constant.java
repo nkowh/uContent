@@ -89,6 +89,9 @@ public class Constant {
         public static final String GROUP = "group";
         public static final String PERMISSION = "permission";
         public static final String ALLOWABLEACTIONS = "_allowableActions";
+        public static final String READ = "read";
+        public static final String WRITE = "write";
+        public static final String GROUPS = "groups";
 
 
         public static final String ISDOCTYPE = "isDocType";
