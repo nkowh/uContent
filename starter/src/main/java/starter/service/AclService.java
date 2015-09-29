@@ -1,5 +1,6 @@
 package starter.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -26,20 +27,16 @@ public class AclService {
 
     public XContentBuilder all(String type, String id) throws IOException {
         GetResponse getResponse = documentService.checkPermission(type, id, context.getUserName(), Constant.Permission.read);
-        XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
-        xContentBuilder.startArray();
-        List<Map<String, Object>> acl =  (List<Map<String, Object>>)getResponse.getSource().get("_acl");
-        for(Map<String, Object> map : acl){
-            xContentBuilder.startObject();
-            Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
-            while (it.hasNext()){
-                Map.Entry<String, Object> entry = it.next();
-                xContentBuilder.field(entry.getKey(), entry.getValue());
-            }
-            xContentBuilder.endObject();
+        Map<String, Object> acl =  (Map<String, Object>)getResponse.getSource().get("_acl");
+        XContentBuilder builder = JsonXContent.contentBuilder();
+        builder.startObject();
+        Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
+        while(it.hasNext()){
+            Map.Entry<String, Object> entry = it.next();
+            builder.field(entry.getKey()).value(entry.getValue());
         }
-        xContentBuilder.endArray();
-        return xContentBuilder;
+        builder.endObject();
+        return builder;
     }
 
     public XContentBuilder update(String type, String id, Json body) throws IOException {
