@@ -156,11 +156,28 @@ public class TypeService {
                         .endObject();
 
                 //组装_acl属性
-                builder.startObject("_acl").field(Constant.FieldName.TYPE, "nested")
+//                builder.startObject("_acl").field(Constant.FieldName.TYPE, "nested")
+//                        .startObject(Constant.FieldName.PROPERTIES)
+//                        .startObject(Constant.FieldName.PERMISSION).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+//                        .startObject(Constant.FieldName.USER).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+//                        .startObject(Constant.FieldName.GROUP).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+//                        .endObject()
+//                        .endObject();
+
+                builder.startObject("_acl")
                         .startObject(Constant.FieldName.PROPERTIES)
-                        .startObject(Constant.FieldName.PERMISSION).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.USER).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.GROUP).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                            .startObject(Constant.FieldName.READ)
+                                .startObject(Constant.FieldName.PROPERTIES)
+                                    .startObject(Constant.FieldName.USERS).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                                    .startObject(Constant.FieldName.GROUPS).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                                .endObject()
+                            .endObject()
+                            .startObject(Constant.FieldName.WRITE)
+                                .startObject(Constant.FieldName.PROPERTIES)
+                                    .startObject(Constant.FieldName.USERS).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                                    .startObject(Constant.FieldName.GROUPS).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                                .endObject()
+                            .endObject()
                         .endObject()
                         .endObject();
 

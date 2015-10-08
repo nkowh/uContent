@@ -1,7 +1,6 @@
 package starter.service;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -62,8 +61,6 @@ public class DocumentService {
 
     private Logger logger = LoggerFactory.getLogger(DocumentService.class);
 
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
     private Set<String> getFulltextProperties(String[] types) throws IOException {
         Set<String> keys = new HashSet<>();
         GetMappingsResponse response = context.getClient().admin().indices().prepareGetMappings(context.getIndex()).setTypes(types).execute().actionGet();
@@ -77,16 +74,13 @@ public class DocumentService {
                     keys.add(name.toString());
                 }
             }
-
         }
-
         keys.add("_fullText");
         return keys;
     }
 
 
     public XContentBuilder query(String[] types, String query, int start, int limit, SortBuilder[] sort, boolean allowableActions, boolean fulltext) throws IOException {
-
         SearchRequestBuilder searchRequestBuilder = context.getClient().prepareSearch(context.getIndex()).setFrom(start).setSize(limit);
         //set types
         if (types == null || types.length == 0) {
@@ -118,19 +112,14 @@ public class DocumentService {
         String[] exclude = {"_streams._fullText"};
         searchRequestBuilder.setFetchSource(null, exclude);
 
-        //set acl filter
-        TermFilterBuilder termFilter1 = FilterBuilders.termFilter(Constant.FieldName.USER, context.getUserName());
-        TermFilterBuilder termFilter2 = FilterBuilders.termFilter(Constant.FieldName.PERMISSION, Constant.Permission.read);
-        BoolFilterBuilder boolFilter1 = FilterBuilders.boolFilter().must(termFilter1, termFilter2);
-        BoolFilterBuilder boolFilterBuilder = FilterBuilders.boolFilter().should(boolFilter1);
+        BoolFilterBuilder filter = FilterBuilders.boolFilter();
+        TermFilterBuilder userFilter = FilterBuilders.termFilter("_acl.read.users", context.getUserName());
+        filter.should(userFilter);
         List<String> groups = userService.getGroupsOfUser(context.getUserName());
-        for (String group : groups) {
-            TermFilterBuilder termFilter3 = FilterBuilders.termFilter(Constant.FieldName.GROUP, group);
-            TermFilterBuilder termFilter4 = FilterBuilders.termFilter(Constant.FieldName.PERMISSION, Constant.Permission.read);
-            BoolFilterBuilder boolFilter2 = FilterBuilders.boolFilter().must(termFilter3, termFilter4);
-            boolFilterBuilder.should(boolFilter2);
+        for(String group : groups){
+            TermFilterBuilder groupFilter = FilterBuilders.termFilter("_acl.read.groups", group);
+            filter.should(groupFilter);
         }
-        FilterBuilder filter = FilterBuilders.nestedFilter(Constant.FieldName.ACL, boolFilterBuilder);
         searchRequestBuilder.setPostFilter(filter);
         //process result
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
@@ -253,54 +242,56 @@ public class DocumentService {
         body.put(Constant.FieldName.CREATEDON, localDateTime);
         body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
         body.put(Constant.FieldName.LASTUPDATEDON, localDateTime);
-        List<Object> permission = new ArrayList<Object>();
-        permission.add(Constant.Permission.read);
-        permission.add(Constant.Permission.write);
-        Map<String, Object> ace = new HashMap<String, Object>();
-        ace.put(Constant.FieldName.USER, context.getUserName());
-        ace.put(Constant.FieldName.PERMISSION, permission);
-        List<Map<String, Object>> acl = null;
+
+        Map<String, Object> acl = new HashMap<>();
         Object o = body.get(Constant.FieldName.ACL);
         if (o != null) {
-            ObjectMapper objectMapper = new ObjectMapper();
-            acl = objectMapper.readValue(o.toString(), List.class);
+            acl = (Map<String, Object>) o;
             validateAcl(acl);
+            Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
+            while (it.hasNext()){
+                Map.Entry<String, Object> entry = it.next();
+                String key = entry.getKey();
+                if (key.equals("read")) {
+                    Map<String, Object> map = (Map<String, Object>) entry.getValue();
+                    Object users = map.get("users");
+                    if (users != null) {
+                        List<String> u = (List<String>) users;
+                        if (!u.contains(context.getUserName())) {
+                            u.add(context.getUserName());
+                        }
+                    }
+                }
+            }
         } else {
-            acl = new ArrayList<Map<String, Object>>();
+            List<String> users = new ArrayList<>();
+            users.add(context.getUserName());
+            Map<String, List<String>> read = new HashMap<>();
+            read.put("users", users);
+            acl.put("read", read);
         }
-        acl.add(ace);
         body.put(Constant.FieldName.ACL, acl);
     }
 
 
-    private void validateAcl(List<Map<String, Object>> acl) {
-        Iterator<Map<String, Object>> it = acl.iterator();
-        while (it.hasNext()) {
-            Map<String, Object> map = it.next();
-            Iterator<Map.Entry<String, Object>> iterator = map.entrySet().iterator();
-            while (iterator.hasNext()) {// ignore illegal key
-                Map.Entry<String, Object> entry = iterator.next();
-                String key = entry.getKey();
-                if (!key.equals(Constant.FieldName.USER) && !key.equals(Constant.FieldName.PERMISSION)) {
+    private void validateAcl(Map<String, Object> acl) {
+        Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
+        while (it.hasNext()){
+            Map.Entry<String, Object> pEntry = it.next();
+            String pKey = pEntry.getKey();
+            if (!Constant.Permission.getPermissionDeclaration().contains(pKey)) {
+                it.remove();
+                continue;
+            }
+            Map<String, Object> entry = (Map<String, Object>) pEntry.getValue();
+            Iterator<Map.Entry<String, Object>> iterator = entry.entrySet().iterator();
+            while (iterator.hasNext()){
+                Map.Entry<String, Object> en = iterator.next();
+                String key = en.getKey();
+                if (!key.equals("users") && !key.equals("groups")) {
                     iterator.remove();
                 }
-                if (map.isEmpty()) {
-                    it.remove();
-                }
             }
-            List<String> permission = (List<String>) map.get(Constant.FieldName.PERMISSION);
-            List<String> per = new ArrayList<String>();
-            for (String s : permission) {  //turn permission to lowerCase
-                per.add(s.toLowerCase());
-            }
-            Iterator<String> iterator1 = per.iterator();
-            while (iterator1.hasNext()) {//  ignore illegal permission and turn permission to lowerCase
-                String p = iterator1.next();
-                if (!p.equals(Constant.Permission.read.toString()) && !p.equals(Constant.Permission.write.toString())) {
-                    iterator1.remove();
-                }
-            }
-            map.put(Constant.FieldName.PERMISSION, per);
         }
     }
 
@@ -330,9 +321,10 @@ public class DocumentService {
     }
 
     private Set getUserPermission(String user, Object acl) throws IOException {
-        Set uPermission = getPermissionByUser(user, acl);
+        Map<String, Object> _acl = (Map<String, Object>) acl;
+        Set uPermission = getPermissionByUser(user, _acl);
         List<String> groups = getGroups(user);
-        Set gPermission = getPermissionByGroups(groups, acl);
+        Set gPermission = getPermissionByGroups(groups, _acl);
         uPermission.addAll(gPermission);
         return uPermission;
     }
@@ -341,28 +333,45 @@ public class DocumentService {
         return userService.getGroupsOfUser(user);
     }
 
-    private Set getPermissionByUser(String user, Object acl) {
-        List<Map<String, Object>> _acl = (List<Map<String, Object>>) acl;
+    private Set getPermissionByUser(String user, Map<String, Object> acl) {
         Set permission = new HashSet();
-        if (_acl != null && !_acl.isEmpty()) {
-            for (Map<String, Object> map : _acl) {
-                Object u = map.get(Constant.FieldName.USER);
-                if (u != null && u.toString().equals(user)) {
-                    permission.addAll((List) map.get(Constant.FieldName.PERMISSION));
+        if (acl != null && !acl.isEmpty()) {
+            Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
+            while (it.hasNext()){
+                Map.Entry<String, Object> entry = it.next();
+                Map<String, Object> map = (Map<String, Object>) entry.getValue();
+                Object users = map.get("users");
+                if (users != null) {
+                    List<String> _users = (List<String>) users;
+                    if(_users.contains(user)){
+                        permission.add(entry.getKey());
+                        continue;
+                    }
                 }
             }
         }
         return permission;
     }
 
-    private Set getPermissionByGroups(List<String> groups, Object acl) {
-        List<Map<String, Object>> _acl = (List<Map<String, Object>>) acl;
+    private Set getPermissionByGroups(List<String> groups, Map<String, Object> acl) {
         Set permission = new HashSet();
-        if (_acl != null && !_acl.isEmpty()) {
-            for (Map<String, Object> map : _acl) {
-                Object u = map.get(Constant.FieldName.GROUP);
-                if (u != null && groups.contains(u.toString())) {
-                    permission.addAll((List) map.get(Constant.FieldName.PERMISSION));
+        if (groups == null || groups.isEmpty()) {
+            return permission;
+        }
+        if (acl != null && !acl.isEmpty()) {
+            Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
+            while (it.hasNext()){
+                Map.Entry<String, Object> entry = it.next();
+                Map<String, Object> map = (Map<String, Object>) entry.getValue();
+                Object g = map.get("groups");
+                if (g != null) {
+                    List<String> _groups = (List<String>) g;
+                    for(String s : groups){
+                        if (_groups.contains(s)) {
+                            permission.add(entry.getKey());
+                            continue;
+                        }
+                    }
                 }
             }
         }
@@ -370,7 +379,7 @@ public class DocumentService {
     }
 
     private boolean hasPermission(String user, Object acl, Constant.Permission action) throws IOException {
-        List<Map<String, Object>> _acl = (List<Map<String, Object>>) acl;
+        Map<String, Object> _acl = (Map<String, Object>) acl;
         Set permission = getPermissionByUser(user, _acl);
         if (permission.contains(action.toString())) {
             return true;
@@ -392,78 +401,77 @@ public class DocumentService {
     public void processAcl(Json body, Object srcAcl) {
         Object newAcl = body.get(Constant.FieldName.ACL);
         if (newAcl != null) {
-            List<Map<String, Object>> _srcAcl = (List<Map<String, Object>>) srcAcl;
+            Map<String, Object> _srcAcl = (Map<String, Object>) srcAcl;
             Object addAcl = ((Map<String, Object>) newAcl).get("add");
             Object removeAcl = ((Map<String, Object>) newAcl).get("remove");
             if (addAcl != null) {
-                List<Map<String, Object>> _addAcl = (List<Map<String, Object>>) addAcl;
+                Map<String, Object> _addAcl = (Map<String, Object>) addAcl;
                 handleAddAcl(_addAcl, _srcAcl);
             }
             if (removeAcl != null) {
-                List<Map<String, Object>> _removeAcl = (List<Map<String, Object>>) removeAcl;
+                Map<String, Object> _removeAcl = (Map<String, Object>) removeAcl;
                 handleRemoveAcl(_removeAcl, _srcAcl);
             }
             body.put(Constant.FieldName.ACL, _srcAcl);
         }
     }
 
-    private void handleRemoveAcl(List<Map<String, Object>> removeAcl, List<Map<String, Object>> _srcAcl) {
-        for (Map<String, Object> map : removeAcl) {
-            Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
-            List<String> newPermission = new ArrayList<String>();
-            String who = null;
-            while (it.hasNext()) {
-                Map.Entry<String, Object> entry = it.next();
-                String key = entry.getKey();
-                if (key.equals(Constant.FieldName.PERMISSION)) {
-                    newPermission = (List<String>) map.get(key);
-                } else {
-                    who = key;
-                }
+    private void handleRemoveAcl(Map<String, Object> removeAcl, Map<String, Object> _srcAcl) {
+        Iterator<Map.Entry<String, Object>> it = removeAcl.entrySet().iterator();
+        while (it.hasNext()){
+            Map.Entry<String, Object> entry = it.next();
+            String key = entry.getKey();
+            if (!Constant.Permission.getPermissionDeclaration().contains(key)) {
+                it.remove();
+                continue;
             }
-            Iterator<Map<String, Object>> iterator = _srcAcl.iterator();
-            while (iterator.hasNext()) {
-                Map<String, Object> src_ace = iterator.next();
-                Object o = src_ace.get(who);
-                if (o != null && o.toString().equals(map.get(who).toString())) {
-                    List<String> oldPermission = (List<String>) src_ace.get(Constant.FieldName.PERMISSION);
-                    oldPermission.removeAll(newPermission);
+            Map<String, Object> _map = (Map<String, Object>) _srcAcl.get(key);
+            Map<String, Object> value = (Map<String, Object>) entry.getValue();
+            Iterator<Map.Entry<String, Object>> iterator = value.entrySet().iterator();
+            while (iterator.hasNext()){
+                Map.Entry<String, Object> next = iterator.next();
+                String key1 = next.getKey();
+                if (!key1.equals("users") && !key1.equals("groups")) {
+                    iterator.remove();
+                    continue;
                 }
+                List<String> _list = (List<String>) _map.get(key1);
+                List<String> list = (List<String>) next.getValue();
+                _list.removeAll(list);
             }
         }
     }
 
-    private void handleAddAcl(List<Map<String, Object>> addAcl, List<Map<String, Object>> _srcAcl) {
-        for (Map<String, Object> map : addAcl) {
-            Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
-            List<String> newPermission = new ArrayList<String>();
-            String who = null;
-            while (it.hasNext()) {
-                Map.Entry<String, Object> entry = it.next();
-                String key = entry.getKey();
-                if (key.equals(Constant.FieldName.PERMISSION)) {
-                    newPermission = (List<String>) map.get(key);
-                } else {
-                    who = key;
-                }
+    private void handleAddAcl(Map<String, Object> addAcl, Map<String, Object> _srcAcl) {
+        Iterator<Map.Entry<String, Object>> it = addAcl.entrySet().iterator();
+        while (it.hasNext()){
+            Map.Entry<String, Object> entry = it.next();
+            String key = entry.getKey();
+            if (!Constant.Permission.getPermissionDeclaration().contains(key)) {
+                it.remove();
+                continue;
             }
-            boolean found = false;
-            Iterator<Map<String, Object>> iterator = _srcAcl.iterator();
-            while (iterator.hasNext()) {
-                Map<String, Object> src_ace = iterator.next();
-                Object o = src_ace.get(who);
-                if (o != null && o.toString().equals(map.get(who).toString())) {
-                    List<String> oldPermission = (List<String>) src_ace.get(Constant.FieldName.PERMISSION);
-                    for (String s : newPermission) {
-                        if (!oldPermission.contains(s)) {
-                            oldPermission.add(s);
+            Map<String, Object> _map = (Map<String, Object>) _srcAcl.get(key);
+            Map<String, Object> value = (Map<String, Object>) entry.getValue();
+            Iterator<Map.Entry<String, Object>> iterator = value.entrySet().iterator();
+            while (iterator.hasNext()){
+                Map.Entry<String, Object> next = iterator.next();
+                String key1 = next.getKey();
+                if (!key1.equals("users") && !key1.equals("groups")) {
+                    iterator.remove();
+                    continue;
+                }
+                List<String> _list = (List<String>) _map.get(key1);
+                if (_list != null) {
+                    List<String> list = (List<String>) next.getValue();
+                    for(String s : list){
+                        if (!_list.contains(s)) {
+                            _list.add(s);
                         }
                     }
-                    found = true;
+                }else{
+                    _map.put(key1, next.getValue());
                 }
-            }
-            if (!found) {
-                _srcAcl.add(map);
             }
         }
     }
