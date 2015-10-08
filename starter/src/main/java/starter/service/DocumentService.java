@@ -19,6 +19,7 @@ import org.elasticsearch.common.hppc.cursors.ObjectCursor;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.joda.time.LocalDateTime;
 import org.elasticsearch.common.lang3.StringUtils;
+import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.*;
@@ -41,7 +42,6 @@ import javax.imageio.ImageReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -96,10 +96,11 @@ public class DocumentService {
                     searchRequestBuilder.addHighlightedField(key);
                     booleanBuilder.should(QueryBuilders.matchQuery(key, query));
                 }
-
-                searchRequestBuilder.setQuery(booleanBuilder);
-            } else
-                searchRequestBuilder.setQuery(query);
+                query = booleanBuilder.toString();
+//                searchRequestBuilder.setQuery(booleanBuilder);
+//            } else {
+//                searchRequestBuilder.setQuery(query);
+            }
         }
         //set sort
         if (sort != null && sort.length > 0) {
@@ -120,7 +121,8 @@ public class DocumentService {
             TermFilterBuilder groupFilter = FilterBuilders.termFilter("_acl.read.groups", group);
             filter.should(groupFilter);
         }
-        searchRequestBuilder.setPostFilter(filter);
+        searchRequestBuilder.setQuery(toFilteredQuery(query, filter.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS).string()));
+//        searchRequestBuilder.setPostFilter(filter);
         //process result
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
@@ -567,6 +569,11 @@ public class DocumentService {
             IOUtils.closeQuietly(in);
         }
         return "";
+    }
+
+    private String toFilteredQuery(String query, String filter){
+        String s = "{\"filtered\":{\"query\":" + query + ",\"filter\":" + filter;
+        return s;
     }
 
 }
