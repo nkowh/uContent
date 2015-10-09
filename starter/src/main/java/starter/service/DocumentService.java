@@ -572,7 +572,7 @@ public class DocumentService {
     }
 
     private String toFilteredQuery(String query, String filter){
-        String s = "{\"filtered\":{\"query\":" + query + ",\"filter\":" + filter;
+        String s = "{\"filtered\":{\"query\":" + query + ",\"filter\":" + filter + "}}";
         return s;
     }
 
