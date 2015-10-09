@@ -577,11 +577,4 @@ public class DocumentService {
         return s;
     }
 
-
-    public static void main(String[] args) {
-        String s = "{\"read\":{\"users\":[],\"groups\":[]},\"write\":{\"users\":[],\"groups\":[]}}";
-        Map<String, Object> acl = Json.parse(s);
-        System.out.println(acl);
-    }
-
 }
