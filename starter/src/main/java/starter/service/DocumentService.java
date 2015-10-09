@@ -1,6 +1,7 @@
 package starter.service;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -87,10 +88,10 @@ public class DocumentService {
             types = typeService.getAllTypes().toArray(new String[]{});
         }
         searchRequestBuilder.setTypes(types);
-        Set<String> keys = getFulltextProperties(types);
         //set query
         if (StringUtils.isNotBlank(query)) {
             if (fulltext) {
+                Set<String> keys = getFulltextProperties(types);
                 BoolQueryBuilder booleanBuilder = QueryBuilders.boolQuery();
                 for (String key : keys) {
                     searchRequestBuilder.addHighlightedField(key);
@@ -237,6 +238,46 @@ public class DocumentService {
         return xContentBuilder;
     }
 
+    public XContentBuilder deleteByIds(String jsonString){
+        XContentBuilder xContentBuilder = null;
+        List<Map<String, Object>> list = null;
+        try {
+            xContentBuilder = JsonXContent.contentBuilder().startArray();
+            ObjectMapper objectMapper = new ObjectMapper();
+            list = objectMapper.readValue(jsonString, List.class);
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
+        for(Map<String, Object> map : list){
+            String type = map.get("type").toString();
+            String id = map.get("id").toString();
+            try {
+                checkPermission(type, id, context.getUserName(), Constant.Permission.write);
+                DeleteResponse deleteResponse = context.getClient().prepareDelete(context.getIndex(), type, id).execute().actionGet();
+                xContentBuilder.startObject().field("_index", context.getIndex())
+                        .field("_type", type)
+                        .field("_id", id)
+                        .field("delete", deleteResponse.isFound()).endObject();
+            } catch (IOException e) {
+                logger.error(e.getMessage());
+                try {
+                    xContentBuilder.startObject().field("_index", context.getIndex())
+                            .field("_type", type)
+                            .field("_id", id)
+                            .field("delete", e.getMessage()).endObject();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+        try {
+            xContentBuilder.endArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return xContentBuilder;
+    }
+
 
     private void beforeCreate(Json body) throws IOException {
         LocalDateTime localDateTime = new DateTime().toLocalDateTime();
@@ -255,7 +296,7 @@ public class DocumentService {
             while (it.hasNext()){
                 Map.Entry<String, Object> entry = it.next();
                 String key = entry.getKey();
-                if (key.equals("read")) {
+                if (key.equals("read") || key.equals("write")) {
                     Map<String, Object> map = (Map<String, Object>) entry.getValue();
                     Object users = map.get("users");
                     if (users != null) {
@@ -271,7 +312,10 @@ public class DocumentService {
             users.add(context.getUserName());
             Map<String, List<String>> read = new HashMap<>();
             read.put("users", users);
+            Map<String, List<String>> write = new HashMap<>();
+            read.put("users", users);
             acl.put("read", read);
+            acl.put("write", write);
         }
         body.put(Constant.FieldName.ACL, acl);
     }
@@ -575,13 +619,6 @@ public class DocumentService {
     private String toFilteredQuery(String query, String filter){
         String s = "{\"filtered\":{\"query\":" + query + ",\"filter\":" + filter + "}}";
         return s;
-    }
-
-
-    public static void main(String[] args) {
-        String s = "{\"read\":{\"users\":[],\"groups\":[]},\"write\":{\"users\":[],\"groups\":[]}}";
-        Map<String, Object> acl = Json.parse(s);
-        System.out.println(acl);
     }
 
 }
