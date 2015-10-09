@@ -127,4 +127,15 @@ public class Documents {
         }
     }
 
+
+    @RequestMapping(value = "", method = RequestMethod.DELETE)
+    public String delete(@RequestParam String jsonString) {
+        try {
+            XContentBuilder xContentBuilder = documentService.deleteByIds(jsonString);
+            return xContentBuilder.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
