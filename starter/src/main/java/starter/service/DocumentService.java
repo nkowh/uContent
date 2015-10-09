@@ -248,7 +248,8 @@ public class DocumentService {
         Map<String, Object> acl = new HashMap<>();
         Object o = body.get(Constant.FieldName.ACL);
         if (o != null) {
-            acl = (Map<String, Object>) o;
+            acl = Json.parse(o.toString());
+//            acl = (Map<String, Object>) o;
             validateAcl(acl);
             Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
             while (it.hasNext()){
@@ -574,6 +575,13 @@ public class DocumentService {
     private String toFilteredQuery(String query, String filter){
         String s = "{\"filtered\":{\"query\":" + query + ",\"filter\":" + filter + "}}";
         return s;
+    }
+
+
+    public static void main(String[] args) {
+        String s = "{\"read\":{\"users\":[],\"groups\":[]},\"write\":{\"users\":[],\"groups\":[]}}";
+        Map<String, Object> acl = Json.parse(s);
+        System.out.println(acl);
     }
 
 }
