@@ -13,6 +13,8 @@ import starter.uContentException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/svc", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -129,9 +131,9 @@ public class Documents {
 
 
     @RequestMapping(value = "", method = RequestMethod.DELETE)
-    public String delete(@RequestParam String jsonString) {
+    public String delete(@RequestBody List<Map> body) {
+        XContentBuilder xContentBuilder = documentService.delete(body);
         try {
-            XContentBuilder xContentBuilder = documentService.deleteByIds(jsonString);
             return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);

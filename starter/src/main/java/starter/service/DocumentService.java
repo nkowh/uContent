@@ -238,17 +238,14 @@ public class DocumentService {
         return xContentBuilder;
     }
 
-    public XContentBuilder deleteByIds(String jsonString){
+    public XContentBuilder delete(List<Map> body){
         XContentBuilder xContentBuilder = null;
-        List<Map<String, Object>> list = null;
         try {
             xContentBuilder = JsonXContent.contentBuilder().startArray();
-            ObjectMapper objectMapper = new ObjectMapper();
-            list = objectMapper.readValue(jsonString, List.class);
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
-        for(Map<String, Object> map : list){
+        for(Map<String, Object> map : body){
             String type = map.get("type").toString();
             String id = map.get("id").toString();
             try {
@@ -258,7 +255,7 @@ public class DocumentService {
                         .field("_type", type)
                         .field("_id", id)
                         .field("delete", deleteResponse.isFound()).endObject();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logger.error(e.getMessage());
                 try {
                     xContentBuilder.startObject().field("_index", context.getIndex())
