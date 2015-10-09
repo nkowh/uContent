@@ -25,7 +25,7 @@ public class Documents {
     @RequestMapping(value = "/{type}", method = {RequestMethod.GET})
     public String query(@PathVariable String type,
                         @RequestParam(defaultValue = "") String query,
-                        @RequestParam(defaultValue = "false") boolean highlight,
+                        @RequestParam(defaultValue = "false") boolean fulltext,
                         @RequestParam(defaultValue = "0") int start,
                         @RequestParam(defaultValue = "10") int limit,
                         @RequestParam(defaultValue = "[]") SortBuilder[] sort,
@@ -33,7 +33,7 @@ public class Documents {
         try {
             query = java.net.URLDecoder.decode(query, "UTF-8");
             String[] types = {type};
-            XContentBuilder xContentBuilder = documentService.query(types, query, start, limit, sort, allowableActions, highlight);
+            XContentBuilder xContentBuilder = documentService.query(types, query, start, limit, sort, allowableActions, fulltext);
             return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
