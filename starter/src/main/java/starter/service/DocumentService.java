@@ -255,7 +255,7 @@ public class DocumentService {
             while (it.hasNext()){
                 Map.Entry<String, Object> entry = it.next();
                 String key = entry.getKey();
-                if (key.equals("read")) {
+                if (key.equals("read") || key.equals("write")) {
                     Map<String, Object> map = (Map<String, Object>) entry.getValue();
                     Object users = map.get("users");
                     if (users != null) {
@@ -271,7 +271,10 @@ public class DocumentService {
             users.add(context.getUserName());
             Map<String, List<String>> read = new HashMap<>();
             read.put("users", users);
+            Map<String, List<String>> write = new HashMap<>();
+            read.put("users", users);
             acl.put("read", read);
+            acl.put("write", write);
         }
         body.put(Constant.FieldName.ACL, acl);
     }
