@@ -10,10 +10,18 @@ import starter.uContentException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class Json extends HashMap<String, Object> {
 
     public Json() {
+    }
+
+    public static Json parse(Map map) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Json json = new Json();
+        json.putAll(map);
+        return json;
     }
 
     public static Json parse(String jsonString) {
@@ -33,7 +41,7 @@ public class Json extends HashMap<String, Object> {
         XContentBuilder builder = JsonXContent.contentBuilder();
         builder.startObject();
         Iterator<Entry<String, Object>> it = this.entrySet().iterator();
-        while(it.hasNext()){
+        while (it.hasNext()) {
             Entry<String, Object> entry = it.next();
             builder.field(entry.getKey()).value(entry.getValue());
         }
