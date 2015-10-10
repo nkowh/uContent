@@ -36,6 +36,11 @@ public class MultipartParser {
         }
         Map<String, String[]> parameterMap = request.getParameterMap();
         for (String key : parameterMap.keySet()) {
+            if (key.equals("_acl")) {
+                Map<String, Object> acl = Json.parse(parameterMap.get(key)[0]);
+                body.put(key, acl);
+                continue;
+            }
             body.put(key, parameterMap.get(key)[0]);
         }
         return this;
