@@ -286,8 +286,7 @@ public class DocumentService {
         Map<String, Object> acl = new HashMap<>();
         Object o = body.get(Constant.FieldName.ACL);
         if (o != null) {
-            acl = Json.parse(o.toString());
-//            acl = (Map<String, Object>) o;
+            acl = Json.parse((Map)o);
             validateAcl(acl);
             Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
             while (it.hasNext()){
