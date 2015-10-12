@@ -206,8 +206,65 @@ public class DocumentService {
 
     public XContentBuilder update(String type, String id, Json body) throws IOException, ParseException {
         GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.write);
-        processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
+//        processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
         validate(body, type);
+        beforeUpdate(body);
+        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
+        XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
+        xContentBuilder.startObject()
+                .field("_index", context.getIndex())
+                .field("_type", type)
+                .field("_id", id)
+                .field("_version", updateResponse.getVersion());
+        xContentBuilder.endObject();
+        return xContentBuilder;
+    }
+
+
+    public XContentBuilder update(String type, String id, Json body, List<MultipartFile> files) throws IOException, ParseException {
+        GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.write);
+        validate(body, type);
+//        processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
+        List<Map<String, Object>> streams = new ArrayList<Map<String, Object>>();
+        Object _streams = getResponse.getSource().get("_streams");
+        if (_streams != null) {
+            List<Map<String, Object>> oldSteams = (List<Map<String, Object>>) _streams;
+            Object o = body.get("stream_deleteIds");
+            if (o != null) {
+                List<String> deleteIds = (List<String>) o;
+                Iterator<Map<String, Object>> it = oldSteams.iterator();
+                while (it.hasNext()){
+                    Map<String, Object> map = it.next();
+                    if (deleteIds.contains(map.get("streamId").toString())) {
+                        it.remove();
+                    }
+                }
+            }
+            streams.addAll(oldSteams);
+        }
+        if (!files.isEmpty()) {
+            for (MultipartFile file : files) {
+                Map<String, Object> stream = new HashMap<String, Object>();
+                String fileId = fs.write(file.getBytes());
+                if (StringUtils.isBlank(fileId)) {
+                    logger.error(String.format("The stream: %s store failed", file.getName()));
+                    throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+                stream.put(Constant.FieldName.STREAMID, fileId);
+                stream.put(Constant.FieldName.STREAMNAME, file.getName());
+                stream.put(Constant.FieldName.LENGTH, file.getSize());
+                stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
+                stream.put(Constant.FieldName.FULLTEXT, parse(file.getInputStream()));
+                if ("image/tiff".equalsIgnoreCase(file.getContentType())) {
+                    ImageReader reader = ImageIO.getImageReadersByFormatName("tif").next();
+                    reader.setInput(ImageIO.createImageInputStream(file.getInputStream()));
+                    int pageCount = reader.getNumImages(true);
+                    stream.put(Constant.FieldName.PAGECOUNT, pageCount);
+                }
+                streams.add(stream);
+            }
+            body.put(Constant.FieldName.STREAMS, streams);
+        }
         beforeUpdate(body);
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
@@ -289,34 +346,47 @@ public class DocumentService {
 //            acl = Json.parse(o.toString());
             acl = (Map<String, Object>) o;
             validateAcl(acl);
-            Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
-            while (it.hasNext()){
-                Map.Entry<String, Object> entry = it.next();
-                String key = entry.getKey();
-                if (key.equals("read") || key.equals("write")) {
-                    Map<String, Object> map = (Map<String, Object>) entry.getValue();
-                    Object users = map.get("users");
-                    if (users != null) {
-                        List<String> u = (List<String>) users;
-                        if (!u.contains(context.getUserName())) {
-                            u.add(context.getUserName());
-                        }
-                    }
-                }
-            }
+//            Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
+//            while (it.hasNext()){
+//                Map.Entry<String, Object> entry = it.next();
+//                String key = entry.getKey();
+//                if (key.equals("read") || key.equals("write")) {
+//                    Map<String, Object> map = (Map<String, Object>) entry.getValue();
+//                    Object users = map.get("users");
+//                    if (users != null) {
+//                        List<String> u = (List<String>) users;
+//                        if (!u.contains(context.getUserName())) {
+//                            u.add(context.getUserName());
+//                        }
+//                    }
+//                }
+//            }
         } else {
             List<String> users = new ArrayList<>();
             users.add(context.getUserName());
             Map<String, List<String>> read = new HashMap<>();
             read.put("users", users);
             Map<String, List<String>> write = new HashMap<>();
-            read.put("users", users);
+            write.put("users", users);
             acl.put("read", read);
             acl.put("write", write);
         }
         body.put(Constant.FieldName.ACL, acl);
     }
 
+
+//    private void validateStream(List<Map<String, Object>> streams) {
+//        for(Map<String, Object> map : streams){
+//            Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
+//            while (it.hasNext()){
+//                Map.Entry<String, Object> entry = it.next();
+//                String key = entry.getKey();
+//                if (!key.equals("_fullText") && !key.equals("streamId") && !key.equals("length") && !key.equals("streamName") && !key.equals("contentType")) {
+//                    it.remove();
+//                }
+//            }
+//        }
+//    }
 
     private void validateAcl(Map<String, Object> acl) {
         Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
@@ -543,7 +613,11 @@ public class DocumentService {
         while (iterator.hasNext()) {
             Map.Entry<String, Object> entry = iterator.next();
             String key = entry.getKey();
-            if (key.equals(Constant.FieldName.STREAMS) || key.equals(Constant.FieldName.ACL)) {
+            if (key.equals(Constant.FieldName.STREAMS)) {
+                continue;
+            }
+            if (key.equals(Constant.FieldName.ACL)) {
+                validateAcl((Map<String, Object>)entry.getValue());
                 continue;
             }
             if (!keySet.contains(key)) {//ignore undefined getFulltextProperties
