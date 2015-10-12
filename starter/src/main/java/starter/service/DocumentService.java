@@ -688,8 +688,10 @@ public class DocumentService {
     }
 
     private String toFilteredQuery(String query, String filter){
-        String s = "{\"filtered\":{\"query\":" + query + ",\"filter\":" + filter + "}}";
-        return s;
+        if (StringUtils.isNotBlank(query)) {
+            return "{\"filtered\":{\"query\":" + query + ",\"filter\":" + filter + "}}";
+        }
+        return "{\"filtered\":{\"filter\":" + filter + "}}";
     }
 
 }
