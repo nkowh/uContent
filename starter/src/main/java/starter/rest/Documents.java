@@ -119,6 +119,19 @@ public class Documents {
         }
     }
 
+    @RequestMapping(value = "/{type}/{id}", method = RequestMethod.PUT, consumes = "multipart/*")
+    public String patchWithStream(@PathVariable String type, @PathVariable String id, MultipartHttpServletRequest request) {
+        try {
+            MultipartParser parser = new MultipartParser(request).invoke();
+            XContentBuilder result = documentService.update(type, id, parser.getBody(), parser.getFiles());
+            return result.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (ParseException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @RequestMapping(value = "/{type}/{id}", method = RequestMethod.DELETE)
     public String delete(@PathVariable String type, @PathVariable String id) {
         try {
