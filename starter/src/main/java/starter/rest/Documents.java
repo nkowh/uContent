@@ -23,7 +23,6 @@ public class Documents {
     @Autowired
     private DocumentService documentService;
 
-
     @RequestMapping(value = "/{type}", method = {RequestMethod.GET})
     public String query(@PathVariable String type,
                         @RequestParam(defaultValue = "") String query,
