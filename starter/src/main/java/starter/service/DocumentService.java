@@ -122,8 +122,11 @@ public class DocumentService {
             TermFilterBuilder groupFilter = FilterBuilders.termFilter("_acl.read.groups", group);
             filter.should(groupFilter);
         }
-        searchRequestBuilder.setQuery(toFilteredQuery(query, filter.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS).string()));
-//        searchRequestBuilder.setPostFilter(filter);
+//        if (StringUtils.isNotBlank(query)) {
+            searchRequestBuilder.setQuery(toFilteredQuery(query, filter.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS).string()));
+//        }else{
+//            searchRequestBuilder.setPostFilter(filter);
+//        }
         //process result
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
