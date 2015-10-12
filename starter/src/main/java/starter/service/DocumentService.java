@@ -97,10 +97,10 @@ public class DocumentService {
                     searchRequestBuilder.addHighlightedField(key);
                     booleanBuilder.should(QueryBuilders.matchQuery(key, query));
                 }
-                query = booleanBuilder.toString();
-//                searchRequestBuilder.setQuery(booleanBuilder);
-//            } else {
-//                searchRequestBuilder.setQuery(query);
+//                query = booleanBuilder.toString();
+                searchRequestBuilder.setQuery(booleanBuilder);
+            } else {
+                searchRequestBuilder.setQuery(query);
             }
         }
         //set sort
@@ -123,9 +123,9 @@ public class DocumentService {
             filter.should(groupFilter);
         }
 //        if (StringUtils.isNotBlank(query)) {
-            searchRequestBuilder.setQuery(toFilteredQuery(query, filter.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS).string()));
+//            searchRequestBuilder.setQuery(toFilteredQuery(query, filter.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS).string()));
 //        }else{
-//            searchRequestBuilder.setPostFilter(filter);
+            searchRequestBuilder.setPostFilter(filter);
 //        }
         //process result
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
@@ -226,13 +226,13 @@ public class DocumentService {
 
     public XContentBuilder update(String type, String id, Json body, List<MultipartFile> files) throws IOException, ParseException {
         GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.write);
-        validate(body, type);
+//        validate(body, type);
 //        processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
         List<Map<String, Object>> streams = new ArrayList<Map<String, Object>>();
         Object _streams = getResponse.getSource().get("_streams");
         if (_streams != null) {
             List<Map<String, Object>> oldSteams = (List<Map<String, Object>>) _streams;
-            Object o = body.get("stream_deleteIds");
+            Object o = body.get("_removeStreamIds");
             if (o != null) {
                 List<String> deleteIds = (List<String>) o;
                 Iterator<Map<String, Object>> it = oldSteams.iterator();
@@ -266,8 +266,11 @@ public class DocumentService {
                 }
                 streams.add(stream);
             }
+        }
+        if (streams != null && !streams.isEmpty()) {
             body.put(Constant.FieldName.STREAMS, streams);
         }
+        validate(body, type);
         beforeUpdate(body);
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
@@ -340,8 +343,8 @@ public class DocumentService {
         LocalDateTime localDateTime = new DateTime().toLocalDateTime();
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
         body.put(Constant.FieldName.CREATEDON, localDateTime);
-        body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
-        body.put(Constant.FieldName.LASTUPDATEDON, localDateTime);
+//        body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
+//        body.put(Constant.FieldName.LASTUPDATEDON, localDateTime);
 
         Map<String, Object> acl = new HashMap<>();
         Object o = body.get(Constant.FieldName.ACL);

@@ -12,6 +12,7 @@ import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.multipart.support.MultipartFilter;
 import starter.service.fs.FileSystem;
@@ -48,6 +49,12 @@ public class StarterApplication extends SpringBootServletInitializer {
             client.addTransportAddress(new InetSocketTransportAddress(parts[0], Integer.parseInt(parts[1])));
         }
         return client;
+    }
+
+
+    @Bean
+    public MultipartResolver MultipartResolverInstance() {
+        return new NkoMultipartResolver();
     }
 
 }

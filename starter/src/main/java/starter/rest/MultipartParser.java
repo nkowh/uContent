@@ -1,5 +1,6 @@
 package starter.rest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -12,6 +13,7 @@ public class MultipartParser {
     private MultipartHttpServletRequest request;
     private Json body;
     private List<MultipartFile> files;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public MultipartParser(MultipartHttpServletRequest request) {
         this.request = request;
@@ -37,8 +39,13 @@ public class MultipartParser {
         Map<String, String[]> parameterMap = request.getParameterMap();
         for (String key : parameterMap.keySet()) {
             if (key.equals("_acl")) {
-                Map<String, Object> acl = Json.parse(parameterMap.get(key)[0]);
+                Map<String, Object> acl = objectMapper.readValue(parameterMap.get(key)[0], Map.class);
                 body.put(key, acl);
+                continue;
+            }
+            if (key.equals("_removeStreamIds")) {
+                List list = objectMapper.readValue(parameterMap.get(key)[0], List.class);
+                body.put(key, list);
                 continue;
             }
             body.put(key, parameterMap.get(key)[0]);
