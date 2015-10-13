@@ -1,18 +1,15 @@
-Ext.define('starter.view.main.document.SearchForm', {
+Ext.define('explorer.view.main.AdvancedSearch', {
     extend: 'Ext.form.Panel',
-    xtype: 'searchForm',
-    //title: 'Search Form',
-    controller: 'advancedsearch',
-    viewModel: 'advancedsearch',
-    collapsible: true,
-    frame: true,
-    bodyPadding: 3,
+    xtype: 'advancedsearch',
+
+    controller: 'advsearch',
+    bodyPadding: 5,
     fieldDefaults: {
         labelAlign: 'left',
         labelWidth: 150,
         msgTarget: 'side'
     },
-
+    scrollable : true,
     items: [{
         xtype: 'tagfield',
         fieldLabel: 'Type',
@@ -34,7 +31,9 @@ Ext.define('starter.view.main.document.SearchForm', {
         defaults: {
             anchor: '100%'
         },
-        items: [Ext.create('starter.view.main.document.SearchCondition')]
+        items: [{
+            xtype : 'searchcondition'
+        }]
     },
         {
             fieldLabel: 'minimum_should_match',
@@ -42,12 +41,8 @@ Ext.define('starter.view.main.document.SearchForm', {
             name: 'minimum_should_match',
             value: '1'
         }],
-    listeners: {
-        //afterrender : 'loadPropertyField'
-    },
     buttons: [{
         text: 'Search',
         handler: 'search'
     }]
-
 });
