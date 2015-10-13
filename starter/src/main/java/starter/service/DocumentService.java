@@ -156,6 +156,7 @@ public class DocumentService {
     }
 
     public XContentBuilder create(String type, Json body) throws IOException, ParseException {
+        processAcl(body);
         validate(body, type);
         beforeCreate(body);
         IndexResponse indexResponse = context.getClient().prepareIndex(context.getIndex(), type).setSource(body).execute().actionGet();
@@ -168,6 +169,25 @@ public class DocumentService {
                 .field("_created", indexResponse.isCreated())
                 .endObject();
         return builder;
+    }
+
+    private void processAcl(Json body) {
+        Object o = body.get("_acl");
+        if (o != null && StringUtils.isNotBlank(o.toString())) {
+            if (o instanceof Map) {
+                return;
+            }
+            if(o instanceof String){
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    Map<String, Object> acl = objectMapper.readValue(o.toString(), Map.class);
+                    body.put("_acl", acl);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
     }
 
     public XContentBuilder create(String type, Json body, List<MultipartFile> files) throws IOException, ParseException {
@@ -273,13 +293,7 @@ public class DocumentService {
         if (streams != null && !streams.isEmpty()) {
             body.put(Constant.FieldName.STREAMS, streams);
         }
-        Object _acl = body.get("_acl");
-        if(_acl != null && StringUtils.isNotBlank(_acl.toString())){
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> acl = objectMapper.readValue(_acl.toString(), Map.class);
-            body.put("_acl", acl);
-        }
-
+        processAcl(body);
         validate(body, type);
         beforeUpdate(body);
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
@@ -358,10 +372,20 @@ public class DocumentService {
 
         Map<String, Object> acl = new HashMap<>();
         Object o = body.get(Constant.FieldName.ACL);
-        if (o != null) {
+        if (o == null) {
+            List<String> users = new ArrayList<>();
+            users.add(context.getUserName());
+            Map<String, List<String>> read = new HashMap<>();
+            read.put("users", users);
+            Map<String, List<String>> write = new HashMap<>();
+            write.put("users", users);
+            acl.put("read", read);
+            acl.put("write", write);
+            body.put(Constant.FieldName.ACL, acl);
+
 //            acl = Json.parse(o.toString());
-            acl = (Map<String, Object>) o;
-            validateAcl(acl);
+//            acl = (Map<String, Object>) o;
+//            validateAcl(acl);
 
 //            Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
 //            while (it.hasNext()){
@@ -378,17 +402,17 @@ public class DocumentService {
 //                    }
 //                }
 //            }
-        } else {
-            List<String> users = new ArrayList<>();
-            users.add(context.getUserName());
-            Map<String, List<String>> read = new HashMap<>();
-            read.put("users", users);
-            Map<String, List<String>> write = new HashMap<>();
-            write.put("users", users);
-            acl.put("read", read);
-            acl.put("write", write);
+//        } else {
+//            List<String> users = new ArrayList<>();
+//            users.add(context.getUserName());
+//            Map<String, List<String>> read = new HashMap<>();
+//            read.put("users", users);
+//            Map<String, List<String>> write = new HashMap<>();
+//            write.put("users", users);
+//            acl.put("read", read);
+//            acl.put("write", write);
         }
-        body.put(Constant.FieldName.ACL, acl);
+//        body.put(Constant.FieldName.ACL, acl);
     }
 
 
