@@ -187,6 +187,8 @@ public class DocumentService {
                 }
 
             }
+        }else{
+            body.remove("_acl");
         }
     }
 
