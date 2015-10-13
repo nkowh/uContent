@@ -34,7 +34,9 @@ public class MultipartParser {
         Map<String, MultipartFile> fileMap = request.getFileMap();
         for (String name : fileMap.keySet()) {
             for(MultipartFile file : request.getFiles(name)){
-                this.files.add(file);
+                if (!file.isEmpty()) {
+                    this.files.add(file);
+                }
             }
         }
         Map<String, String[]> parameterMap = request.getParameterMap();

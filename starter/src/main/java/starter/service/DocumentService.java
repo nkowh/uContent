@@ -19,6 +19,8 @@ import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.hppc.cursors.ObjectCursor;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.joda.time.LocalDateTime;
+import org.elasticsearch.common.joda.time.format.DateTimeFormatter;
+import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 import org.elasticsearch.common.lang3.StringUtils;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -43,6 +45,7 @@ import javax.imageio.ImageReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -279,7 +282,7 @@ public class DocumentService {
                     throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
                 stream.put(Constant.FieldName.STREAMID, fileId);
-                stream.put(Constant.FieldName.STREAMNAME, file.getName());
+                stream.put(Constant.FieldName.STREAMNAME, file.getOriginalFilename());
                 stream.put(Constant.FieldName.LENGTH, file.getSize());
                 stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
                 stream.put(Constant.FieldName.FULLTEXT, parse(file.getInputStream()));
@@ -292,9 +295,7 @@ public class DocumentService {
                 streams.add(stream);
             }
         }
-        if (streams != null && !streams.isEmpty()) {
-            body.put(Constant.FieldName.STREAMS, streams);
-        }
+        body.put(Constant.FieldName.STREAMS, streams);
         processAcl(body);
         validate(body, type);
         beforeUpdate(body);
@@ -667,6 +668,10 @@ public class DocumentService {
             }
             if (key.equals(Constant.FieldName.ACL)) {
                 validateAcl((Map<String, Object>)entry.getValue());
+                continue;
+            }
+            if(key.equals("createdBy") || key.equals("createdOn") || key.equals("lastUpdatedBy") || key.equals("lastUpdatedOn")){
+                iterator.remove();
                 continue;
             }
             if (!keySet.contains(key)) {//ignore undefined getFulltextProperties
