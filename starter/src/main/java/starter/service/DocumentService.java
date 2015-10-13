@@ -255,7 +255,7 @@ public class DocumentService {
         if (_streams != null) {
             List<Map<String, Object>> oldSteams = (List<Map<String, Object>>) _streams;
             Object o = body.get("_removeStreamIds");
-            if (o != null) {
+            if (o != null && StringUtils.isNotBlank(o.toString())) {
                 String[] split = o.toString().split(",");
                 List<String> deleteList = new ArrayList<>();
                 Collections.addAll(deleteList, split);
