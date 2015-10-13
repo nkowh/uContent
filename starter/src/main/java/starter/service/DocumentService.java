@@ -352,6 +352,7 @@ public class DocumentService {
 //            acl = Json.parse(o.toString());
             acl = (Map<String, Object>) o;
             validateAcl(acl);
+
 //            Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
 //            while (it.hasNext()){
 //                Map.Entry<String, Object> entry = it.next();
@@ -410,7 +411,13 @@ public class DocumentService {
                 String key = en.getKey();
                 if (!key.equals("users") && !key.equals("groups")) {
                     iterator.remove();
+                    continue;
                 }
+//                List list = (List) en.getValue();
+//                if (list.isEmpty()) {
+//                    iterator.remove();
+//                    continue;
+//                }
             }
         }
     }

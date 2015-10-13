@@ -1,6 +1,7 @@
 package starter.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -39,8 +40,10 @@ public class MultipartParser {
         Map<String, String[]> parameterMap = request.getParameterMap();
         for (String key : parameterMap.keySet()) {
             if (key.equals("_acl")) {
-                Map<String, Object> acl = objectMapper.readValue(parameterMap.get(key)[0], Map.class);
-                body.put(key, acl);
+                if (StringUtils.isNotBlank(parameterMap.get(key)[0])) {
+                    Map<String, Object> acl = objectMapper.readValue(parameterMap.get(key)[0], Map.class);
+                    body.put(key, acl);
+                }
                 continue;
             }
             if (key.equals("_removeStreamIds")) {
