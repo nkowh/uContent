@@ -23,7 +23,6 @@ public class Documents {
     @Autowired
     private DocumentService documentService;
 
-
     @RequestMapping(value = "/{type}", method = {RequestMethod.GET})
     public String query(@PathVariable String type,
                         @RequestParam(defaultValue = "") String query,
@@ -98,7 +97,7 @@ public class Documents {
     @RequestMapping(value = "/{type}/{id}", method = RequestMethod.PUT, consumes = "application/json")
     public String updateWithoutStream(@PathVariable String type, @PathVariable String id, @RequestBody Json body) {
         try {
-            XContentBuilder xContentBuilder = documentService.update(type, id, body);
+            XContentBuilder xContentBuilder = documentService.update(type, id, body, null);
             return xContentBuilder.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -107,20 +106,20 @@ public class Documents {
         }
     }
 
-    @RequestMapping(value = "/{type}/{id}", method = RequestMethod.PATCH, consumes = "application/json")
-    public String patchWithoutStream(@PathVariable String type, @PathVariable String id, @RequestBody Json body) {
-        try {
-            XContentBuilder xContentBuilder = documentService.patch(type, id, body);
-            return xContentBuilder.string();
-        } catch (IOException e) {
-            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (ParseException e) {
-            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+//    @RequestMapping(value = "/{type}/{id}", method = RequestMethod.PATCH, consumes = "application/json")
+//    public String patchWithoutStream(@PathVariable String type, @PathVariable String id, @RequestBody Json body) {
+//        try {
+//            XContentBuilder xContentBuilder = documentService.patch(type, id, body);
+//            return xContentBuilder.string();
+//        } catch (IOException e) {
+//            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+//        } catch (ParseException e) {
+//            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//    }
 
     @RequestMapping(value = "/{type}/{id}", method = RequestMethod.PUT, consumes = "multipart/*")
-    public String patchWithStream(@PathVariable String type, @PathVariable String id, MultipartHttpServletRequest request) {
+    public String updateWithStream(@PathVariable String type, @PathVariable String id, MultipartHttpServletRequest request) {
         try {
             MultipartParser parser = new MultipartParser(request).invoke();
             XContentBuilder result = documentService.update(type, id, parser.getBody(), parser.getFiles());

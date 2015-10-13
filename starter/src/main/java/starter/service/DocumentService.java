@@ -97,10 +97,10 @@ public class DocumentService {
                     searchRequestBuilder.addHighlightedField(key);
                     booleanBuilder.should(QueryBuilders.matchQuery(key, query));
                 }
-                query = booleanBuilder.toString();
-//                searchRequestBuilder.setQuery(booleanBuilder);
-//            } else {
-//                searchRequestBuilder.setQuery(query);
+//                query = booleanBuilder.toString();
+                searchRequestBuilder.setQuery(booleanBuilder);
+            } else {
+                searchRequestBuilder.setQuery(query);
             }
         }
         //set sort
@@ -122,8 +122,11 @@ public class DocumentService {
             TermFilterBuilder groupFilter = FilterBuilders.termFilter("_acl.read.groups", group);
             filter.should(groupFilter);
         }
-        searchRequestBuilder.setQuery(toFilteredQuery(query, filter.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS).string()));
-//        searchRequestBuilder.setPostFilter(filter);
+//        if (StringUtils.isNotBlank(query)) {
+//            searchRequestBuilder.setQuery(toFilteredQuery(query, filter.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS).string()));
+//        }else{
+            searchRequestBuilder.setPostFilter(filter);
+//        }
         //process result
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
@@ -153,6 +156,7 @@ public class DocumentService {
     }
 
     public XContentBuilder create(String type, Json body) throws IOException, ParseException {
+        processAcl(body);
         validate(body, type);
         beforeCreate(body);
         IndexResponse indexResponse = context.getClient().prepareIndex(context.getIndex(), type).setSource(body).execute().actionGet();
@@ -167,6 +171,27 @@ public class DocumentService {
         return builder;
     }
 
+    private void processAcl(Json body) {
+        Object o = body.get("_acl");
+        if (o != null && StringUtils.isNotBlank(o.toString())) {
+            if (o instanceof Map) {
+                return;
+            }
+            if(o instanceof String){
+                ObjectMapper objectMapper = new ObjectMapper();
+                try {
+                    Map<String, Object> acl = objectMapper.readValue(o.toString(), Map.class);
+                    body.put("_acl", acl);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }else{
+            body.remove("_acl");
+        }
+    }
+
     public XContentBuilder create(String type, Json body, List<MultipartFile> files) throws IOException, ParseException {
         if (!files.isEmpty()) {
             List<Map<String, Object>> streams = new ArrayList<Map<String, Object>>();
@@ -178,7 +203,7 @@ public class DocumentService {
                     throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
                 stream.put(Constant.FieldName.STREAMID, fileId);
-                stream.put(Constant.FieldName.STREAMNAME, file.getName());
+                stream.put(Constant.FieldName.STREAMNAME, file.getOriginalFilename());
                 stream.put(Constant.FieldName.LENGTH, file.getSize());
                 stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
                 stream.put(Constant.FieldName.FULLTEXT, parse(file.getInputStream()));
@@ -195,54 +220,57 @@ public class DocumentService {
         return create(type, body);
     }
 
-    public Json head(String type, String id) throws IOException {
-        return get(type, id, true, false);
-    }
+//    public Json head(String type, String id) throws IOException {
+//        return get(type, id, true, false);
+//    }
 
     public Json get(String type, String id, boolean head, boolean allowableActions) throws IOException {
         GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.read);
         return processGet(getResponse, head, allowableActions);
     }
 
-    public XContentBuilder update(String type, String id, Json body) throws IOException, ParseException {
-        GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.write);
-//        processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
-        validate(body, type);
-        beforeUpdate(body);
-        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
-        XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
-        xContentBuilder.startObject()
-                .field("_index", context.getIndex())
-                .field("_type", type)
-                .field("_id", id)
-                .field("_version", updateResponse.getVersion());
-        xContentBuilder.endObject();
-        return xContentBuilder;
-    }
+//    public XContentBuilder update(String type, String id, Json body) throws IOException, ParseException {
+//        GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.write);
+////        processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
+//        validate(body, type);
+//        beforeUpdate(body);
+//        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
+//        XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
+//        xContentBuilder.startObject()
+//                .field("_index", context.getIndex())
+//                .field("_type", type)
+//                .field("_id", id)
+//                .field("_version", updateResponse.getVersion());
+//        xContentBuilder.endObject();
+//        return xContentBuilder;
+//    }
 
 
     public XContentBuilder update(String type, String id, Json body, List<MultipartFile> files) throws IOException, ParseException {
         GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.write);
-        validate(body, type);
+//        validate(body, type);
 //        processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
         List<Map<String, Object>> streams = new ArrayList<Map<String, Object>>();
         Object _streams = getResponse.getSource().get("_streams");
         if (_streams != null) {
             List<Map<String, Object>> oldSteams = (List<Map<String, Object>>) _streams;
-            Object o = body.get("stream_deleteIds");
-            if (o != null) {
-                List<String> deleteIds = (List<String>) o;
-                Iterator<Map<String, Object>> it = oldSteams.iterator();
-                while (it.hasNext()){
-                    Map<String, Object> map = it.next();
-                    if (deleteIds.contains(map.get("streamId").toString())) {
-                        it.remove();
+            Object o = body.get("_removeStreamIds");
+            if (o != null && StringUtils.isNotBlank(o.toString())) {
+                String[] split = o.toString().split(",");
+                List<String> deleteList = new ArrayList<>();
+                Collections.addAll(deleteList, split);
+                Iterator<Map<String, Object>> iterator = oldSteams.iterator();
+                while (iterator.hasNext()){
+                    String streamId = iterator.next().get("streamId").toString();
+                    if(deleteList.contains(streamId)){
+                        iterator.remove();
+                        continue;
                     }
                 }
             }
             streams.addAll(oldSteams);
         }
-        if (!files.isEmpty()) {
+        if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 Map<String, Object> stream = new HashMap<String, Object>();
                 String fileId = fs.write(file.getBytes());
@@ -263,8 +291,12 @@ public class DocumentService {
                 }
                 streams.add(stream);
             }
+        }
+        if (streams != null && !streams.isEmpty()) {
             body.put(Constant.FieldName.STREAMS, streams);
         }
+        processAcl(body);
+        validate(body, type);
         beforeUpdate(body);
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
@@ -277,9 +309,9 @@ public class DocumentService {
         return xContentBuilder;
     }
 
-    public XContentBuilder patch(String type, String id, Json body) throws IOException, ParseException {
-        return update(type, id, body);
-    }
+//    public XContentBuilder patch(String type, String id, Json body) throws IOException, ParseException {
+//        return update(type, id, body);
+//    }
 
     public XContentBuilder delete(String type, String id) throws IOException {
         checkPermission(type, id, context.getUserName(), Constant.Permission.write);
@@ -337,15 +369,26 @@ public class DocumentService {
         LocalDateTime localDateTime = new DateTime().toLocalDateTime();
         body.put(Constant.FieldName.CREATEDBY, context.getUserName());
         body.put(Constant.FieldName.CREATEDON, localDateTime);
-        body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
-        body.put(Constant.FieldName.LASTUPDATEDON, localDateTime);
+//        body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
+//        body.put(Constant.FieldName.LASTUPDATEDON, localDateTime);
 
         Map<String, Object> acl = new HashMap<>();
         Object o = body.get(Constant.FieldName.ACL);
-        if (o != null) {
+        if (o == null) {
+            List<String> users = new ArrayList<>();
+            users.add(context.getUserName());
+            Map<String, List<String>> read = new HashMap<>();
+            read.put("users", users);
+            Map<String, List<String>> write = new HashMap<>();
+            write.put("users", users);
+            acl.put("read", read);
+            acl.put("write", write);
+            body.put(Constant.FieldName.ACL, acl);
+
 //            acl = Json.parse(o.toString());
-            acl = (Map<String, Object>) o;
-            validateAcl(acl);
+//            acl = (Map<String, Object>) o;
+//            validateAcl(acl);
+
 //            Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
 //            while (it.hasNext()){
 //                Map.Entry<String, Object> entry = it.next();
@@ -361,17 +404,17 @@ public class DocumentService {
 //                    }
 //                }
 //            }
-        } else {
-            List<String> users = new ArrayList<>();
-            users.add(context.getUserName());
-            Map<String, List<String>> read = new HashMap<>();
-            read.put("users", users);
-            Map<String, List<String>> write = new HashMap<>();
-            write.put("users", users);
-            acl.put("read", read);
-            acl.put("write", write);
+//        } else {
+//            List<String> users = new ArrayList<>();
+//            users.add(context.getUserName());
+//            Map<String, List<String>> read = new HashMap<>();
+//            read.put("users", users);
+//            Map<String, List<String>> write = new HashMap<>();
+//            write.put("users", users);
+//            acl.put("read", read);
+//            acl.put("write", write);
         }
-        body.put(Constant.FieldName.ACL, acl);
+//        body.put(Constant.FieldName.ACL, acl);
     }
 
 
@@ -404,7 +447,13 @@ public class DocumentService {
                 String key = en.getKey();
                 if (!key.equals("users") && !key.equals("groups")) {
                     iterator.remove();
+                    continue;
                 }
+//                List list = (List) en.getValue();
+//                if (list.isEmpty()) {
+//                    iterator.remove();
+//                    continue;
+//                }
             }
         }
     }
@@ -688,8 +737,10 @@ public class DocumentService {
     }
 
     private String toFilteredQuery(String query, String filter){
-        String s = "{\"filtered\":{\"query\":" + query + ",\"filter\":" + filter + "}}";
-        return s;
+        if (StringUtils.isNotBlank(query)) {
+            return "{\"filtered\":{\"query\":" + query + ",\"filter\":" + filter + "}}";
+        }
+        return "{\"filtered\":{\"filter\":" + filter + "}}";
     }
 
 }

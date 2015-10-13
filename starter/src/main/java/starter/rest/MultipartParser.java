@@ -1,5 +1,7 @@
 package starter.rest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.common.lang3.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -12,6 +14,7 @@ public class MultipartParser {
     private MultipartHttpServletRequest request;
     private Json body;
     private List<MultipartFile> files;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public MultipartParser(MultipartHttpServletRequest request) {
         this.request = request;
@@ -36,11 +39,26 @@ public class MultipartParser {
         }
         Map<String, String[]> parameterMap = request.getParameterMap();
         for (String key : parameterMap.keySet()) {
-            if (key.equals("_acl")) {
-                Map<String, Object> acl = Json.parse(parameterMap.get(key)[0]);
-                body.put(key, acl);
-                continue;
-            }
+//            if (key.equals("_acl")) {
+//                if (StringUtils.isNotBlank(parameterMap.get(key)[0])) {
+//                    Map<String, Object> acl = objectMapper.readValue(parameterMap.get(key)[0], Map.class);
+//                    body.put(key, acl);
+//                }
+//                continue;
+//            }
+//            if (key.equals("_removeStreamIds")) {
+//                if (StringUtils.isNotBlank(parameterMap.get(key)[0])) {
+//                    List<String> list = new ArrayList<>();
+//                    String[] split = parameterMap.get(key)[0].split(",");
+//                    for(String s : split){
+//                        if (StringUtils.isNotBlank(s)) {
+//                            list.add(s);
+//                        }
+//                    }
+//                    body.put(key, list);
+//                }
+//                continue;
+//            }
             body.put(key, parameterMap.get(key)[0]);
         }
         return this;

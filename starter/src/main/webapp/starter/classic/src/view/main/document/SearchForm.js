@@ -14,7 +14,7 @@ Ext.define('starter.view.main.document.SearchForm', {
     },
 
     items: [{
-        xtype: 'combo',
+        xtype: 'tagfield',
         fieldLabel: 'Type',
         name: 'type',
         displayField: 'displayName',
@@ -22,8 +22,9 @@ Ext.define('starter.view.main.document.SearchForm', {
         valueField: 'name',
         bind: {
             store: '{types}'
-            //value : '{tValue}'
         },
+        filterPickList: true,
+        publishes: 'value',
         listeners: {
             change: "changeType"
         }
