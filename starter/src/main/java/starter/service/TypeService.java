@@ -140,27 +140,27 @@ public class TypeService {
 
                 //组装properties
                 builder.startObject(Constant.FieldName.PROPERTIES)
-                        .startObject(Constant.FieldName.NAME).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.DESCRIPTION).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject();
+                        .startObject(Constant.FieldName.NAME).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
+                        .startObject(Constant.FieldName.DESCRIPTION).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject();
 
                 //组装stream属性
                 builder.startObject(Constant.FieldName.STREAMS).startObject(Constant.FieldName.PROPERTIES)
-                        .startObject(Constant.FieldName.STREAMID).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.STREAMNAME).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.LENGTH).field(Constant.FieldName.TYPE, "long").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.CONTENTTYPE).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                        .startObject(Constant.FieldName.STREAMID).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
+                        .startObject(Constant.FieldName.STREAMNAME).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
+                        .startObject(Constant.FieldName.LENGTH).field(Constant.FieldName.TYPE, "long").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
+                        .startObject(Constant.FieldName.CONTENTTYPE).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
                         .startObject(Constant.FieldName.FULLTEXT).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.ANALYZED).
                                     field(Constant.FieldName.INDEXANALYZER, Constant.DEFAULT_INDEXANALYZER).
-                                    field(Constant.FieldName.SEARCHANALYZER, Constant.DEFAULT_SEARCHANALYZER).field("store", "yes").endObject()
+                                    field(Constant.FieldName.SEARCHANALYZER, Constant.DEFAULT_SEARCHANALYZER).endObject()
                         .endObject()
                         .endObject();
 
                 //组装_acl属性
 //                builder.startObject("_acl").field(Constant.FieldName.TYPE, "nested")
 //                        .startObject(Constant.FieldName.PROPERTIES)
-//                        .startObject(Constant.FieldName.PERMISSION).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-//                        .startObject(Constant.FieldName.USER).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-//                        .startObject(Constant.FieldName.GROUP).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+//                        .startObject(Constant.FieldName.PERMISSION).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
+//                        .startObject(Constant.FieldName.USER).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
+//                        .startObject(Constant.FieldName.GROUP).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
 //                        .endObject()
 //                        .endObject();
 
@@ -168,14 +168,14 @@ public class TypeService {
                         .startObject(Constant.FieldName.PROPERTIES)
                             .startObject(Constant.FieldName.READ)
                                 .startObject(Constant.FieldName.PROPERTIES)
-                                    .startObject(Constant.FieldName.USERS).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                                    .startObject(Constant.FieldName.GROUPS).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                                    .startObject(Constant.FieldName.USERS).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
+                                    .startObject(Constant.FieldName.GROUPS).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
                                 .endObject()
                             .endObject()
                             .startObject(Constant.FieldName.WRITE)
                                 .startObject(Constant.FieldName.PROPERTIES)
-                                    .startObject(Constant.FieldName.USERS).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                                    .startObject(Constant.FieldName.GROUPS).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
+                                    .startObject(Constant.FieldName.USERS).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
+                                    .startObject(Constant.FieldName.GROUPS).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
                                 .endObject()
                             .endObject()
                         .endObject()
@@ -183,10 +183,13 @@ public class TypeService {
 
 
                 //组装创建信息属性
-                builder.startObject(Constant.FieldName.CREATEDBY).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.CREATEDON).field(Constant.FieldName.TYPE, "date").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.LASTUPDATEDBY).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject()
-                        .startObject(Constant.FieldName.LASTUPDATEDON).field(Constant.FieldName.TYPE, "date").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).field("store", "yes").endObject();
+                builder.startObject(Constant.FieldName.CREATEDBY).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
+                        .startObject(Constant.FieldName.CREATEDON).field(Constant.FieldName.TYPE, "date").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
+                        .startObject(Constant.FieldName.LASTUPDATEDBY).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject()
+                        .startObject(Constant.FieldName.LASTUPDATEDON).field(Constant.FieldName.TYPE, "date").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject();
+
+                //组装Tag属性
+                builder.startObject(Constant.FieldName.TAG).field(Constant.FieldName.TYPE, "string").field(Constant.FieldName.INDEX, Constant.FieldName.NOT_ANALYZED).endObject();
 
                 //组装自定义属性
                 for(Object property:properties){
@@ -215,7 +218,6 @@ public class TypeService {
                             }
 
                         }
-                        builder.field("store", "yes");
                         builder.endObject();
                     }
                 }
@@ -232,8 +234,6 @@ public class TypeService {
             acknowledged = putMappingResponse.isAcknowledged();
             //System.out.println(builder.string());
             //client.close();
-
-            putMappingResponse.isAcknowledged();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -310,6 +310,8 @@ public class TypeService {
         pros.put(Constant.FieldName.CREATEDON,makeProperty(Constant.FieldName.CREATEDON, "date", Constant.FieldName.NOT_ANALYZED, "", "", false, "", "", "", ""));
         pros.put(Constant.FieldName.LASTUPDATEDBY,makeProperty(Constant.FieldName.LASTUPDATEDBY, "string", Constant.FieldName.NOT_ANALYZED, "", "", false, "", "", "", ""));
         pros.put(Constant.FieldName.LASTUPDATEDON,makeProperty(Constant.FieldName.LASTUPDATEDON, "date", Constant.FieldName.NOT_ANALYZED, "", "", false, "", "", "", ""));
+
+        pros.put(Constant.FieldName.TAG,makeProperty(Constant.FieldName.TAG, "string", Constant.FieldName.NOT_ANALYZED, "", "", false, "", "", "", ""));
 
         MappingMetaData mappingMetaData = mappings.get(context.getIndex()).get(id);
         if (mappingMetaData!=null){

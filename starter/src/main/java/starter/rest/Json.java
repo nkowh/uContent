@@ -3,14 +3,14 @@ package starter.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
 import starter.uContentException;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class Json extends HashMap<String, Object> {
 
@@ -45,6 +45,30 @@ public class Json extends HashMap<String, Object> {
             Entry<String, Object> entry = it.next();
             builder.field(entry.getKey()).value(entry.getValue());
         }
+        builder.endObject();
+        return builder;
+    }
+
+    //将Json集合转换为大Json
+    public static XContentBuilder parse(List<Json> list, String arrayName) throws IOException {
+        if (list == null||list.size()==0|| StringUtils.isEmpty(arrayName)) {
+            return null;
+        }
+
+        XContentBuilder builder= XContentFactory.jsonBuilder();
+        builder.startObject();
+        builder.field("total", list.size());
+        builder.startArray(arrayName);
+        for(Json json:list){
+            builder.startObject();
+            Iterator<Entry<String, Object>> it = json.entrySet().iterator();
+            while (it.hasNext()) {
+                Entry<String, Object> entry = it.next();
+                builder.field(entry.getKey()).value(entry.getValue());
+            }
+            builder.endObject();
+        }
+        builder.endArray();
         builder.endObject();
         return builder;
     }

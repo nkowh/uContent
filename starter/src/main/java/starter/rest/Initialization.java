@@ -13,9 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import starter.RequestContext;
-import starter.service.Constant;
-import starter.service.GroupService;
-import starter.service.UserService;
+import starter.service.*;
 import starter.uContentException;
 
 @RestController
@@ -27,6 +25,12 @@ public class Initialization {
 
     @Autowired
     private GroupService groupService;
+
+    @Autowired
+    private ViewService viewService;
+
+    @Autowired
+    private TagService tagService;
 
     @Autowired
     private RequestContext context;
@@ -68,6 +72,20 @@ public class Initialization {
             return false;
         }
 
+        //check view mapping
+        GetMappingsResponse getViewMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getAlias()).addTypes(Constant.FieldName.VIEWTYPENAME).get();
+        ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> viewMappings = getViewMappingsResponse.getMappings();
+        if(viewMappings.size()==0){
+            return false;
+        }
+
+        //check tag mapping
+        GetMappingsResponse getTagMappingsResponse = client.admin().indices().prepareGetMappings().addIndices(context.getAlias()).addTypes(Constant.FieldName.TAGTYPENAME).get();
+        ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> tagMappings = getTagMappingsResponse.getMappings();
+        if(tagMappings.size()==0){
+            return false;
+        }
+
         return true;
     }
 
@@ -92,6 +110,8 @@ public class Initialization {
             if (client.admin().indices().prepareExists(indices).execute().actionGet().isExists()){
                 userService.initialUserData();
                 groupService.initialGroupData();
+                viewService.initialViewData();
+                tagService.initialTagData();;
             }
         } catch (Exception e) {
             e.printStackTrace();
