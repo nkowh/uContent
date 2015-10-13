@@ -198,30 +198,30 @@ public class DocumentService {
         return create(type, body);
     }
 
-    public Json head(String type, String id) throws IOException {
-        return get(type, id, true, false);
-    }
+//    public Json head(String type, String id) throws IOException {
+//        return get(type, id, true, false);
+//    }
 
     public Json get(String type, String id, boolean head, boolean allowableActions) throws IOException {
         GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.read);
         return processGet(getResponse, head, allowableActions);
     }
 
-    public XContentBuilder update(String type, String id, Json body) throws IOException, ParseException {
-        GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.write);
-//        processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
-        validate(body, type);
-        beforeUpdate(body);
-        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
-        XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
-        xContentBuilder.startObject()
-                .field("_index", context.getIndex())
-                .field("_type", type)
-                .field("_id", id)
-                .field("_version", updateResponse.getVersion());
-        xContentBuilder.endObject();
-        return xContentBuilder;
-    }
+//    public XContentBuilder update(String type, String id, Json body) throws IOException, ParseException {
+//        GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.write);
+////        processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
+//        validate(body, type);
+//        beforeUpdate(body);
+//        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
+//        XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
+//        xContentBuilder.startObject()
+//                .field("_index", context.getIndex())
+//                .field("_type", type)
+//                .field("_id", id)
+//                .field("_version", updateResponse.getVersion());
+//        xContentBuilder.endObject();
+//        return xContentBuilder;
+//    }
 
 
     public XContentBuilder update(String type, String id, Json body, List<MultipartFile> files) throws IOException, ParseException {
@@ -234,18 +234,21 @@ public class DocumentService {
             List<Map<String, Object>> oldSteams = (List<Map<String, Object>>) _streams;
             Object o = body.get("_removeStreamIds");
             if (o != null) {
-                List<String> deleteIds = (List<String>) o;
-                Iterator<Map<String, Object>> it = oldSteams.iterator();
-                while (it.hasNext()){
-                    Map<String, Object> map = it.next();
-                    if (deleteIds.contains(map.get("streamId").toString())) {
-                        it.remove();
+                String[] split = o.toString().split(",");
+                List<String> deleteList = new ArrayList<>();
+                Collections.addAll(deleteList, split);
+                Iterator<Map<String, Object>> iterator = oldSteams.iterator();
+                while (iterator.hasNext()){
+                    String streamId = iterator.next().get("streamId").toString();
+                    if(deleteList.contains(streamId)){
+                        iterator.remove();
+                        continue;
                     }
                 }
             }
             streams.addAll(oldSteams);
         }
-        if (!files.isEmpty()) {
+        if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 Map<String, Object> stream = new HashMap<String, Object>();
                 String fileId = fs.write(file.getBytes());
@@ -270,6 +273,13 @@ public class DocumentService {
         if (streams != null && !streams.isEmpty()) {
             body.put(Constant.FieldName.STREAMS, streams);
         }
+        Object _acl = body.get("_acl");
+        if(_acl != null && StringUtils.isNotBlank(_acl.toString())){
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object> acl = objectMapper.readValue(_acl.toString(), Map.class);
+            body.put("_acl", acl);
+        }
+
         validate(body, type);
         beforeUpdate(body);
         UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
@@ -283,9 +293,9 @@ public class DocumentService {
         return xContentBuilder;
     }
 
-    public XContentBuilder patch(String type, String id, Json body) throws IOException, ParseException {
-        return update(type, id, body);
-    }
+//    public XContentBuilder patch(String type, String id, Json body) throws IOException, ParseException {
+//        return update(type, id, body);
+//    }
 
     public XContentBuilder delete(String type, String id) throws IOException {
         checkPermission(type, id, context.getUserName(), Constant.Permission.write);

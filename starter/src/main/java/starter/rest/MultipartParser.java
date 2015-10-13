@@ -39,18 +39,26 @@ public class MultipartParser {
         }
         Map<String, String[]> parameterMap = request.getParameterMap();
         for (String key : parameterMap.keySet()) {
-            if (key.equals("_acl")) {
-                if (StringUtils.isNotBlank(parameterMap.get(key)[0])) {
-                    Map<String, Object> acl = objectMapper.readValue(parameterMap.get(key)[0], Map.class);
-                    body.put(key, acl);
-                }
-                continue;
-            }
-            if (key.equals("_removeStreamIds")) {
-                List list = objectMapper.readValue(parameterMap.get(key)[0], List.class);
-                body.put(key, list);
-                continue;
-            }
+//            if (key.equals("_acl")) {
+//                if (StringUtils.isNotBlank(parameterMap.get(key)[0])) {
+//                    Map<String, Object> acl = objectMapper.readValue(parameterMap.get(key)[0], Map.class);
+//                    body.put(key, acl);
+//                }
+//                continue;
+//            }
+//            if (key.equals("_removeStreamIds")) {
+//                if (StringUtils.isNotBlank(parameterMap.get(key)[0])) {
+//                    List<String> list = new ArrayList<>();
+//                    String[] split = parameterMap.get(key)[0].split(",");
+//                    for(String s : split){
+//                        if (StringUtils.isNotBlank(s)) {
+//                            list.add(s);
+//                        }
+//                    }
+//                    body.put(key, list);
+//                }
+//                continue;
+//            }
             body.put(key, parameterMap.get(key)[0]);
         }
         return this;
