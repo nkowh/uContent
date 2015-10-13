@@ -9,10 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import starter.RequestContext;
-import starter.service.GroupService;
-import starter.service.ReIndexService;
-import starter.service.TypeService;
-import starter.service.UserService;
+import starter.service.*;
 import starter.uContentException;
 
 import java.io.IOException;
@@ -29,6 +26,10 @@ public class Systems {
     private UserService userService;
     @Autowired
     private GroupService groupService;
+    @Autowired
+    private ViewService viewService;
+    @Autowired
+    private TagService tagService;
     @Autowired
     private RequestContext context;
 
@@ -246,6 +247,124 @@ public class Systems {
     public boolean checkUserInAdminGroup() {
         return groupService.checkUserInAdminGroup();
     }
+
+    /****************************** views ******************************/
+    @RequestMapping(value = "views", method = {RequestMethod.GET})
+    public String allViews() {
+        try {
+            XContentBuilder result = Json.parse(viewService.all(), "views");
+            return result.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(value = "views", method = RequestMethod.POST)
+    public String createView(@RequestBody Json body) {
+        try {
+            XContentBuilder result = viewService.create(body);
+            return result.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(value = "views/{id}", method = RequestMethod.GET)
+    public String getView(@PathVariable String id) {
+        try {
+            XContentBuilder result = viewService.get(id).toXContentBuilder();
+            return result.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @RequestMapping(value = "views/{id}", method = RequestMethod.PATCH)
+    public String updateView(@PathVariable String id, @RequestBody Json body) {
+        try {
+            XContentBuilder result = viewService.update(id, body);
+            return result.string();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(value = "views/{id}", method = RequestMethod.DELETE)
+    public String deleteView(@PathVariable String id) {
+        try {
+            XContentBuilder result = viewService.delete(id);
+            return result.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(value = "views/user/{id}", method = RequestMethod.GET)
+    public String getViewsByUser(@PathVariable String id) {
+        try {
+            XContentBuilder result = Json.parse(viewService.getViewsByUser(id), "views");
+            return result.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    /****************************** tags ******************************/
+    @RequestMapping(value = "tags", method = {RequestMethod.GET})
+    public String allTags() {
+        try {
+            XContentBuilder result = Json.parse(tagService.all(), "tags");
+            return result.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(value = "tags", method = RequestMethod.POST)
+    public String createTag(@RequestBody Json body) {
+        try {
+            XContentBuilder result = tagService.create(body);
+            return result.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(value = "tags/{id}", method = RequestMethod.GET)
+    public String getTag(@PathVariable String id) {
+        try {
+            XContentBuilder result = tagService.get(id).toXContentBuilder();
+            return result.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @RequestMapping(value = "tags/{id}", method = RequestMethod.PATCH)
+    public String updateTag(@PathVariable String id, @RequestBody Json body) {
+        try {
+            XContentBuilder result = tagService.update(id, body);
+            return result.string();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(value = "tags/{id}", method = RequestMethod.DELETE)
+    public String deleteTag(@PathVariable String id) {
+        try {
+            XContentBuilder result = tagService.delete(id);
+            return result.string();
+        } catch (IOException e) {
+            throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
     @RequestMapping(value = "_reindex", method = RequestMethod.POST)
     public String reindex(@RequestParam(defaultValue = "")String target,

@@ -80,6 +80,7 @@ public class Constant {
         public static final String CREATEDON = "createdOn";
         public static final String LASTUPDATEDBY = "lastUpdatedBy";
         public static final String LASTUPDATEDON = "lastUpdatedOn";
+        public static final String TAG = "tag";
         public static final String ACL = "_acl";
         public static final String STREAMS = "_streams";
         public static final String STREAMID = "streamId";
@@ -101,7 +102,6 @@ public class Constant {
         public static final String READ = "read";
         public static final String WRITE = "write";
         public static final String GROUPS = "groups";
-
 
         public static final String ISDOCTYPE = "isDocType";
         public static final String DISPLAYNAME = "displayName";
@@ -131,6 +131,16 @@ public class Constant {
         public static final String GROUPNAME = "groupName";
         public static final String USERS = "users";
 
+        //fields of VIEW
+        public static final String VIEWID = "viewId";
+        public static final String VIEWNAME = "viewName";
+        public static final String VIEWTYPENAME = "view";
+        public static final String QUERYCONTEXT = "queryContext";
+
+        //fields of tag
+        public static final String TAGID = "tagId";
+        public static final String TAGCONTEXT = "tagContext";
+        public static final String TAGTYPENAME = "tag";
     }
 
 
