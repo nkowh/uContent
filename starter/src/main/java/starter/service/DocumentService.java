@@ -181,7 +181,7 @@ public class DocumentService {
                     throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
                 stream.put(Constant.FieldName.STREAMID, fileId);
-                stream.put(Constant.FieldName.STREAMNAME, file.getName());
+                stream.put(Constant.FieldName.STREAMNAME, file.getOriginalFilename());
                 stream.put(Constant.FieldName.LENGTH, file.getSize());
                 stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
                 stream.put(Constant.FieldName.FULLTEXT, parse(file.getInputStream()));
