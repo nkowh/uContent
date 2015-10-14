@@ -265,47 +265,12 @@ Ext.define('explorer.view.main.AdvSearchController', {
             tabPanel.add({
                 title:this.getViewModel().get('advQueryTitle'),
                 xtype:'documents',
-                query : Ext.JSON.encode(query),
+                docQuery : Ext.JSON.encode(query),
                 qType :type ,
                 index : index
             });
-            this.getViewModel().setData({queryCondition: Ext.JSON.encode(query),qType :type});
             tabPanel.setActiveTab(index);
             this.getView().up('window').close();
-        }
-    },
-    deleteDoc : function(bt,e){
-        var me = this;
-        var records = this.getView().getSelectionModel().getSelection();
-        if (records && records.length > 0) {
-            var result = [];
-            Ext.Msg.confirm("Title", "Are you sure to delete this Document？", function (r) {
-                Ext.Array.each(records, function(record, index, countriesItSelf) {
-                    result.push({"type":record.get("_type"),"id":record.get("_id")});
-                });
-                Ext.Ajax.request({
-                    method: 'DELETE',
-                    url: '/svc',
-                    headers: {'Content-Type': 'application/json;charset=utf-8'},
-                    params: JSON.stringify(result),
-                    callback: function (options, success, response) {
-                        if (!success) {
-                            return;
-                        }
-                        Ext.toast({
-                            html: 'Delete successful',
-                            title: 'message',
-                            width: 200,
-                            align: 't'
-                        });
-                        me.getView().store.load();
-                    }
-                });
-            });
-
-        } else {
-            Ext.Msg.alert('message', 'Please select one item at least.');
-            return;
         }
     }
 });

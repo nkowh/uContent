@@ -131,6 +131,8 @@ Ext.define('explorer.view.main.IndexDocController', {
                 });
                 if(flag){
                     this.getView().down('hiddenfield[name=_acl]').setValue(Ext.encode(_acl));
+                }else{
+                    this.getView().down('hiddenfield[name=_acl]').setValue('');
                 }
             }
             var url = '';
@@ -267,42 +269,44 @@ Ext.define('explorer.view.main.IndexDocController', {
         var streamcontainer = this.getView().down('fieldset[itemId=stream]');
         var removeStreamIds = this.getView().down('hiddenfield[itemId=removeStreamIds]');
         Ext.Array.each(streams, function(stream, index, countriesItSelf) {
-            streamcontainer.insert(index,{
-                xtype: 'container',
-                layout: 'hbox',
-                items: [
-                    {
-                        fieldLabel :'StreamName',
-                        xtype: 'textfield',
-                        name : 'streamName',
-                        value : stream.streamName,
-                        readOnly : true
-                    },
-                    {
-                        xtype: 'button',
-                        text: '-',
-                        fieldReference: 'fieldInterval',
-                        style: {
-                            'margin-left': '10px'
+            if(stream&&stream.streamName!=''){
+                streamcontainer.insert(index,{
+                    xtype: 'container',
+                    layout: 'hbox',
+                    items: [
+                        {
+                            fieldLabel :'StreamName',
+                            xtype: 'textfield',
+                            name : 'streamName',
+                            value : stream.streamName,
+                            readOnly : true
                         },
-                        streamId : stream.streamId,
-                        listeners: {
-                            click: function(bt,e){
-                                var stream = bt.up('container');
-                                var streamcontainer = me.getView().down('fieldset[itemId=stream]');
-                                var streamId = bt.streamId;
-                                var vals =[];
-                                if(removeStreamIds.getValue()&&removeStreamIds.getValue().length>0){
-                                    vals =  removeStreamIds.getValue().split(',');
+                        {
+                            xtype: 'button',
+                            text: '-',
+                            fieldReference: 'fieldInterval',
+                            style: {
+                                'margin-left': '10px'
+                            },
+                            streamId : stream.streamId,
+                            listeners: {
+                                click: function(bt,e){
+                                    var stream = bt.up('container');
+                                    var streamcontainer = me.getView().down('fieldset[itemId=stream]');
+                                    var streamId = bt.streamId;
+                                    var vals =[];
+                                    if(removeStreamIds.getValue()&&removeStreamIds.getValue().length>0){
+                                        vals =  removeStreamIds.getValue().split(',');
+                                    }
+                                    vals.push(streamId);
+                                    removeStreamIds.setValue(vals);
+                                    streamcontainer.remove(stream);
                                 }
-                                vals.push(streamId);
-                                removeStreamIds.setValue(vals);
-                                streamcontainer.remove(stream);
                             }
                         }
-                    }
-                ]
-            });
+                    ]
+                });
+            }
         });
     }
 });

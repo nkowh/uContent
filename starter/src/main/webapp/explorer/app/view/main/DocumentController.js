@@ -63,7 +63,7 @@ Ext.define('explorer.view.main.DocumentController', {
 
     loadData : function(e, eOpts ){
         var me = this;
-        var query = this.getView().query;
+        var query = this.getView().docQuery;
         var params = {};
         if(this.getView().limit&&this.getView().limit!=''){
 
@@ -79,9 +79,12 @@ Ext.define('explorer.view.main.DocumentController', {
                 types: this.getView().qType
             };
         }
-        this.getView().store.load({
-            params : params
-        });
+        var store =  Ext.create('explorer.store.Documents');
+        store.getProxy().extraParams =params;
+        e.bindStore(store);
+        e.down('pagingtoolbar').bindStore(store);
+        store.load();
+
     },
     showImage: function (grid, record, item, index, e, eOpts) {
         Ext.create('Ext.window.Window', {

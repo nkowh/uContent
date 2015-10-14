@@ -12,7 +12,7 @@ Ext.define('explorer.view.main.MainHeaderController', {
             tabPanel.add({
                 title:this.getViewModel().get('fullTextTitle'),
                 xtype:'fulltext',
-                query: keytext,
+                docQuery: keytext,
                 limit: pageSize,
                 index : index
             });
