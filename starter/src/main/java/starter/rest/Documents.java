@@ -49,6 +49,7 @@ public class Documents {
                       @RequestParam(defaultValue = "[]") SortBuilder[] sort,
                       @RequestParam(defaultValue = "false") boolean allowableActions) {
         try {
+            query = java.net.URLDecoder.decode(query, "UTF-8");
             XContentBuilder xContentBuilder = documentService.query(types, query, start, limit, sort, allowableActions, highlight);
             return xContentBuilder.string();
         } catch (IOException e) {

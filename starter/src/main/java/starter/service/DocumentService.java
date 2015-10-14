@@ -97,10 +97,7 @@ public class DocumentService {
                     searchRequestBuilder.addHighlightedField(key);
                     booleanBuilder.should(QueryBuilders.matchQuery(key, query));
                 }
-//                query = booleanBuilder.toString();
-                searchRequestBuilder.setQuery(booleanBuilder);
-            } else {
-                searchRequestBuilder.setQuery(query);
+                query = booleanBuilder.toString();
             }
         }
         //set sort
@@ -122,11 +119,7 @@ public class DocumentService {
             TermFilterBuilder groupFilter = FilterBuilders.termFilter("_acl.read.groups", group);
             filter.should(groupFilter);
         }
-//        if (StringUtils.isNotBlank(query)) {
-            searchRequestBuilder.setQuery(toFilteredQuery(query, filter.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS).string()));
-//        }else{
-//            searchRequestBuilder.setPostFilter(filter);
-//        }
+        searchRequestBuilder.setQuery(toFilteredQuery(query, filter.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS).string()));
         //process result
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
