@@ -178,10 +178,9 @@ public class DocumentService {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
             }
         }else{
-            body.remove("_acl");
+            body.put("_acl", null);
         }
     }
 
@@ -341,7 +340,7 @@ public class DocumentService {
 
         Map<String, Object> acl = new HashMap<>();
         Object o = body.get(Constant.FieldName.ACL);
-        if (o == null) {
+        if (o == null || o.toString().equals("")) {
             List<String> users = new ArrayList<>();
             users.add(context.getUserName());
             Map<String, List<String>> read = new HashMap<>();
@@ -506,7 +505,9 @@ public class DocumentService {
                 continue;
             }
             if (key.equals(Constant.FieldName.ACL)) {
-                validateAcl((Map<String, Object>)entry.getValue());
+                if (entry.getValue() != null) {
+                    validateAcl((Map<String, Object>)entry.getValue());
+                }
                 continue;
             }
             if(key.equals("createdBy") || key.equals("createdOn") || key.equals("lastUpdatedBy") || key.equals("lastUpdatedOn")){
