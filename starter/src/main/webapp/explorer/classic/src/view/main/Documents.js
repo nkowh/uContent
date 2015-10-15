@@ -97,6 +97,7 @@ Ext.define('explorer.view.main.Documents', {
     }],
 
     listeners: {
-        afterrender: 'loadData'
+        afterrender: 'loadData',
+        itemdblclick: 'showImage'
     }
 });
