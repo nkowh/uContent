@@ -64,7 +64,7 @@ Ext.define('starter.view.document.IndexDocumentController', {
                 xtype: 'datefield',
                 fieldLabel: property.name,
                 anchor: '100%',
-                format : 'Y-m-d',
+                format: 'Y-m-d',
                 name: property.name,
                 value: property.defaultValue
             };
@@ -93,7 +93,7 @@ Ext.define('starter.view.document.IndexDocumentController', {
                     forceSelection: true
                 }, {
                     xtype: 'tagfield',
-                    name : 'permission',
+                    name: 'permission',
                     store: ['READ', 'WRITE'],
                     forceSelection: true
                 }, {
@@ -119,20 +119,21 @@ Ext.define('starter.view.document.IndexDocumentController', {
             var aclcontainer = this.getView().down('fieldset[itemId=aclList]');
             var aclItems = aclcontainer.items;
             if (aclItems) {
-                var _acl = [];
-                Ext.Array.each(aclItems.items, function (aclItem, index, countriesItSelf) {
+                var _acl = {
+                    read: {users: [], groups: []},
+                    write: {users: [], groups: []}
+                };
+                if (aclItems.length === 0)_acl = undefined;
+                Ext.Array.each(aclItems.items, function (aclItem) {
                     var operationObjs = aclItem.child('tagfield[name="operationObj"]').getValueRecords();
-                    var permission = aclItem.child('tagfield[name="permission"]').getValue();
-                    Ext.Array.each(operationObjs, function (operationObj, index, countriesItSelf) {
-                        var ace = {};
-                        if (operationObj.get('isUser')) {
-                            ace.user = operationObj.get('name');
-                        }
-                        if (operationObj.get('isGroup')) {
-                            ace.group = operationObj.get('name');
-                        }
-                        ace.permission = permission;
-                        _acl.push(ace);
+                    var permissions = aclItem.child('tagfield[name="permission"]').getValue();
+                    Ext.Array.each(permissions, function (permission){
+                        Ext.Array.each(operationObjs, function (operationObj) {
+                            if (operationObj.get('isUser'))
+                                _acl[permission.toLowerCase()].users.push(operationObj.get('name'));
+                            if (operationObj.get('isGroup'))
+                                _acl[permission.toLowerCase()].groups.push(operationObj.get('name'));
+                        });
                     });
                 });
                 this.getView().down('hiddenfield[name=_acl]').setValue(Ext.encode(_acl));
@@ -151,22 +152,12 @@ Ext.define('starter.view.document.IndexDocumentController', {
                     form.reset();
                 },
                 failure: function (form, action) {
-                    if (action.response.status === 200) {
-                        Ext.toast({
-                            html: 'Docuemnt Saved',
-                            title: 'message',
-                            width: 200,
-                            align: 't'
-                        });
-                        form.reset();
-                    } else {
-                        Ext.toast({
-                            html: 'error',
-                            title: 'message',
-                            width: 200,
-                            align: 't'
-                        });
-                    }
+                    Ext.toast({
+                        html: 'error',
+                        title: 'message',
+                        width: 200,
+                        align: 't'
+                    });
                 }
             });
 

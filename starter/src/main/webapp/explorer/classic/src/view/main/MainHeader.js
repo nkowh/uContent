@@ -44,7 +44,7 @@ Ext.define('explorer.view.main.MainHeader', {
                 },
                 {
                     text   : '退出',
-                    handler  : 'onTitleClick'
+                    handler  : 'logout'
                 }
             ]
         }

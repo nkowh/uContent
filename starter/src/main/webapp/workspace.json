@@ -4,7 +4,8 @@
      */
     "apps": [
         "starter",
-        "explorer"
+        "explorer",
+        "entry"
     ],
 
     /**

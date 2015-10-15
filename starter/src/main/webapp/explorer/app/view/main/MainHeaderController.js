@@ -2,19 +2,19 @@ Ext.define('explorer.view.main.MainHeaderController', {
     extend: 'explorer.view.main.DocumentController',
 
     alias: 'controller.mainheader',
-    fullText : function(bt,e){
+    fullText: function (bt, e) {
         var me = this;
         var keytext = bt.up('toolbar').down('textfield').getValue().trim();
         var tabPanel = bt.up('app-header').up('app-main').down('tabpanel');
         var pageSize = this.getViewModel().get('pageSize');
-        if(keytext&&keytext!=''){
+        if (keytext && keytext != '') {
             var index = tabPanel.items.length;
             tabPanel.add({
-                title:this.getViewModel().get('fullTextTitle'),
-                xtype:'fulltext',
+                title: this.getViewModel().get('fullTextTitle'),
+                xtype: 'fulltext',
                 docQuery: keytext,
                 limit: pageSize,
-                index : index
+                index: index
             });
             tabPanel.setActiveTab(index);
 
@@ -46,26 +46,45 @@ Ext.define('explorer.view.main.MainHeaderController', {
             });
         }
     },
-    advQuery : function(bt,e){
+    advQuery: function (bt, e) {
         Ext.create('Ext.window.Window', {
             layout: 'fit',
             title: '高级查询',
-            width : 1000,
-            height : 600,
+            width: 1000,
+            height: 600,
             items: [{
                 xtype: 'advancedsearch'
             }]
         }).show();
     },
-    indexDoc : function(bt,e){
+    indexDoc: function (bt, e) {
         Ext.create('Ext.window.Window', {
             layout: 'fit',
             title: '新建文档',
-            width : 1000,
-            height : 600,
+            width: 1000,
+            height: 600,
             items: [{
                 xtype: 'indexdocument'
             }]
         }).show();
+    },
+    logout: function () {
+        Ext.Msg.prompt('确认', '是否退出系统?', function (btn, text) {
+            if (btn != 'ok')return;
+            Ext.util.Cookies.clear('userId');
+            Ext.util.Cookies.clear('digest');
+        });
+        Ext.Msg.show({
+            title: '确认',
+            message: '是否退出系统?',
+            buttons: Ext.Msg.OKCANCEL,
+            icon: Ext.Msg.QUESTION,
+            fn: function (btn) {
+                if (btn != 'ok')return;
+                Ext.util.Cookies.clear('userId');
+                Ext.util.Cookies.clear('digest');
+                window.location.href = '/entry/index.html';
+            }
+        });
     }
 });
