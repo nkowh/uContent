@@ -42,6 +42,14 @@ Ext.define('explorer.view.main.DocumentController', {
                     params: Ext.JSON.encode(result),
                     callback: function (options, success, response) {
                         if (!success) {
+                            var error = Ext.decode(response.responseText);
+                            Ext.toast({
+                                html: 'Delete Error!<br />'+error.status+':'+error.reason,
+                                title: 'message',
+                                width: 200,
+                                align: 't'
+                            });
+
                             return;
                         }
                         Ext.toast({

@@ -136,11 +136,13 @@ Ext.define('explorer.view.main.IndexDocController', {
                 }
             }
             var url = '';
+            var msg = "";
             if( this.getView().down('hiddenfield[name=_id]')&&this.getView().down('hiddenfield[name=_id]').getValue()!=''){
                 url = '/svc/' +this.getView().down('textfield[name=type]').getValue()+'/'+this.getView().down('hiddenfield[name=_id]').getValue();
-
+                msg ='Update';
             }else{
                 url = '/svc/'+type.getValue();
+                msg ='Create';
             }
             form.submit({
                 url: url,
@@ -148,7 +150,7 @@ Ext.define('explorer.view.main.IndexDocController', {
                 success: function (form, action) {
                     me.getView().up('window').close();
                     Ext.toast({
-                        html: 'Docuemnt Saved',
+                        html: msg+'successful',
                         title: 'message',
                         width: 200,
                         align: 't'
@@ -159,18 +161,21 @@ Ext.define('explorer.view.main.IndexDocController', {
                     if (action.response.status === 200) {
                         me.getView().up('window').close();
                         Ext.toast({
-                            html: 'Docuemnt Saved',
+                            html: msg+'successful',
                             title: 'message',
                             width: 200,
                             align: 't'
                         });
                     } else {
+
+                        var error = Ext.decode(action.responseText);
                         Ext.toast({
-                            html: 'error',
+                            html: msg+' Error!<br />'+error.status+':'+error.reason,
                             title: 'message',
                             width: 200,
                             align: 't'
                         });
+
                     }
                 }
             });
