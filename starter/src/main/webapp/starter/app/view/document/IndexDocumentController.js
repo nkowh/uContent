@@ -123,11 +123,10 @@ Ext.define('starter.view.document.IndexDocumentController', {
                     read: {users: [], groups: []},
                     write: {users: [], groups: []}
                 };
-                if (aclItems.length === 0)_acl = undefined;
                 Ext.Array.each(aclItems.items, function (aclItem) {
                     var operationObjs = aclItem.child('tagfield[name="operationObj"]').getValueRecords();
                     var permissions = aclItem.child('tagfield[name="permission"]').getValue();
-                    Ext.Array.each(permissions, function (permission){
+                    Ext.Array.each(permissions, function (permission) {
                         Ext.Array.each(operationObjs, function (operationObj) {
                             if (operationObj.get('isUser'))
                                 _acl[permission.toLowerCase()].users.push(operationObj.get('name'));
@@ -136,6 +135,9 @@ Ext.define('starter.view.document.IndexDocumentController', {
                         });
                     });
                 });
+                if (_acl.read.users.length === 0 && _acl.read.groups.length === 0
+                    && _acl.write.groups.length === 0 && _acl.write.users.length === 0)
+                    _acl = undefined;
                 this.getView().down('hiddenfield[name=_acl]').setValue(Ext.encode(_acl));
             }
 
