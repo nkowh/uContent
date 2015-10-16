@@ -69,7 +69,7 @@ public class Documents {
         }
     }
 
-    @RequestMapping(value = "/{type}", method = RequestMethod.POST, consumes = "multipart/*")
+    @RequestMapping(value = "/{type}", method = RequestMethod.POST, consumes = "multipart/*",produces = MediaType.TEXT_PLAIN_VALUE)
     public String create(@PathVariable String type, MultipartHttpServletRequest request) {
         try {
             MultipartParser parser = new MultipartParser(request).invoke();
