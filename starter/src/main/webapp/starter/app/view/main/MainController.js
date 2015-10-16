@@ -18,7 +18,7 @@ Ext.define('starter.view.main.MainController', {
                 if (btn != 'ok')return;
                 Ext.util.Cookies.clear('userId');
                 Ext.util.Cookies.clear('digest');
-                window.location.reload();
+                window.location.href = '/entry/index.html';
             }
         });
     },

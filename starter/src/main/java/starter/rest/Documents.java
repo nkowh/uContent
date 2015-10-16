@@ -10,7 +10,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import starter.service.DocumentService;
 import starter.uContentException;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -50,6 +49,7 @@ public class Documents {
                       @RequestParam(defaultValue = "[]") SortBuilder[] sort,
                       @RequestParam(defaultValue = "false") boolean allowableActions) {
         try {
+            query = java.net.URLDecoder.decode(query, "UTF-8");
             XContentBuilder xContentBuilder = documentService.query(types, query, start, limit, sort, allowableActions, highlight);
             return xContentBuilder.string();
         } catch (IOException e) {
@@ -69,7 +69,7 @@ public class Documents {
         }
     }
 
-    @RequestMapping(value = "/{type}", method = RequestMethod.POST, consumes = "multipart/*")
+    @RequestMapping(value = "/{type}", method = RequestMethod.POST, consumes = "multipart/*",produces = MediaType.TEXT_PLAIN_VALUE)
     public String create(@PathVariable String type, MultipartHttpServletRequest request) {
         try {
             MultipartParser parser = new MultipartParser(request).invoke();

@@ -97,10 +97,7 @@ public class DocumentService {
                     searchRequestBuilder.addHighlightedField(key);
                     booleanBuilder.should(QueryBuilders.matchQuery(key, query));
                 }
-//                query = booleanBuilder.toString();
-                searchRequestBuilder.setQuery(booleanBuilder);
-            } else {
-                searchRequestBuilder.setQuery(query);
+                query = booleanBuilder.toString();
             }
         }
         //set sort
@@ -122,11 +119,7 @@ public class DocumentService {
             TermFilterBuilder groupFilter = FilterBuilders.termFilter("_acl.read.groups", group);
             filter.should(groupFilter);
         }
-//        if (StringUtils.isNotBlank(query)) {
-//            searchRequestBuilder.setQuery(toFilteredQuery(query, filter.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS).string()));
-//        }else{
-            searchRequestBuilder.setPostFilter(filter);
-//        }
+        searchRequestBuilder.setQuery(toFilteredQuery(query, filter.toXContent(JsonXContent.contentBuilder(), ToXContent.EMPTY_PARAMS).string()));
         //process result
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
         XContentBuilder xContentBuilder = JsonXContent.contentBuilder().startObject();
@@ -185,10 +178,9 @@ public class DocumentService {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
             }
         }else{
-            body.remove("_acl");
+            body.put("_acl", null);
         }
     }
 
@@ -220,36 +212,15 @@ public class DocumentService {
         return create(type, body);
     }
 
-//    public Json head(String type, String id) throws IOException {
-//        return get(type, id, true, false);
-//    }
 
     public Json get(String type, String id, boolean head, boolean allowableActions) throws IOException {
         GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.read);
         return processGet(getResponse, head, allowableActions);
     }
 
-//    public XContentBuilder update(String type, String id, Json body) throws IOException, ParseException {
-//        GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.write);
-////        processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
-//        validate(body, type);
-//        beforeUpdate(body);
-//        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), type, id).setDoc(body).execute().actionGet();
-//        XContentBuilder xContentBuilder = JsonXContent.contentBuilder();
-//        xContentBuilder.startObject()
-//                .field("_index", context.getIndex())
-//                .field("_type", type)
-//                .field("_id", id)
-//                .field("_version", updateResponse.getVersion());
-//        xContentBuilder.endObject();
-//        return xContentBuilder;
-//    }
-
 
     public XContentBuilder update(String type, String id, Json body, List<MultipartFile> files) throws IOException, ParseException {
         GetResponse getResponse = checkPermission(type, id, context.getUserName(), Constant.Permission.write);
-//        validate(body, type);
-//        processAcl(body, getResponse.getSource().get(Constant.FieldName.ACL));
         List<Map<String, Object>> streams = new ArrayList<Map<String, Object>>();
         Object _streams = getResponse.getSource().get("_streams");
         if (_streams != null) {
@@ -279,7 +250,7 @@ public class DocumentService {
                     throw new uContentException("FS store failed", HttpStatus.INTERNAL_SERVER_ERROR);
                 }
                 stream.put(Constant.FieldName.STREAMID, fileId);
-                stream.put(Constant.FieldName.STREAMNAME, file.getName());
+                stream.put(Constant.FieldName.STREAMNAME, file.getOriginalFilename());
                 stream.put(Constant.FieldName.LENGTH, file.getSize());
                 stream.put(Constant.FieldName.CONTENTTYPE, file.getContentType());
                 stream.put(Constant.FieldName.FULLTEXT, parse(file.getInputStream()));
@@ -292,9 +263,7 @@ public class DocumentService {
                 streams.add(stream);
             }
         }
-        if (streams != null && !streams.isEmpty()) {
-            body.put(Constant.FieldName.STREAMS, streams);
-        }
+        body.put(Constant.FieldName.STREAMS, streams);
         processAcl(body);
         validate(body, type);
         beforeUpdate(body);
@@ -309,9 +278,6 @@ public class DocumentService {
         return xContentBuilder;
     }
 
-//    public XContentBuilder patch(String type, String id, Json body) throws IOException, ParseException {
-//        return update(type, id, body);
-//    }
 
     public XContentBuilder delete(String type, String id) throws IOException {
         checkPermission(type, id, context.getUserName(), Constant.Permission.write);
@@ -374,7 +340,7 @@ public class DocumentService {
 
         Map<String, Object> acl = new HashMap<>();
         Object o = body.get(Constant.FieldName.ACL);
-        if (o == null) {
+        if (o == null || o.toString().equals("")) {
             List<String> users = new ArrayList<>();
             users.add(context.getUserName());
             Map<String, List<String>> read = new HashMap<>();
@@ -384,52 +350,9 @@ public class DocumentService {
             acl.put("read", read);
             acl.put("write", write);
             body.put(Constant.FieldName.ACL, acl);
-
-//            acl = Json.parse(o.toString());
-//            acl = (Map<String, Object>) o;
-//            validateAcl(acl);
-
-//            Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
-//            while (it.hasNext()){
-//                Map.Entry<String, Object> entry = it.next();
-//                String key = entry.getKey();
-//                if (key.equals("read") || key.equals("write")) {
-//                    Map<String, Object> map = (Map<String, Object>) entry.getValue();
-//                    Object users = map.get("users");
-//                    if (users != null) {
-//                        List<String> u = (List<String>) users;
-//                        if (!u.contains(context.getUserName())) {
-//                            u.add(context.getUserName());
-//                        }
-//                    }
-//                }
-//            }
-//        } else {
-//            List<String> users = new ArrayList<>();
-//            users.add(context.getUserName());
-//            Map<String, List<String>> read = new HashMap<>();
-//            read.put("users", users);
-//            Map<String, List<String>> write = new HashMap<>();
-//            write.put("users", users);
-//            acl.put("read", read);
-//            acl.put("write", write);
         }
-//        body.put(Constant.FieldName.ACL, acl);
     }
 
-
-//    private void validateStream(List<Map<String, Object>> streams) {
-//        for(Map<String, Object> map : streams){
-//            Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator();
-//            while (it.hasNext()){
-//                Map.Entry<String, Object> entry = it.next();
-//                String key = entry.getKey();
-//                if (!key.equals("_fullText") && !key.equals("streamId") && !key.equals("length") && !key.equals("streamName") && !key.equals("contentType")) {
-//                    it.remove();
-//                }
-//            }
-//        }
-//    }
 
     private void validateAcl(Map<String, Object> acl) {
         Iterator<Map.Entry<String, Object>> it = acl.entrySet().iterator();
@@ -449,11 +372,6 @@ public class DocumentService {
                     iterator.remove();
                     continue;
                 }
-//                List list = (List) en.getValue();
-//                if (list.isEmpty()) {
-//                    iterator.remove();
-//                    continue;
-//                }
             }
         }
     }
@@ -561,84 +479,6 @@ public class DocumentService {
         }
     }
 
-    public void processAcl(Json body, Object srcAcl) {
-        Object newAcl = body.get(Constant.FieldName.ACL);
-        if (newAcl != null) {
-            Map<String, Object> _srcAcl = (Map<String, Object>) srcAcl;
-            Object addAcl = ((Map<String, Object>) newAcl).get("add");
-            Object removeAcl = ((Map<String, Object>) newAcl).get("remove");
-            if (addAcl != null) {
-                Map<String, Object> _addAcl = (Map<String, Object>) addAcl;
-                handleAddAcl(_addAcl, _srcAcl);
-            }
-            if (removeAcl != null) {
-                Map<String, Object> _removeAcl = (Map<String, Object>) removeAcl;
-                handleRemoveAcl(_removeAcl, _srcAcl);
-            }
-            body.put(Constant.FieldName.ACL, _srcAcl);
-        }
-    }
-
-    private void handleRemoveAcl(Map<String, Object> removeAcl, Map<String, Object> _srcAcl) {
-        Iterator<Map.Entry<String, Object>> it = removeAcl.entrySet().iterator();
-        while (it.hasNext()){
-            Map.Entry<String, Object> entry = it.next();
-            String key = entry.getKey();
-            if (!Constant.Permission.getPermissionDeclaration().contains(key)) {
-                it.remove();
-                continue;
-            }
-            Map<String, Object> _map = (Map<String, Object>) _srcAcl.get(key);
-            Map<String, Object> value = (Map<String, Object>) entry.getValue();
-            Iterator<Map.Entry<String, Object>> iterator = value.entrySet().iterator();
-            while (iterator.hasNext()){
-                Map.Entry<String, Object> next = iterator.next();
-                String key1 = next.getKey();
-                if (!key1.equals("users") && !key1.equals("groups")) {
-                    iterator.remove();
-                    continue;
-                }
-                List<String> _list = (List<String>) _map.get(key1);
-                List<String> list = (List<String>) next.getValue();
-                _list.removeAll(list);
-            }
-        }
-    }
-
-    private void handleAddAcl(Map<String, Object> addAcl, Map<String, Object> _srcAcl) {
-        Iterator<Map.Entry<String, Object>> it = addAcl.entrySet().iterator();
-        while (it.hasNext()){
-            Map.Entry<String, Object> entry = it.next();
-            String key = entry.getKey();
-            if (!Constant.Permission.getPermissionDeclaration().contains(key)) {
-                it.remove();
-                continue;
-            }
-            Map<String, Object> _map = (Map<String, Object>) _srcAcl.get(key);
-            Map<String, Object> value = (Map<String, Object>) entry.getValue();
-            Iterator<Map.Entry<String, Object>> iterator = value.entrySet().iterator();
-            while (iterator.hasNext()){
-                Map.Entry<String, Object> next = iterator.next();
-                String key1 = next.getKey();
-                if (!key1.equals("users") && !key1.equals("groups")) {
-                    iterator.remove();
-                    continue;
-                }
-                List<String> _list = (List<String>) _map.get(key1);
-                if (_list != null) {
-                    List<String> list = (List<String>) next.getValue();
-                    for(String s : list){
-                        if (!_list.contains(s)) {
-                            _list.add(s);
-                        }
-                    }
-                }else{
-                    _map.put(key1, next.getValue());
-                }
-            }
-        }
-    }
-
 
     public GetResponse checkPermission(String type, String id, String user, Constant.Permission permission) throws IOException {
         String[] exclude = {"_streams._fullText"};
@@ -654,7 +494,6 @@ public class DocumentService {
         return getResponse;
     }
 
-
     private void validate(Json body, String type) throws IOException, ParseException {
         Map<String, Map<String, Object>> definition = typeService.getProperties(type);
         Set<String> keySet = definition.keySet();
@@ -666,7 +505,13 @@ public class DocumentService {
                 continue;
             }
             if (key.equals(Constant.FieldName.ACL)) {
-                validateAcl((Map<String, Object>)entry.getValue());
+                if (entry.getValue() != null) {
+                    validateAcl((Map<String, Object>)entry.getValue());
+                }
+                continue;
+            }
+            if(key.equals("createdBy") || key.equals("createdOn") || key.equals("lastUpdatedBy") || key.equals("lastUpdatedOn")){
+                iterator.remove();
                 continue;
             }
             if (!keySet.contains(key)) {//ignore undefined getFulltextProperties
@@ -696,7 +541,6 @@ public class DocumentService {
         }
     }
 
-
     private Object formatValue(String type, Object value) throws ParseException {
         if (value == null || value.toString().equals("")) {
             return null;
@@ -715,7 +559,6 @@ public class DocumentService {
                 return StringValue;
         }
     }
-
 
     public String parse(InputStream in) {
         try {

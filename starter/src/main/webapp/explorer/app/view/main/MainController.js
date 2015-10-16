@@ -17,7 +17,7 @@ Ext.define('explorer.view.main.MainController', {
                     tabPanel.add({
                         title:record.get('name'),
                             xtype: 'documents',
-                            query : record.get('query'),
+                            docQuery : record.get('query'),
                             qType : record.get('type'),
                             index : index
                     });

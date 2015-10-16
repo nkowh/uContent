@@ -1,5 +1,5 @@
 $app-name:  dynamic( 'starter' );
-$image-search-path: 'D:/ideaWork/uContent/starter/src/main/webapp/build/development/starter/modern/resources';
+$image-search-path: 'C:/Users/XQL/IdeaProjects/uContent/starter/src/main/webapp/build/development/starter/modern/resources';
 $theme-name:  dynamic( 'theme-neptune' );
 $include-ext-abstractcomponent: dynamic(true);;
 $include-ext-abstractmanager: dynamic(true);;
@@ -711,6 +711,8 @@ $include-starter-model-log: dynamic(true);;
 $include-starter-model-property: dynamic(true);;
 $include-starter-model-type: dynamic(true);;
 $include-starter-model-user: dynamic(true);;
+$include-starter-overrides-form: dynamic(true);;
+$include-starter-overrides-submit: dynamic(true);;
 $include-starter-store-documents: dynamic(true);;
 $include-starter-store-groups: dynamic(true);;
 $include-starter-store-logs: dynamic(true);;

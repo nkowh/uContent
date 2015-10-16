@@ -41,6 +41,10 @@ Ext.define('explorer.view.main.MainHeader', {
                 {
                     text   : '新建文档',
                     handler  : 'indexDoc'
+                },
+                {
+                    text   : '退出',
+                    handler  : 'logout'
                 }
             ]
         }

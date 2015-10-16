@@ -27,4 +27,17 @@ public class ErrorHandler {
 
     }
 
+    @ExceptionHandler(Exception.class)
+    public void allException(Exception ex,HttpServletResponse response) throws IOException {
+        Map<String, Object> map = new HashMap<>();
+        map.put("reason", ex.getMessage());
+        map.put("status", 500);
+        map.put("stack",ex.fillInStackTrace().getStackTrace());
+        ObjectMapper mapper=new ObjectMapper();
+        response.setStatus(500);
+        response.setContentType("application/json;charset=UTF-8");
+        IOUtils.write(mapper.writeValueAsBytes(map), response.getOutputStream());
+
+    }
+
 }

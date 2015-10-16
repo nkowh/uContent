@@ -60,6 +60,11 @@ public class Streams {
         getStream(type, id, streamId, response);
     }
 
+    @RequestMapping(value = "{type}/{id}/_streams/{streamId}", method = RequestMethod.GET, params = "accept=image/gif")
+    public void getGif(@PathVariable String type, @PathVariable String id, @PathVariable String streamId, HttpServletResponse response) {
+        getStream(type, id, streamId, response);
+    }
+
     @RequestMapping(value = "{type}/{id}/_streams/{streamId}", method = RequestMethod.GET, params = "accept=image/tiff")
     public void getTiff(@PathVariable String type, @PathVariable String id, @PathVariable String streamId, @RequestParam(defaultValue = "0") int pageIndex, HttpServletResponse response) {
         InputStream stream = null;

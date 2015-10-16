@@ -77,6 +77,7 @@ public class LogAspect {
             "&& !execution(public * starter.rest.ErrorHandler.*(..)) " + //ErrorHandler里处理异常，不记录日志
             "&& !execution(public * starter.rest.Initialization.*(..))" + //系统数据初始化，不记录日志
             "&& !execution(public * starter.rest.Monitor.*(..))" + //系统监控，不记录日志
+            "&& !execution(public * starter.rest.Documents.*(..))" + //系统监控，不记录日志
             "&& !execution(public * starter.rest.Logs.*(..))"; //Logs里查询日志方法，不记录日志
 
     private final String SIMPLE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";

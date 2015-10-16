@@ -18,7 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @RestController
-@RequestMapping(value="svc/",produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "svc/", produces = MediaType.APPLICATION_JSON_VALUE)
 public class Systems {
     @Autowired
     private TypeService typeService;
@@ -36,7 +36,9 @@ public class Systems {
     @Autowired
     private ReIndexService reIndexService;
 
-    /************************** types ******************************/
+    /**
+     * *********************** types *****************************
+     */
 
     @RequestMapping(value = "types", method = RequestMethod.GET)
     public String allTypes() {
@@ -58,10 +60,10 @@ public class Systems {
         }
     }
 
-    @RequestMapping(value = "types/{id}", method = RequestMethod.GET)
-    public String getType(@PathVariable String id) {
+    @RequestMapping(value = "types/{ids}", method = RequestMethod.GET)
+    public String getType(@PathVariable String[] ids) {
         try {
-            XContentBuilder result = typeService.get(id);
+            XContentBuilder result = typeService.get(ids[0]);
             return result.string();
         } catch (IOException e) {
             throw new uContentException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -69,7 +71,7 @@ public class Systems {
     }
 
     @RequestMapping(value = "types/{id}", method = RequestMethod.PUT)
-    public String updateType(@PathVariable String id,@RequestBody Json body) {
+    public String updateType(@PathVariable String id, @RequestBody Json body) {
         try {
             XContentBuilder result = typeService.update(id, body);
             return result.string();
@@ -89,7 +91,9 @@ public class Systems {
     }
 
 
-    /***************************** users ******************************/
+    /**
+     * ************************** users *****************************
+     */
 
     @RequestMapping(value = "users", method = {RequestMethod.GET})
     public String allUsers(@RequestParam(defaultValue = "") String query,
@@ -128,7 +132,7 @@ public class Systems {
 
 
     @RequestMapping(value = "users/{id}", method = RequestMethod.PATCH)
-    public String updateUser(@PathVariable String id,@RequestBody Json body) {
+    public String updateUser(@PathVariable String id, @RequestBody Json body) {
         try {
             checkAuthorize();
             XContentBuilder result = userService.update(id, body);
@@ -161,7 +165,9 @@ public class Systems {
     }
 
 
-    /****************************** groups ******************************/
+    /**
+     * *************************** groups *****************************
+     */
 
     @RequestMapping(value = "groups", method = {RequestMethod.GET})
     public String allGroups(@RequestParam(defaultValue = "") String query,
@@ -189,7 +195,7 @@ public class Systems {
 
     @RequestMapping(value = "groups/{id}/users", method = RequestMethod.PATCH)
     public String refGroupUsers(@PathVariable String id,
-                                 @RequestBody Json userIds) {
+                                @RequestBody Json userIds) {
         try {
             checkAuthorize();
             XContentBuilder result = groupService.refUsers(id, userIds);
@@ -222,7 +228,7 @@ public class Systems {
     }
 
     @RequestMapping(value = "groups/{id}", method = RequestMethod.PATCH)
-    public String updateGroup(@PathVariable String id,@RequestBody Json body) {
+    public String updateGroup(@PathVariable String id, @RequestBody Json body) {
         try {
             checkAuthorize();
             XContentBuilder result = groupService.update(id, body);
@@ -248,7 +254,9 @@ public class Systems {
         return groupService.checkUserInAdminGroup();
     }
 
-    /****************************** views ******************************/
+    /**
+     * *************************** views *****************************
+     */
     @RequestMapping(value = "views", method = {RequestMethod.GET})
     public String allViews() {
         try {
@@ -312,7 +320,9 @@ public class Systems {
     }
 
 
-    /****************************** tags ******************************/
+    /**
+     * *************************** tags *****************************
+     */
     @RequestMapping(value = "tags", method = {RequestMethod.GET})
     public String allTags() {
         try {
@@ -367,12 +377,12 @@ public class Systems {
 
 
     @RequestMapping(value = "_reindex", method = RequestMethod.POST)
-    public String reindex(@RequestParam(defaultValue = "")String target,
-                        @RequestParam(defaultValue = "")String from,
-                        @RequestParam(defaultValue = "")String to) {
+    public String reindex(@RequestParam(defaultValue = "") String target,
+                          @RequestParam(defaultValue = "") String from,
+                          @RequestParam(defaultValue = "") String to) {
         try {
             Json json = reIndexService.check();
-            if (!((Boolean)json.get("isFinished"))) {
+            if (!((Boolean) json.get("isFinished"))) {
                 throw new uContentException("There exist a reindex job which has not finished yet", HttpStatus.INTERNAL_SERVER_ERROR);
             }
             Date dateFrom = null;
@@ -419,9 +429,8 @@ public class Systems {
     }
 
 
-
-    private void checkAuthorize(){
-        if(!groupService.checkUserInAdminGroup()){
+    private void checkAuthorize() {
+        if (!groupService.checkUserInAdminGroup()) {
             throw new uContentException("Forbidden", HttpStatus.FORBIDDEN);
         }
     }

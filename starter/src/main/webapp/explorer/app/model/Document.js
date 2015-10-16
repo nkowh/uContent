@@ -6,8 +6,8 @@ Ext.define('explorer.model.Document', {
         {name: 'name', type: 'string'},
         {name: 'createdBy', type: 'string'},
         {name: 'lastUpdatedBy', type: 'string'},
-        {name: 'createdOn', type: 'date'},
-        {name: 'lastUpdatedOn', type: 'date'},
+        {name: 'createdOn', type: 'date',dateFormat: 'c'},
+        {name: 'lastUpdatedOn', type: 'date',dateFormat: 'c'},
         {name: 'score', type: 'float'},
         {name: 'highlight', type: 'auto'}
     ],
