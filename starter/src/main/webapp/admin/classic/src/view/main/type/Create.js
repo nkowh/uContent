@@ -1,0 +1,86 @@
+Ext.define('admin.view.main.type.Create', {
+    extend: 'Ext.window.Window',
+    xtype: 'createtype',
+    controller: 'type',
+    viewModel: 'type',
+    title:'新建类型',
+    width: 1300,
+    height: 600,
+    layout: {
+        type: 'border',
+        padding: 5
+    },
+    items:[{
+        region: 'north',
+        xtype: 'createTypeInfo'
+    },{
+        region: 'center',
+        xtype: 'grid',
+        bind: {
+            title: '{propertyTitle}'
+        },
+        columns: [{
+            header: 'Name',
+            dataIndex: 'name',
+            width: 150
+        }, {
+            header: 'Type',
+            dataIndex: 'type',
+            width: 100
+        },  {
+            header: 'DefaultValue',
+            dataIndex: 'defaultValue',
+            width: 130
+        }, {
+            header: 'Pattern',
+            dataIndex: 'pattern',
+            width: 200
+        }, {
+            header: 'PromptMessage',
+            dataIndex: 'promptMessage',
+            width: 220
+        }, {
+            header: 'Required',
+            dataIndex: 'required',
+            width: 80
+
+        }, {
+            header: 'Index',
+            dataIndex: 'index',
+            width: 100
+        },{
+            header: 'IndexAnalyzer',
+            dataIndex: 'indexAnalyzer',
+            width: 100
+        },{
+            header: 'SearchAnalyzer',
+            dataIndex: 'searchAnalyzer',
+            width: 100
+        },  {
+            header: 'Order',
+            dataIndex: 'order',
+            width: 80
+        }],
+        dockedItems: [{
+            xtype: 'toolbar',
+            dock: 'top',
+            items: ['->',
+                { xtype: 'button', text: 'Add', handler: 'addProperty' },
+                { xtype: 'button', text: 'Delete',handler: 'deleteProperty'}
+            ]
+        }],
+        listeners: {
+            itemdblclick: 'modifyProperty'
+        }
+    }],
+    buttons: [{
+        text: 'Close',
+        handler: function() {
+            this.up('window').close();
+        }
+    }, {
+        text: 'Submit',
+        handler : 'createSave'
+    }]
+
+});
