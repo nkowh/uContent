@@ -216,6 +216,7 @@ public class UserService {
         for (SearchHit searchHitFields : searchResponse.getHits()) {
             groups.add(searchHitFields.getId());
         }
+        groups.add(Constant.EVERYONE);
         return groups;
     }
 
