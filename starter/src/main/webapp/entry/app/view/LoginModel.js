@@ -11,6 +11,7 @@ Ext.define('entry.view.LoginModel', {
             fields: ['name', 'url'],
             data: [
                 {name: '文档管理', url: '/explorer/index.html'},
+                {name: '系统管理', url: '/admin/index.html'},
                 {name: '演示', url: '/starter/index.html'}
             ]
         }

@@ -31,7 +31,7 @@ Ext.define('explorer.view.main.MainHeader', {
             ]
         },
         {
-            width: 200,
+            width: 230,
             xtype : 'toolbar',
             items : [
                 {
