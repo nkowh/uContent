@@ -53,11 +53,11 @@ public class Json extends HashMap<String, Object> {
     public static XContentBuilder parse(List<Json> list, String arrayName) throws IOException {
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject();
-        builder.field("total", list.size());
         builder.startArray(arrayName);
         if (list == null||list.size()==0) {
-
+            builder.field("total", 0);
         }else{
+            builder.field("total", list.size());
             for(Json json:list){
                 builder.startObject();
                 Iterator<Entry<String, Object>> it = json.entrySet().iterator();
