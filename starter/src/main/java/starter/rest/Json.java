@@ -51,22 +51,22 @@ public class Json extends HashMap<String, Object> {
 
     //将Json集合转换为大Json
     public static XContentBuilder parse(List<Json> list, String arrayName) throws IOException {
-        if (list == null||list.size()==0|| StringUtils.isEmpty(arrayName)) {
-            return null;
-        }
-
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject();
         builder.field("total", list.size());
         builder.startArray(arrayName);
-        for(Json json:list){
-            builder.startObject();
-            Iterator<Entry<String, Object>> it = json.entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<String, Object> entry = it.next();
-                builder.field(entry.getKey()).value(entry.getValue());
+        if (list == null||list.size()==0) {
+
+        }else{
+            for(Json json:list){
+                builder.startObject();
+                Iterator<Entry<String, Object>> it = json.entrySet().iterator();
+                while (it.hasNext()) {
+                    Entry<String, Object> entry = it.next();
+                    builder.field(entry.getKey()).value(entry.getValue());
+                }
+                builder.endObject();
             }
-            builder.endObject();
         }
         builder.endArray();
         builder.endObject();
