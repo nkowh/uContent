@@ -95,7 +95,10 @@ public class ViewService {
         //body.put(Constant.FieldName.CREATEDON, new Date());
         //body.put(Constant.FieldName.LASTUPDATEDBY, null);
         //body.put(Constant.FieldName.LASTUPDATEDON, null);
-        IndexResponse indexResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.VIEWTYPENAME).setSource(body).execute().actionGet();
+
+        Json json = checkView(body);
+
+        IndexResponse indexResponse = client.prepareIndex(context.getIndex(), Constant.FieldName.VIEWTYPENAME).setSource(json).execute().actionGet();
         builder.startObject()
                 .field("_index", indexResponse.getIndex())
                 .field("_type", indexResponse.getType())
@@ -139,11 +142,13 @@ public class ViewService {
 
         body.remove(Constant.FieldName._ID);
 
+        Json json = checkView(body);
+
         //body.remove(Constant.FieldName.CREATEDBY);
         //body.remove(Constant.FieldName.CREATEDON);
         //body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
         //body.put(Constant.FieldName.LASTUPDATEDON, new Date());
-        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), Constant.FieldName.VIEWTYPENAME, id).setDoc(body).execute().actionGet();
+        UpdateResponse updateResponse = context.getClient().prepareUpdate(context.getIndex(), Constant.FieldName.VIEWTYPENAME, id).setDoc(json).execute().actionGet();
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject()
                 .field("_index", context.getIndex())
@@ -190,7 +195,7 @@ public class ViewService {
             view.put(Constant.FieldName.QUERYCONTEXT, searchHitFields.getSource().get(Constant.FieldName.QUERYCONTEXT));
             boolean exist = false;
             for(Json json:views){
-                if (json.get(Constant.FieldName._ID)!=null){
+                if (json.get(Constant.FieldName._ID).equals(searchHitFields.getId())){
                     exist = true;
                     break;
                 }
@@ -213,7 +218,7 @@ public class ViewService {
                     view.put(Constant.FieldName.QUERYCONTEXT, searchHitFields.getSource().get(Constant.FieldName.QUERYCONTEXT));
                     boolean exist = false;
                     for(Json json:views){
-                        if (json.get(Constant.FieldName._ID)!=null){
+                        if (json.get(Constant.FieldName._ID).equals(searchHitFields.getId())){
                             exist = true;
                             break;
                         }
@@ -225,6 +230,19 @@ public class ViewService {
             }
         }
         return views;
+    }
+
+    private Json checkView(Json body){
+        Json json = new Json();
+        Iterator<Map.Entry<String, Object>> it = body.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, Object> entry = it.next();
+            if((entry.getKey().equals(Constant.FieldName.VIEWNAME)||entry.getKey().equals(Constant.FieldName.QUERYCONTEXT)||
+                    entry.getKey().equals(Constant.FieldName.USERS)||entry.getKey().equals(Constant.FieldName.GROUPS))){
+                json.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return json;
     }
 
 }
