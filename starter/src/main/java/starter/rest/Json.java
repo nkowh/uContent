@@ -54,11 +54,11 @@ public class Json extends HashMap<String, Object> {
         XContentBuilder builder= XContentFactory.jsonBuilder();
         builder.startObject();
         if (list == null||list.size()==0) {
-            builder.startArray(arrayName);
             builder.field("total", 0);
-        }else{
             builder.startArray(arrayName);
+        }else{
             builder.field("total", list.size());
+            builder.startArray(arrayName);
             for(Json json:list){
                 builder.startObject();
                 Iterator<Entry<String, Object>> it = json.entrySet().iterator();
