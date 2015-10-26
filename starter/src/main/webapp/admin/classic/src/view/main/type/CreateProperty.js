@@ -45,6 +45,7 @@ Ext.define('admin.view.main.type.CreateProperty', {
     },{
         fieldLabel: 'Required',
         name: 'required',
+        uncheckedValue : false,
         xtype : 'checkboxfield',
         inputValue: true
     },{

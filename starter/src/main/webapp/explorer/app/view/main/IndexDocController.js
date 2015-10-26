@@ -244,6 +244,7 @@ Ext.define('explorer.view.main.IndexDocController', {
         var form = this.getView().getForm();
         var type = data.get('_type');
         form.findField('type').setValue(type);
+        form.findField('tag').setValue(data.get('tag'));
         var streams = data.get('_streams');
         var _acl = data.get('_acl');
         var acl = {read:[],write:[]};
