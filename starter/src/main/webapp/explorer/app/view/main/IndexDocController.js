@@ -53,7 +53,9 @@ Ext.define('explorer.view.main.IndexDocController', {
             field = {
                 fieldLabel: property.name,
                 name: property.name,
-                value: property.defaultValue
+                value: property.defaultValue,
+                regex : property.pattern,
+                regexText : property.promptMessage
             };
         }
         if (type == 'integer' || type == 'float') {
@@ -63,7 +65,9 @@ Ext.define('explorer.view.main.IndexDocController', {
                 minValue: -2147483647,
                 maxValue: 2147483647,
                 name: property.name,
-                value: property.defaultValue
+                value: property.defaultValue,
+                regex : property.pattern,
+                regexText : property.promptMessage
             };
         }
         if (type == 'boolean') {
@@ -73,7 +77,9 @@ Ext.define('explorer.view.main.IndexDocController', {
                 fieldLabel: property.name,
                 value: property.defaultValue,
                 minWidth: 100,
-                store: [true, false]
+                store: [true, false],
+                regex : property.pattern,
+                regexText : property.promptMessage
             }
         }
         if (type == 'date') {
@@ -83,7 +89,9 @@ Ext.define('explorer.view.main.IndexDocController', {
                 anchor: '100%',
                 altFormats : 'c',
                 format : 'Y-m-d',
-                name: property.name
+                name: property.name,
+                regex : property.pattern,
+                regexText : property.promptMessage
             };
             if(property.defaultValue!=''){
                 field.value = new Date(property.defaultValue);
@@ -110,22 +118,22 @@ Ext.define('explorer.view.main.IndexDocController', {
 
                     Ext.Array.each(readOperationObj, function (operationObj, index, countriesItSelf) {
                             if (operationObj.get('isUser')) {
-                                _acl.read.users.push(operationObj.get('name'));
+                                _acl.read.users.push(operationObj.get('id'));
                                 flag = true;
                             }
                             if (operationObj.get('isGroup')) {
-                                _acl.read.groups.push(operationObj.get('name'));
+                                _acl.read.groups.push(operationObj.get('id'));
                                 flag = true;
                             }
 
                     });
                 Ext.Array.each(writeOperationObj, function (operationObj, index, countriesItSelf) {
                         if (operationObj.get('isUser')) {
-                            _acl.write.users.push(operationObj.get('name'));
+                            _acl.write.users.push(operationObj.get('id'));
                             flag = true;
                         }
                         if (operationObj.get('isGroup')) {
-                            _acl.write.groups.push(operationObj.get('name'));
+                            _acl.write.groups.push(operationObj.get('id'));
                             flag = true;
                         }
                 });

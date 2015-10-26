@@ -1,2 +1,2 @@
 // @tag full-page
-// @require C:\Users\XQL\IdeaProjects\uContent\starter\src\main\webapp\explorer\app.js
+// @require D:\ideaWork\uContent\starter\src\main\webapp\explorer\app.js

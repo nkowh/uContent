@@ -11,21 +11,37 @@ Ext.define('explorer.view.main.MainController', {
     loadMenu : function(){
         var me = this;
         var tabPanel = this.getView().down('tabpanel');
-        this.getViewModel().getStore('views').load({
-            callback: function(records, operation, success) {
-                Ext.Array.each(records, function(record, index, countriesItSelf) {
-                    tabPanel.add({
-                        title:record.get('name'),
-                            xtype: 'documents',
-                            docQuery : record.get('query'),
-                            qType : record.get('type'),
-                            index : index
-                    });
-                });
-               tabPanel.setActiveTab(0);
-
-            }
-        });
+        var userId = Ext.util.Cookies.get('userId');
+        if(userId&&userId!=''){
+            Ext.Ajax.request({
+                url: '/svc/views/user/' + userId,
+                callback: function (options, success, response) {
+                    if (!success) {
+                        return;
+                    }
+                    if (response.responseText != '') {
+                        var data = Ext.decode(response.responseText);
+                        Ext.Array.each(data.views, function(record, index, countriesItSelf) {
+                            var queryContext = record.queryContext;
+                            var docQuery = '';
+                            var qType = '';
+                            if(queryContext&&queryContext!=''){
+                                queryContext =  Ext.JSON.decode(queryContext);
+                                docQuery =queryContext.query;
+                                qType =queryContext.type;
+                            }
+                            tabPanel.add({
+                                title:record.viewName,
+                                xtype: 'documents',
+                                docQuery : Ext.JSON.encode(docQuery),
+                                qType : qType,
+                                index : index
+                            });
+                        });
+                    }
+                }
+            });
+        }
 
     },
     changeMenu : function(tabPanel, newCard, oldCard, eOpts){

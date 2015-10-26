@@ -4,8 +4,7 @@ Ext.define('starter.view.main.system.type.CreateProperty', {
     controller: 'type',
     viewModel: 'type',
     bind: {
-        title: '{propertyTitle}',
-        store : '{properties}'
+        title: '{propertyTitle}'
     },
     columns: [{
         header: 'Name',

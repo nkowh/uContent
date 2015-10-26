@@ -15,7 +15,7 @@ Ext.define('explorer.view.main.MainModel', {
     },
 
     stores: {
-        views: {type: 'views'},
+        //views: {type: 'views'},
         fulltext: {
             type: 'documents'
         },

@@ -20,7 +20,7 @@ Ext.define('admin.view.main.MainHeader', {
             items : [
                 {
                     text   : '退出',
-                    handler  : 'onTitleClick'
+                    handler  : 'logout'
                 }
             ]
         }

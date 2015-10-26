@@ -62,13 +62,21 @@ Ext.define('admin.view.main.Main', {
                 iconCls: 'fa-users',
                 xtype: 'groups'
             }, {
-                title: '日志',
-                iconCls: 'fa fa-bars',
-                xtype: 'logs'
+                    title: '标签',
+                    iconCls: 'fa-users',
+                    xtype: 'tags'
             }, {
+                    title: '视图',
+                    iconCls: 'fa-users',
+                    xtype: 'views'
+                }, {
                 title: '类型',
                 iconCls: 'fa-cubes',
                 xtype: 'types'
+            }, {
+                    title: '日志',
+                    iconCls: 'fa fa-bars',
+                    xtype: 'logs'
             },  {
                     title: '重建索引',
                     iconCls: 'fa-cog',

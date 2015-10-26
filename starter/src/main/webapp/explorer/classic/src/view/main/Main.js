@@ -47,13 +47,13 @@ Ext.define('explorer.view.main.Main', {
             tabWidth : 150,
             minTabWidth : 150,
             defaults: {
-                textAlign: 'left',
+                textAlign: 'center',
                 closable: true,
                 //scrollable: true,
                 margin: 5
             },
             listeners :{
-                beforerender : 'loadMenu',
+                afterrender : 'loadMenu',
                 tabchange : 'changeMenu'
             }
         }
