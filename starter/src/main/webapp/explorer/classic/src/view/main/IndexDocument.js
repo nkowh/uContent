@@ -42,6 +42,7 @@ Ext.define('explorer.view.main.IndexDocument', {
                     name : 'tag',
                     xtype: 'tagfield',
                     fieldLabel: 'Tag',
+                    encodeSubmitValue: true,
                     displayField: 'tagContext',
                     valueField: '_id',
                     forceSelection: true,

@@ -34,6 +34,7 @@ Ext.define('explorer.view.main.ModifyDocument', {
                     xtype: 'tagfield',
                     fieldLabel: 'Tag',
                     displayField: 'tagContext',
+                    encodeSubmitValue: true,
                     valueField: '_id',
                     forceSelection: true,
                     store: Ext.create('Ext.data.Store', {
