@@ -33,15 +33,20 @@ Ext.define('explorer.view.main.ModifyDocument', {
                     name : 'tag',
                     xtype: 'tagfield',
                     fieldLabel: 'Tag',
-                    displayField: 'name',
-                    valueField: 'id',
+                    displayField: 'tagContext',
+                    valueField: '_id',
                     forceSelection: true,
-                    store: Ext.create("Ext.data.Store", {
-                        fields: ["name", "id"],
-                        data: [
-                            { name: "music", id: "music" },
-                            { name: "sports", id: "sports" }
-                        ]
+                    store: Ext.create('Ext.data.Store', {
+                        fields: ['_id','tagContext'],
+                        proxy: {
+                            type: 'ajax',
+                            url: '/svc/tags',
+                            reader: {
+                                type: 'json',
+                                rootProperty: 'tags'
+                            }
+                        },
+                        autoLoad: true
                     }),
                     readOnly : false
                 }, {

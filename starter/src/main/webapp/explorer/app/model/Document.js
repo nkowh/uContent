@@ -5,6 +5,7 @@ Ext.define('explorer.model.Document', {
         {name: 'id', type: 'string'},
         {name: 'name', type: 'string'},
         {name: 'createdBy', type: 'string'},
+        {name: 'tag', type: 'string'},
         {name: 'lastUpdatedBy', type: 'string'},
         {name: 'createdOn', type: 'date',dateFormat: 'c'},
         {name: 'lastUpdatedOn', type: 'date',dateFormat: 'c'},
