@@ -146,7 +146,7 @@ Ext.define('explorer.view.main.IndexDocController', {
             var url = '';
             var msg = "";
             if( this.getView().down('hiddenfield[name=_id]')&&this.getView().down('hiddenfield[name=_id]').getValue()!=''){
-                url = '/svc/' +this.getView().down('textfield[name=type]').getValue()+'/'+this.getView().down('hiddenfield[name=_id]').getValue();
+                url = '/svc/' +type.getValue()+'/'+this.getView().down('hiddenfield[name=_id]').getValue();
                 msg ='Update';
             }else{
                 url = '/svc/'+type.getValue();
