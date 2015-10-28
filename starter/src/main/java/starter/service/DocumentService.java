@@ -483,6 +483,14 @@ public class DocumentService {
             LocalDateTime localDateTime = new DateTime().toLocalDateTime();
             body.put(Constant.FieldName.LASTUPDATEDBY, context.getUserName());
             body.put(Constant.FieldName.LASTUPDATEDON, localDateTime);
+
+            Object t = body.get("tag");
+            if (t != null && StringUtils.isNotBlank(t.toString())) {
+                String tag = t.toString();
+                tag = tag.replaceAll("\"","");
+                tag = tag.substring(1, tag.length() -1);
+                body.put("tag", tag);
+            }
         }
     }
 
