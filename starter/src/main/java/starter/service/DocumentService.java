@@ -351,6 +351,13 @@ public class DocumentService {
             acl.put("write", write);
             body.put(Constant.FieldName.ACL, acl);
         }
+        Object t = body.get("tag");
+        if (t != null && StringUtils.isNotBlank(t.toString())) {
+            String tag = t.toString();
+            tag = tag.replaceAll("\"","");
+            tag = tag.substring(1, tag.length() -1);
+            body.put("tag", tag);
+        }
     }
 
 
@@ -501,7 +508,7 @@ public class DocumentService {
         while (iterator.hasNext()) {
             Map.Entry<String, Object> entry = iterator.next();
             String key = entry.getKey();
-            if (key.equals(Constant.FieldName.STREAMS)) {
+            if (key.equals(Constant.FieldName.STREAMS) || key.equals("tag")) {
                 continue;
             }
             if (key.equals(Constant.FieldName.ACL)) {
