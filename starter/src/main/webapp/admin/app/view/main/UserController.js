@@ -36,9 +36,11 @@ Ext.define('admin.view.main.UserController', {
         }
 
         Ext.Msg.confirm("Title", "Are you sure to delete this User ?", function (r) {
-            var store = record[0].store;
-            store.remove(record[0]);
-            me.sync(store);
+            if(r=='yes'){
+                var store = record[0].store;
+                store.remove(record[0]);
+                me.sync(store);
+            }
         });
     },
 

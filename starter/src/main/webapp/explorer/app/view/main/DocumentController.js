@@ -32,6 +32,7 @@ Ext.define('explorer.view.main.DocumentController', {
         if (records && records.length > 0) {
             var result = [];
             Ext.Msg.confirm("Title", "Are you sure to delete this Document？", function (r) {
+                if(r=='no') return ;
                 Ext.Array.each(records, function(record, index, countriesItSelf) {
                     result.push({"type":record.get("_type"),"id":record.get("_id")});
                 });
