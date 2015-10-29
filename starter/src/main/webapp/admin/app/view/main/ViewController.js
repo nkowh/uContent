@@ -516,8 +516,10 @@ Ext.define('admin.view.main.ViewController', {
         }
 
         Ext.Msg.confirm("Title", "Are you sure to delete this View ?", function (r) {
-            var store = record[0].store;
-            store.remove(record[0]);
+            if(r==='yes'){
+                var store = record[0].store;
+                store.remove(record[0]);
+            }
         });
     }
 

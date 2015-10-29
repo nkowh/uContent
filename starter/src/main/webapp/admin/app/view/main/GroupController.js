@@ -39,8 +39,10 @@ Ext.define('admin.view.main.GroupController', {
         var store = record[0].store;
         if (record && record.length > 0) {
             Ext.Msg.confirm("Title", "Are you sure to delete this Group？", function (r) {
-                store.remove(record[0]);
-                me.sync(store);
+                if(r==='yes'){
+                    store.remove(record[0]);
+                    me.sync(store);
+                }
             });
         } else {
             Ext.Msg.alert('message', 'Please select one item at least.');
