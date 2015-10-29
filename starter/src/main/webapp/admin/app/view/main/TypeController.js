@@ -47,7 +47,7 @@ Ext.define('admin.view.main.TypeController', {
         var name = record[0].get('name');
         if (record && record.length > 0) {
             Ext.Msg.confirm("Title", "Are you sure to delete this Type？", function (r) {
-                if(r=='yes'){
+                if(r==='yes'){
                     me.getViewModel().getStore('types').remove(record[0]);
                 }
             });
