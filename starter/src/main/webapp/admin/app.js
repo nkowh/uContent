@@ -8,7 +8,7 @@ Ext.application({
 
     extend: 'admin.Application',
 
-    requires: [
+    views: [
         'admin.view.main.Main'
     ],
 

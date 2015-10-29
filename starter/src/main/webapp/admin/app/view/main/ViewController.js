@@ -183,7 +183,7 @@ Ext.define('admin.view.main.ViewController', {
             if(aPanel.query('combobox[name="property"]')[index]){
                 aPanel.query('combobox[name="property"]')[index].bindStore(
                     Ext.create('Ext.data.Store', {
-                        model: Ext.create('admin.model.Property'),
+                        model: Ext.create('chemistry.model.Property'),
                         data: data
                     })
                 );
@@ -204,7 +204,7 @@ Ext.define('admin.view.main.ViewController', {
                         if(aPanel.query('combobox[name="property"]')[index]){
                             aPanel.query('combobox[name="property"]')[index].bindStore(
                                 Ext.create('Ext.data.Store', {
-                                    model: Ext.create('admin.model.Property'),
+                                    model: Ext.create('chemistry.model.Property'),
                                     data: data
                                 })
                             );

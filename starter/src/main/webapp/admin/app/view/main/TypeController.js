@@ -32,7 +32,7 @@ Ext.define('admin.view.main.TypeController', {
                     var properties = Ext.decode(response.responseText);
                     me.getView().down('grid').bindStore(
                         Ext.create('Ext.data.Store', {
-                            model: 'admin.model.Property',
+                            model: 'chemistry.model.Property',
                             data: properties.properties,
                             initData: properties.properties
                         }));
@@ -59,7 +59,7 @@ Ext.define('admin.view.main.TypeController', {
         var store = e.up('grid').store;
         var order = store.data.length + 1;
         // Create a model instance
-            var r = Ext.create('admin.model.Property', {
+            var r = Ext.create('chemistry.model.Property', {
                 name: '',
                 type: 'string',
                 pattern: '',

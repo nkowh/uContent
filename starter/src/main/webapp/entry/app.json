@@ -61,7 +61,7 @@
      *      ]
      */
     "requires": [
-        "font-awesome"
+        "font-awesome","chemistry"
     ],
 
     /**

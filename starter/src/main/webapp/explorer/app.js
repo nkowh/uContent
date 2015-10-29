@@ -24,7 +24,7 @@ Ext.application({
 
     extend: 'explorer.Application',
 
-    requires: [
+    views: [
         'explorer.view.main.Main'
     ],
 

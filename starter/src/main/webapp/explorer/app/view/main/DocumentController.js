@@ -87,7 +87,7 @@ Ext.define('explorer.view.main.DocumentController', {
                 types: this.getView().qType
             };
         }
-        var store =  Ext.create('explorer.store.Documents');
+        var store =  Ext.create('chemistry.store.Documents');
         store.getProxy().extraParams =params;
         e.bindStore(store);
         e.down('pagingtoolbar').bindStore(store);

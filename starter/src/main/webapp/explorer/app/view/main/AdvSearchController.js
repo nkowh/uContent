@@ -23,7 +23,7 @@ Ext.define('explorer.view.main.AdvSearchController', {
         if(isMulti){
             aPanel.query('combobox[name="property"]')[index].bindStore(
                 Ext.create('Ext.data.Store', {
-                    model: Ext.create('explorer.model.Property'),
+                    model: Ext.create('chemistry.model.Property'),
                     data: data
                 })
             );
@@ -39,7 +39,7 @@ Ext.define('explorer.view.main.AdvSearchController', {
                         data = Ext.Array.insert(properties.properties, 0, data);
                         aPanel.query('combobox[name="property"]')[index].bindStore(
                             Ext.create('Ext.data.Store', {
-                                model: Ext.create('explorer.model.Property'),
+                                model: Ext.create('chemistry.model.Property'),
                                 data: data
                             })
                         );

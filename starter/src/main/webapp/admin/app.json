@@ -63,7 +63,7 @@
     "requires": [
         "font-awesome",
         "ux",
-        "charts"
+        "charts","chemistry"
     ],
 
     /**
